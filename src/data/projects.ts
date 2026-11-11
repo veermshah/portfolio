@@ -50,7 +50,6 @@ export const projects: Project[] = [
     stack: ['Rust', 'Type systems', 'Abstract interpretation', 'LLM inference'],
     live: 'https://veer-lang.vercel.app',
     code: 'https://github.com/veermshah/veer',
-    codePrivate: true,
     extra: [
       { label: 'Docs site source', href: 'https://github.com/veermshah/veer-site' },
       { label: 'Release binaries', href: 'https://github.com/veermshah/veer-site/releases' },
@@ -105,19 +104,23 @@ export const projects: Project[] = [
     slug: 'cambrian',
     title: 'Cambrian',
     pitch:
-      'A Go runtime for a swarm of DeFi agents on Solana and Base, where strategies compete for capital and the losing ones are retired.',
+      'A self-evolving swarm of DeFi trading agents on Solana and Base, written in Go: losing agents are killed, profitable ones reproduce with mutated strategies.',
     role: { kind: 'Solo' },
-    stack: ['Go', 'Solana', 'Base', 'PostgreSQL', 'Redis', 'LLM APIs', 'Docker'],
+    stack: ['Go', 'Solana', 'Base', 'PostgreSQL', 'Redis', 'Gin', 'LLM APIs', 'Docker'],
     code: 'https://github.com/veermshah/Cambrian',
     problem:
-      'Yield strategies go stale and are tedious to babysit. I wanted to test whether an evolutionary setup (many small agents, capital flowing to the ones that make money, mutated copies of the winners) could manage itself, with hard economic guardrails and devnet-only trading until it proves stable.',
+      'Yield strategies go stale and are tedious to babysit. I wanted to test whether an evolutionary setup could manage itself: many small agents, capital flowing to the ones that make money after their own LLM and infrastructure costs, and mutated copies of the winners, with hard guardrails and devnet only until it proves stable.',
     built: [
-      'A single Go process runs 10 to 30 agent loops on goroutines, each with its own genome: chain, task type, model and strategy parameters.',
-      'An orchestrator scores agents each epoch, funds the profitable ones, spawns mutated offspring and retires losers. Shadow agents paper-trade so mutations can be tested cheaply.',
-      'Packages for chain clients, backtesting, LLM strategists, security limits, Redis-backed messaging between agents, notifications and an HTTP API.',
+      'Each agent is a genome: a task (yield rotation, liquidity provision, liquidation hunting or momentum), a chain, an LLM strategist with its own prompt and model, and economic parameters. A fast deterministic loop trades, with a Thompson-sampling bandit; a slow LLM loop tunes the config.',
+      'Once an epoch, an orchestrator settles every agent’s books, kills or pauses the losers, and lets profitable agents reproduce by mutation or crossover. Offspring pass a solvency check, an LLM quality check, an adversarial bull/bear review and a backtest before they get capital.',
+      'The LLM never builds transactions. A security layer validates every transaction against per-chain allowlists and encrypts keys with AES-256-GCM. Agents share signals over Redis, weighted by each agent’s track record.',
+      'One Go process boots everything: Postgres migrations, chain clients (Jupiter, Kamino and marginfi on Solana; 1inch, Aave and Morpho on Base), a REST and WebSocket API, Telegram alerts and a monthly budget cap.',
     ],
-    results: ['86 Go test files across the runtime, orchestrator, chain and security packages.'],
-    images: [],
+    results: [
+      '637 passing tests and subtests across 17 packages, `go vet` clean, in CI on every push.',
+      '18 acceptance suites pass (evolution, bandit convergence, budget, transaction validation and more); 5 live suites are waiting on a full devnet run, so there are no trading results yet.',
+    ],
+    images: [{ file: 'architecture.webp', alt: 'Cambrian architecture: swarm runtime, per-agent loops, orchestrator, chain and security layers, Postgres and Redis', caption: 'Architecture, from the repo README' }],
   },
   {
     slug: 'kaggle-agent',
@@ -127,7 +130,6 @@ export const projects: Project[] = [
     role: { kind: 'Solo' },
     stack: ['Python', 'LightGBM', 'XGBoost', 'CatBoost', 'Optuna', 'PyTorch', 'SQLite', 'Streamlit'],
     code: 'https://github.com/veermshah/kaggle-agent',
-    codePrivate: true,
     problem:
       'Most of the work in a tabular competition is careful bookkeeping: a validation scheme you don’t quietly break, experiments you can compare, and submissions you don’t waste. I wanted an agent to do the grinding while keeping the decisions that can go wrong (rules, submissions) with me.',
     built: [

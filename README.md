@@ -43,7 +43,6 @@ Profile text and the top links (GitHub, LinkedIn, email, resume) are in [`src/da
 
 - [ ] **Resume.** Put the current PDF at `public/resume.pdf` and set `href: '/resume.pdf'` on the Resume link in `src/data/profile.ts`. It's hidden until then.
 - [ ] Check the bio line in `src/data/profile.ts` is current.
-- [ ] When `veer` and `kaggle-agent` go public, remove `codePrivate: true` from both entries.
 
 ## Social card and icons
 
