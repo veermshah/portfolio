@@ -10,6 +10,11 @@
       "permanent": false
     },
     {
+      "source": "/dishbrain-playground/",
+      "destination": "https://veermshah.github.io/dishbrain-playground/",
+      "permanent": false
+    },
+    {
       "source": "/dishbrain-playground/:path*",
       "destination": "https://veermshah.github.io/dishbrain-playground/:path*",
       "permanent": false
@@ -20,12 +25,22 @@
       "permanent": false
     },
     {
+      "source": "/wetware-emulator/",
+      "destination": "https://veermshah.github.io/wetware-emulator/",
+      "permanent": false
+    },
+    {
       "source": "/wetware-emulator/:path*",
       "destination": "https://veermshah.github.io/wetware-emulator/:path*",
       "permanent": false
     },
     {
       "source": "/jev-calibration-lab",
+      "destination": "https://veermshah.github.io/jev-calibration-lab/",
+      "permanent": false
+    },
+    {
+      "source": "/jev-calibration-lab/",
       "destination": "https://veermshah.github.io/jev-calibration-lab/",
       "permanent": false
     },
