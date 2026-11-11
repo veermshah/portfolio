@@ -5,7 +5,8 @@
 //
 // Run `npm run build` first. Internal links must resolve to a file in dist/.
 // External links must end in a 2xx after redirects. Some sites block scripted
-// requests (LinkedIn answers 999); those are reported as warnings, not failures.
+// requests (LinkedIn answers 999) or rate-limit them (429); those are reported
+// as warnings, not failures.
 
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
@@ -93,7 +94,7 @@ if (external) {
   );
   for (const r of results.sort((a, b) => a.url.localeCompare(b.url))) {
     const ok = r.status >= 200 && r.status < 300;
-    const blocked = BOT_BLOCKERS.some((d) => r.url.includes(d));
+    const blocked = r.status === 429 || BOT_BLOCKERS.some((d) => r.url.includes(d));
     const tag = ok ? 'ok  ' : blocked ? 'warn' : 'FAIL';
     if (!ok && !blocked) externalFailures++;
     if (!ok || process.argv.includes('--verbose')) console.log(`  ${tag} ${r.status || r.error} ${r.url}`);
