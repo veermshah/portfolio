@@ -1,0 +1,411 @@
+/**
+ * Every project on the site lives here. The home page lists them in array
+ * order, and each one gets a page at /projects/<slug>.
+ *
+ * Images go in src/assets/projects/<slug>/ and are referenced by file name.
+ * Astro converts them to responsive WebP at build time.
+ */
+
+export interface ProjectLink {
+  label: string;
+  href: string;
+}
+
+export interface ProjectImage {
+  /** File name inside src/assets/projects/<slug>/ */
+  file: string;
+  alt: string;
+  caption?: string;
+}
+
+export interface Project {
+  slug: string;
+  title: string;
+  /** One line for the home page list. */
+  pitch: string;
+  award?: string;
+  /** Hackathon, course or context, shown next to the role. */
+  context?: string;
+  role: { kind: 'Solo' } | { kind: 'Team'; size?: number; mine: string };
+  stack: string[];
+  live?: string;
+  code: string;
+  /** Renders "Code (soon)" without a link until the repo is public. */
+  codePrivate?: boolean;
+  /** Extra links shown on the project page (reports, docs, videos). */
+  extra?: ProjectLink[];
+  problem: string;
+  built: string[];
+  results: string[];
+  images: ProjectImage[];
+}
+
+export const projects: Project[] = [
+  {
+    slug: 'veer',
+    title: 'Veer',
+    pitch:
+      'A programming language for LLM programs whose compiler proves KV-cache memory, prefill cost and numeric error bounds before anything runs.',
+    role: { kind: 'Solo' },
+    stack: ['Rust', 'Type systems', 'Abstract interpretation', 'LLM inference'],
+    live: 'https://veer-lang.vercel.app',
+    code: 'https://github.com/veermshah/veer',
+    codePrivate: true,
+    extra: [
+      { label: 'Docs site source', href: 'https://github.com/veermshah/veer-site' },
+      { label: 'Release binaries', href: 'https://github.com/veermshah/veer-site/releases' },
+    ],
+    problem:
+      'Agents, RAG pipelines and tree search are limited by KV-cache memory and prefill time. Serving engines guess at cache reuse, editing an agent’s history quietly re-prefills thousands of tokens, and the only way to know whether a quantized model is still accurate enough is to run evals. I wanted those costs to be visible in the program and checked by a compiler.',
+    built: [
+      'Contexts are linear values. Every operation (append, generate, fork, splice, speculate, drop) consumes its context, so leaks, use-after-free and ambiguous edits are compile errors.',
+      'A static planner, written as an abstract interpreter over paged KV segments, proves upper bounds on peak KV bytes, prefill and decode tokens, context length and splice re-prefill cost. `@budget(kv = 2GiB, prefill = 12000)` is a compile-time contract.',
+      'Precision types carry a proven error bound through quantization, matmul and activations across FP8, INT8, MXFP4 and NVFP4, so `@accuracy(rel <= 0.25)` is also checked at compile time.',
+      'A six-crate Rust workspace: parser and diagnostics, bit-exact quantization simulators, type checker, planner, a runtime with a simulated engine and an OpenAI-compatible HTTP engine, and the `veer` CLI (`check`, `plan`, `run`, `types`, `explain`).',
+    ],
+    results: [
+      'v0.1.0 released with binaries for macOS (arm64, x64), Windows (x64, MSI) and Linux (x64, arm64), plus shell and PowerShell installers.',
+      'The test suite includes soundness property tests for the planner and error-bound algebra, and every program in the docs is compiled in CI.',
+    ],
+    images: [{ file: 'site.webp', alt: 'The Veer documentation site home page', caption: 'Docs and downloads at veer-lang.vercel.app' }],
+  },
+  {
+    slug: 'wander',
+    title: 'Wander',
+    pitch:
+      'Indoor navigation for blind and low-vision people: a chest-worn iPhone, a scanned 3D map of the building, and a voice guide.',
+    context: 'Hack the North 2026',
+    role: {
+      kind: 'Team',
+      size: 4,
+      mine: 'navigation backend, agent tools, Modal pipeline, assistant chat',
+    },
+    stack: ['Swift', 'ARKit', 'Python', 'FastAPI', 'Modal', 'Next.js', 'OpenAI', 'Elasticsearch'],
+    live: 'https://wander-htn.vercel.app',
+    code: 'https://github.com/veermshah/hackthenorth',
+    problem:
+      'GPS stops at the door. A white cane finds the ground in front of you, but it can’t say which hallway leads to room 3B. We wanted to add the layer the cane was never meant to cover, and let someone you trust help from anywhere.',
+    built: [
+      'A sighted helper scans the building once. The scan becomes a Gaussian splat for the web app and a Niantic VPS map that the phone localizes against. The backend proposes a walkable waypoint graph from the mesh, and the helper reviews and publishes it.',
+      'The wearer talks to a voice agent (“guide me to room 101”). The model decides what to do; routing is plain A* over the waypoint graph, so no position or path ever comes from a model. Obstacle detection runs on the phone with LiDAR and never touches the network.',
+      'My part was mostly the backend. I wrote the first version of the FastAPI navigation backend with the OpenAI Responses agent and its function tools, and the Elasticsearch retrieval layer behind it. I automated the Modal scan pipeline, added self-hosted visual localization and Gaussian splat training on Modal, and set up CI that tests the backend and deploys to Modal when main is green.',
+      'In the web app I built the Ask tab: a streaming chat with the building assistant that grounds “what’s in view” in the web camera and has a mobile voice-call mode. I also made detected scene objects turn into searchable note pins.',
+      'Caleb Bae led the web app, Alan Roybal led the iOS app and the Niantic SDK integration, and Ayro Escobar built the marketing site.',
+    ],
+    results: [
+      'Built by four people in one weekend; the helper web app is live.',
+      'End to end: scan, align, propose the graph, publish, localize at about 5 Hz, route, and speak cues while walking.',
+    ],
+    images: [
+      { file: 'site.webp', alt: 'The Wander landing page', caption: 'wander-htn.vercel.app' },
+      { file: 'architecture.webp', alt: 'Architecture diagram: chest-worn iPhone, Niantic VPS, FastAPI backend on Modal, OpenAI, Elasticsearch, Next.js web app', caption: 'Architecture' },
+    ],
+  },
+  {
+    slug: 'cambrian',
+    title: 'Cambrian',
+    pitch:
+      'A Go runtime for a swarm of DeFi agents on Solana and Base, where strategies compete for capital and the losing ones are retired.',
+    role: { kind: 'Solo' },
+    stack: ['Go', 'Solana', 'Base', 'PostgreSQL', 'Redis', 'LLM APIs', 'Docker'],
+    code: 'https://github.com/veermshah/Cambrian',
+    problem:
+      'Yield strategies go stale and are tedious to babysit. I wanted to test whether an evolutionary setup (many small agents, capital flowing to the ones that make money, mutated copies of the winners) could manage itself, with hard economic guardrails and devnet-only trading until it proves stable.',
+    built: [
+      'A single Go process runs 10 to 30 agent loops on goroutines, each with its own genome: chain, task type, model and strategy parameters.',
+      'An orchestrator scores agents each epoch, funds the profitable ones, spawns mutated offspring and retires losers. Shadow agents paper-trade so mutations can be tested cheaply.',
+      'Packages for chain clients, backtesting, LLM strategists, security limits, Redis-backed messaging between agents, notifications and an HTTP API.',
+    ],
+    results: ['86 Go test files across the runtime, orchestrator, chain and security packages.'],
+    images: [],
+  },
+  {
+    slug: 'kaggle-agent',
+    title: 'kaggle-agent',
+    pitch:
+      'An autonomous agent for Kaggle competitions: it profiles the data, freezes validation, runs experiments for hours, and submits only with my approval.',
+    role: { kind: 'Solo' },
+    stack: ['Python', 'LightGBM', 'XGBoost', 'CatBoost', 'Optuna', 'PyTorch', 'SQLite', 'Streamlit'],
+    code: 'https://github.com/veermshah/kaggle-agent',
+    codePrivate: true,
+    problem:
+      'Most of the work in a tabular competition is careful bookkeeping: a validation scheme you don’t quietly break, experiments you can compare, and submissions you don’t waste. I wanted an agent to do the grinding while keeping the decisions that can go wrong (rules, submissions) with me.',
+    built: [
+      'Onboarding pulls metadata from the Kaggle API, profiles the files, detects the task and submission format, and runs integrity checks: target leakage, duplicates, train/test overlap and adversarial validation for distribution shift.',
+      'The validation scheme is chosen from the data and frozen. Folds are hashed, scores are only compared within one validation version, and a 10% holdout is hidden from every listing and agent.',
+      'A scheduler daemon keeps one GPU job and several CPU jobs running. A bandit over experiment “arms” (baselines, Optuna tuning, feature recipes, ensembling, calibration, seed bagging) picks what to try next. All state is in SQLite, so the loop survives restarts.',
+      'Submissions are prepared and validated automatically but need approval from an interactive terminal.',
+    ],
+    results: [
+      'Tabular classification and regression are complete; image classification has a working GPU training adapter.',
+    ],
+    images: [],
+  },
+  {
+    slug: 'dishbrain-playground',
+    title: 'DishBrain Playground',
+    pitch:
+      'A thousand simulated spiking neurons on a virtual electrode array play Pong in the browser, to test what the DishBrain paper’s feedback actually does.',
+    role: { kind: 'Solo' },
+    stack: ['TypeScript', 'Vite', 'Canvas', 'Vitest', 'Statistics'],
+    live: 'https://veermshah.github.io/dishbrain-playground/',
+    code: 'https://github.com/veermshah/dishbrain-playground',
+    problem:
+      'In 2022 Kagan et al. connected cultured neurons to Pong and reported that cultures given predictable feedback after hits and unpredictable noise after misses rallied longer over time. I wanted to know whether plain spike-timing-dependent plasticity in a generic spiking network is enough to produce that.',
+    built: [
+      '1000 Izhikevich neurons (80% excitatory) with STDP, sitting under an 8×8 virtual electrode array with sensory and motor regions, place and rate coding for the ball, and a population-rate decoder for the paddle.',
+      'The paper’s feedback protocol (a predictable burst after a hit, 4 s of random stimulation after a miss) plus three ablations that change only what follows a miss: predictable, unpredictable and silent.',
+      'A browser playground with a live raster, electrode map and rally curves with 95% confidence bands, plus a headless `npm run experiment` that runs paired seeds and Mann-Whitney U tests.',
+    ],
+    results: [
+      '12 paired seeds per condition, 20 simulated minutes each (one DishBrain session).',
+      'No condition learned. Rally length stayed near 0.3 hits per rally throughout, the same as with plasticity switched off. The DishBrain protocol against silent on late-session rally length: p = 0.30. Across 36 comparisons in three presets, no p-value falls below 0.23.',
+      'I report the null rather than searching for a setting that clears p < 0.05. My read is a credit-assignment problem: STDP sees spike pairs about 20 ms apart, and a miss arrives hundreds of milliseconds later.',
+    ],
+    images: [
+      { file: 'playground.webp', alt: 'DishBrain Playground: the Pong game next to a spike raster and electrode map', caption: 'The playground in the browser' },
+    ],
+  },
+  {
+    slug: 'jev-calibration-lab',
+    title: 'Jev Calibration Lab',
+    pitch:
+      'An independent benchmark that checks whether a decision model’s probabilities match human labels, against frontier LLMs and a cheap baseline.',
+    role: { kind: 'Solo' },
+    stack: ['Python', 'scikit-learn', 'Calibration metrics', 'GitHub Pages'],
+    live: 'https://veermshah.github.io/jev-calibration-lab/',
+    code: 'https://github.com/veermshah/jev-calibration-lab',
+    extra: [{ label: 'Report', href: 'https://github.com/veermshah/jev-calibration-lab/blob/main/report/report.md' }],
+    problem:
+      'TypeSafe’s Jev returns decisions with a probability attached and is trained for calibration, but its published benchmark defines ground truth as the average of two frontier LLMs. That measures agreement with those LLMs, not whether a 0.8 is right 80% of the time against people. I couldn’t find an independent check, so I wrote one.',
+    built: [
+      'Five public datasets labeled by people (SST-2, BoolQ, LIAR, banking77, SMS Spam), 300 fixed-seed evaluation items each.',
+      'One interface for every model arm: Jev, Claude Haiku and Sonnet with stated probabilities through structured output, and a TF-IDF logistic regression floor. New models are a config entry.',
+      'Metrics: accuracy, ECE and adaptive ECE, Brier, NLL, reliability diagrams, risk-coverage curves, latency, cost per 1,000 decisions, and post-hoc recalibration baselines. Results publish to a static leaderboard.',
+    ],
+    results: [
+      'The harness is complete; real Jev and Claude runs are waiting on API keys. Their numbers on the leaderboard come from labeled synthetic generators, not from the APIs.',
+      'Real baseline numbers: TF-IDF logistic regression reaches 0.807 accuracy on SST-2 and 0.967 on SMS Spam, and is underconfident on banking77, where temperature scaling cuts ECE from 0.119 to 0.038.',
+    ],
+    images: [
+      { file: 'site.webp', alt: 'The calibration leaderboard page', caption: 'The leaderboard. Jev and Claude rows are synthetic until the real runs happen.' },
+    ],
+  },
+  {
+    slug: 'wetware-emulator',
+    title: 'Wetware Emulator',
+    pitch:
+      'A simulated cortical culture on a virtual multi-electrode array, with an SDK, HTTP API and live dashboard for prototyping biocompute experiments without a wet lab.',
+    role: { kind: 'Solo' },
+    stack: ['Python', 'NumPy', 'HDF5', 'HTTP API', 'pytest', 'mypy'],
+    live: 'https://veermshah.github.io/wetware-emulator/',
+    code: 'https://github.com/veermshah/wetware-emulator',
+    problem:
+      'Living neurons on electrode arrays can now be reached over the internet, but access is scarce and slow, and I don’t have a wet lab. I wanted somewhere to write and debug a whole experiment first (stimulation protocol, closed loop, analysis, file handling) against something that fails the way a real culture does.',
+    built: [
+      'A NumPy simulation core: Izhikevich neurons placed in 2D, distance-dependent wiring, short-term plasticity, STDP and spontaneous bursts.',
+      'A virtual MEA that turns spikes into extracellular signals with noise, stimulation artifacts and blanking, plus biphasic stimulation that raises on unsafe waveforms instead of clipping them.',
+      'Closed loops on the simulation clock, culture aging (neurons and electrodes die), HDF5 export, YAML protocols, an HTTP server with a matching client, and a live browser dashboard.',
+    ],
+    results: [
+      'A 1000-neuron culture runs about 15× faster than real time on one laptop core.',
+      'Frequency tuning: the evoked response falls from 14.8 spikes per pulse at 1 Hz to 2.9 at 10 Hz and 0.4 at 80 Hz, from synaptic depression.',
+      'Closed-loop Pong, 6 cultures per condition: no learning (0.57 hits per rally with feedback, 0.48 without). I kept it as an example of wiring a closed loop, not as evidence the model learns.',
+    ],
+    images: [
+      { file: 'dashboard.webp', alt: 'Live dashboard with an electrode heatmap, spike raster and firing rate', caption: 'The live dashboard' },
+      { file: 'frequency_tuning.webp', alt: 'Plots of evoked response against stimulation frequency and amplitude', caption: 'Frequency tuning example' },
+    ],
+  },
+  {
+    slug: 'organoid-reservoir',
+    title: 'Organoid Reservoir',
+    pitch:
+      'Brainoware-style reservoir computing on a simulated organoid, benchmarked against an echo state network and an LSTM.',
+    role: { kind: 'Solo' },
+    stack: ['Python', 'NumPy', 'PyTorch', 'scikit-learn'],
+    code: 'https://github.com/veermshah/organoid-reservoir',
+    extra: [{ label: 'Full report', href: 'https://github.com/veermshah/organoid-reservoir/blob/main/report.md' }],
+    problem:
+      'In 2023 Cai et al. used a human brain organoid as the reservoir in a reservoir computer and reported vowel recognition and chaotic time-series prediction. I wanted to see how much of that a simulated organoid-like network reproduces, and how it compares with standard reservoirs when the encoding, readout and data splits are held fixed.',
+    built: [
+      '400 Izhikevich neurons wired inside a sphere with distance-dependent connections, background noise, optional NMDA-like synapses and STDP.',
+      'A virtual electrode array on the surface that encodes inputs as pulse trains or DC current; only a linear readout is trained.',
+      'Tasks: Japanese Vowels speaker recognition, Hénon, NARMA-10, Mackey-Glass and memory capacity. Baselines: ESN, LSTM, logistic regression and linear autoregression. Ablations on STDP, size, stimulation type and noise.',
+    ],
+    results: [
+      'Vowels: 0.965 accuracy for the spiking reservoir vs 0.981 for the ESN and 0.991 for logistic regression on resampled features (5 seeds).',
+      'Memory capacity is about 0.6 vs 10.1 for the ESN, so it does poorly on time series that need history. STDP moves vowels accuracy by about half a point, inside seed noise.',
+      '`make reproduce` regenerates every number and figure in about 13 minutes on a laptop CPU.',
+    ],
+    images: [
+      { file: 'reservoir_3d.webp', alt: '3D plot of neurons inside a sphere with electrodes on the surface', caption: 'The simulated organoid and its electrodes' },
+      { file: 'vowels_accuracy.webp', alt: 'Bar chart comparing vowel recognition accuracy across models', caption: 'Japanese Vowels accuracy by model' },
+    ],
+  },
+  {
+    slug: 'adaptrees',
+    title: 'Adaptrees',
+    pitch:
+      'A C++20 B+tree for variable-length keys, after the SIGMOD 2025 paper “B-Trees Are Back”. Up to 2× faster inserts than a textbook B+tree.',
+    context: 'CS 6360, Database Design',
+    role: { kind: 'Solo' },
+    stack: ['C++20', 'CMake', 'Benchmarking'],
+    code: 'https://github.com/veermshah/Adaptrees',
+    problem:
+      'B-trees with variable-length keys (URLs, titles) waste space and comparisons when nodes store full keys. Müller, Benson and Leis showed that careful node layout closes much of the gap to in-memory structures while keeping pages pageable. I implemented their main techniques to measure them myself.',
+    built: [
+      'Fixed 4 KB slotted pages with 16-byte slots, static per-node prefix truncation, 4-byte key heads for fast comparison, and a 16-entry hint array to narrow binary search.',
+      'Iterative descent with a fixed path stack and a fast path for ascending inserts.',
+      'A plain baseline B-tree used as a correctness oracle, synthetic integer, URL and Wikipedia-title datasets, and insert, point-lookup and range-scan benchmarks.',
+    ],
+    results: [
+      'At 1M keys on an Apple M5 Pro (median of 5 runs): 1.3–2.0× faster inserts and 1.2–1.6× faster point lookups than the baseline B+tree.',
+      'The gains are largest on long shared-prefix keys: Wikipedia-title inserts run 2.04× faster, URL lookups 1.56×.',
+      'Range scans over short integer keys are slower (0.70×) because each row rebuilds the full key into a new string; returning suffix views would likely fix it.',
+      'Lookup and scan checksums match the baseline on every dataset.',
+    ],
+    images: [{ file: 'benchmark.webp', alt: 'Bar charts of throughput for adaptive and baseline B-trees on integer, URL and Wikipedia keys', caption: 'Throughput at 1M keys, million operations per second' }],
+  },
+  {
+    slug: 'destina',
+    title: 'Destina',
+    pitch:
+      'A party game for a table of friends: a robot suggests challenges, a Vision Pro game master approves them, and scores and badges live on Solana.',
+    award: 'Meta track 3rd place, HackTX 2026',
+    context: 'HackTX 2026',
+    role: { kind: 'Team', size: 4, mine: 'Solana program, badge firmware and NFC tooling, WebSocket relay' },
+    stack: ['Solana', 'Anchor', 'Rust', 'C++', 'ESP32', 'Raspberry Pi', 'WebSockets', 'React'],
+    code: 'https://github.com/veermshah/hacktx_26',
+    extra: [
+      { label: 'My pull requests', href: 'https://github.com/Dhivyeshp/hacktx_26/pulls?q=is%3Apr+author%3Aveermshah' },
+    ],
+    problem:
+      'Players at a table join from their phones, tap physical relic chips to get prompts, and a game master on Vision Pro runs the round. The hardware, the phones, the headset and the chain all had to agree on game state in real time.',
+    built: [
+      'Tina, a tabletop robot, listens to the room and suggests challenges built around what the group has in common. Players join by scanning Tina’s QR code and open challenges by tapping NFC “relic” chips. Elijah Walker built the web app and Meta AI pipeline, Arnav Vedula the Vision Pro game master, and Dhivyesh Prithiviraj the robot controls.',
+      'I wrote the Solana program: an Anchor program on Token-2022, deployed to devnet, with a table coin, soulbound player badges whose level and achievements update on chain, round attestations with capped, double-pay-proof awards, kudos, a shop that burns coin, a shared table goal and keepsake NFTs. A chain service on Render and a browser SDK expose it to the web app.',
+      'I also wrote the ESP32-C3 firmware that turns the Hack the North badge into Tina’s animated face and reads and writes NFC relic tags (refusing to write with two tags in the field, targeting by UID, batch programming), the Raspberry Pi tooling that drives it, and the WebSocket relay between the Pi, the Vision Pro and the game hub.',
+    ],
+    results: ['Meta track, 3rd place at HackTX 2026.', 'Seven merged pull requests from me covering the chain, relay and badge work. The program is live on devnet at `DqqLyrxUPAiJ2m3Fu4uLL6GirTH2cSXXS9wJHmGngaZX`.'],
+    images: [{ file: 'architecture.webp', alt: 'Destina architecture: web app, Vision Pro, Raspberry Pi, ESP32 badges and Solana devnet', caption: 'Architecture' }],
+  },
+  {
+    slug: 'quantumloans',
+    title: 'QuantumLoans',
+    pitch: 'Overcollateralized crypto loans: borrow against your holdings without selling them.',
+    award: '1st Place, HackFin',
+    context: 'HackFin',
+    role: { kind: 'Team', size: 3, mine: 'React frontend: lend, borrow and portfolio health pages' },
+    stack: ['React', 'Solidity', 'Hardhat', 'Web3.js', 'Flask'],
+    code: 'https://github.com/veermshah/QuantumLoans',
+    extra: [
+      { label: 'Demo video', href: 'https://www.youtube.com/watch?v=nQ28joUHcSc' },
+      { label: 'Devpost', href: 'https://devpost.com/software/quantumloans' },
+    ],
+    problem:
+      'Selling crypto to get cash triggers taxes and gives up the position. An overcollateralized loan lets you borrow stablecoins against more collateral than you take out, with liquidation if the collateral falls too far.',
+    built: [
+      'A Solidity contract, deployed with Hardhat, that supplies ETH to Compound as collateral and borrows and repays USDC against it, with a Flask backend that calls it.',
+      'I built most of the React frontend: the landing page, the lend and borrow pages, and the portfolio health page. Alan Roybal and Viswa Kotra worked on the contract, backend and the rest of the app.',
+    ],
+    results: ['First place at HackFin.', 'I’m the top contributor by commits in a team of three.'],
+    images: [],
+  },
+  {
+    slug: 'firelens',
+    title: 'FireLens',
+    pitch:
+      'Building-level wildfire damage assessment: Gemini compares pre- and post-fire satellite crops of every building, and the results go on a map with a chat assistant.',
+    context: 'CS 4485 capstone, UT Dallas',
+    role: { kind: 'Team', size: 6, mine: 'dashboard UI, chatbot integration, live evaluation endpoint, deploys' },
+    stack: ['Next.js', 'Mapbox GL', 'FastAPI', 'Gemini', 'Cloudflare R2', 'Vercel', 'Render'],
+    live: 'https://firelens-umber.vercel.app',
+    code: 'https://github.com/veermshah/CS4485-Capstone',
+    problem:
+      'After a wildfire, responders and insurers need to know which buildings are gone, which are damaged and which are fine, and much of that is still people comparing aerial photos one building at a time. We tested how far a general-purpose vision-language model gets on that comparison with no task-specific training.',
+    built: [
+      'A pipeline that crops every building footprint from the xBD Santa Rosa wildfire tiles before and after the fire, and asks Gemini for a damage level, confidence and short reason as strict JSON.',
+      'A Next.js and Mapbox dashboard with pre/post imagery layers, footprints colored by predicted damage, a building inspector with the model’s label next to the FEMA label, metrics, and a chat assistant grounded in the results and the current map view. A FastAPI backend serves chat and live evaluation; data lives in Cloudflare R2.',
+      'My part (top committer): I built the first dashboard UI (map panel, building list, details drawer, filters), set up the Vercel and Render deployments, added building flagging, summaries and street addresses, integrated the chatbot into the backend and dashboard, added the live `/v1/evaluate` endpoint and rate-limit handling, and fixed the map and pre/post layer rendering.',
+    ],
+    results: [
+      'Zero-shot on 4,214 labeled buildings: 81.6% accuracy. No-damage F1 is 0.89.',
+      'When the model calls a building destroyed it is right 74% of the time, but it finds only 47% of destroyed buildings. The minor and major damage classes (28 buildings) are too rare to say anything about.',
+      'The live demo’s data backend is currently down, so the map on the live site may be empty. The screenshot is from the repo.',
+    ],
+    images: [{ file: 'dashboard.webp', alt: 'FireLens dashboard with the map, building list, damage filters and assistant', caption: 'The dashboard (screenshot from the repo)' }],
+  },
+  {
+    slug: 'habla',
+    title: 'Habla',
+    pitch: 'A Spanish tutor you talk to, in the browser or on a scheduled phone call, that writes reading lessons at your level and remembers you.',
+    role: { kind: 'Solo' },
+    stack: ['Next.js', 'TypeScript', 'Supabase', 'pg_cron', 'ElevenLabs', 'Twilio', 'Gemini'],
+    live: 'https://habla-two.vercel.app/',
+    code: 'https://github.com/veermshah/spAInish',
+    problem:
+      'Apps teach vocabulary, but speaking is the hard part, and practice with a person is expensive or awkward. I wanted a tutor that talks, remembers what you struggled with, and calls you.',
+    built: [
+      'Voice practice with an ElevenLabs conversational agent on the page, or as an outbound phone call through Twilio. Calls can be scheduled daily, on weekdays or weekly in your timezone; an hourly pg_cron job in Supabase triggers them.',
+      'Every conversation is saved with its transcript and audio. Memories you add (your job, a trip) go into the agent’s knowledge base so the tutor brings them up later.',
+      'Reading lessons: Gemini writes a 300 to 500 word article at your level, read aloud with word highlighting from timestamped TTS. You write a summary that Gemini grades on accuracy, grammar, vocabulary and coherence, then take a generated quiz.',
+      'Supabase auth, a streak dashboard computed in Postgres functions, and analytics over lesson attempts.',
+    ],
+    results: ['Deployed on Vercel and usable end to end: sign up, practice by voice or phone, take lessons, track streaks.'],
+    images: [{ file: 'landing.webp', alt: 'Habla landing page with a 3D globe', caption: 'Landing page' }],
+  },
+  {
+    slug: 'sa-night-drive',
+    title: 'SA Night Drive',
+    pitch:
+      'A getaway driving game through downtown San Antonio, steered with your hands through the webcam, where each landmark opens a challenge on real hardware.',
+    context: 'RowdyHacks 2026',
+    role: { kind: 'Team', size: 4, mine: 'the Alamo hardware challenge end to end, deploys' },
+    stack: ['React Three Fiber', 'MediaPipe', 'OpenStreetMap', 'Flask-SocketIO', 'Raspberry Pi', 'Arduino'],
+    live: 'https://sa-night-drive.vercel.app',
+    code: 'https://github.com/veermshah/rowdyhacks',
+    problem:
+      'We wanted a heist game that used real San Antonio streets, needed no controller, and spilled out of the browser: each landmark “vault” opens a challenge on physical hardware or a real phone call.',
+    built: [
+      'The drive: a React Three Fiber city built from OpenStreetMap exports, MediaPipe hand steering, and one A* road graph shared by navigation and the police car chasing you. Jagadeep Kalluri built the game; Ishita Saran and Dhivyesh Prithiviraj built the Riverwalk face-scan and Tower phone-call challenges.',
+      'My part was the Alamo vault, end to end: a Simon-says puzzle against a physical rig, where a Raspberry Pi relays an Arduino’s light sensor, joystick, LCD and vault-door servo to the Flask-SocketIO game server. I wrote the relay, the sensor protocol, the server logic and its tests.',
+      'I also set up the Render and Vercel deployments and drew the architecture diagram.',
+    ],
+    results: [
+      'The driving game is live; the vault challenges need the game server and hardware, which ran on-site.',
+      'I made 41 of the repo’s 94 commits.',
+    ],
+    images: [
+      { file: 'landing.webp', alt: 'SA Night Drive start screen', caption: 'Start screen' },
+      { file: 'architecture.webp', alt: 'Architecture: browser game, Flask-SocketIO server, Raspberry Pi and Arduino rig, Presage and Twilio challenges', caption: 'Architecture' },
+    ],
+  },
+  {
+    slug: 'hack-odds',
+    title: 'Hack Odds',
+    pitch: 'A free-to-play prediction market for hackathons on Solana: trade in-app credits on outcomes, settled on devnet.',
+    context: 'HackSMU 2026',
+    role: { kind: 'Solo' },
+    stack: ['Solana', 'Anchor', 'Rust', 'Next.js', 'TypeScript', 'Supabase', 'Gemini'],
+    live: 'https://hackodds.vercel.app',
+    code: 'https://github.com/veermshah/hacksmu26',
+    extra: [
+      { label: 'Program on Solana Explorer', href: 'https://explorer.solana.com/address/5L1zpnbgDyqcWeqKXp3cBmxhZ3kkX9GmsuZuajSxwme5?cluster=devnet' },
+    ],
+    problem:
+      'Hackathons are full of guesses: will submissions pass 120, which track gets the most entries. I wanted to see what a small market for those questions takes when the chain, not a database, is the source of truth, with no real money involved.',
+    built: [
+      'An Anchor program with eight instructions (config, market and outcome setup, buy, sell, close, resolve, claim), PDAs per market, outcome and position, and a token vault per market. Prices follow a deterministic linear curve and all arithmetic is checked.',
+      'A Next.js app with wallet adapters and a demo wallet, a server-side faucet for the devnet token, portfolio and leaderboard pages linked to Solana Explorer, and Supabase as a cache for search and the activity feed.',
+      'Gemini drafts a market from one sentence against a JSON schema, and the draft is validated before it can be published.',
+    ],
+    results: ['Live on Vercel against the devnet program `5L1zpnbgDyqcWeqKXp3cBmxhZ3kkX9GmsuZuajSxwme5`, with Anchor integration tests and Vitest tests for odds and market drafts.'],
+    images: [
+      { file: 'home.webp', alt: 'Hack Odds home page', caption: 'Home' },
+      { file: 'markets.webp', alt: 'Markets list with binary and multi-outcome markets', caption: 'Markets' },
+    ],
+  },
+];
+
+export const projectBySlug = (slug: string) => projects.find((p) => p.slug === slug);

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "astro",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/dishbrain-playground",
+      "destination": "https://veermshah.github.io/dishbrain-playground/",
+      "permanent": false
+    },
+    {
+      "source": "/dishbrain-playground/:path*",
+      "destination": "https://veermshah.github.io/dishbrain-playground/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/wetware-emulator",
+      "destination": "https://veermshah.github.io/wetware-emulator/",
+      "permanent": false
+    },
+    {
+      "source": "/wetware-emulator/:path*",
+      "destination": "https://veermshah.github.io/wetware-emulator/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/jev-calibration-lab",
+      "destination": "https://veermshah.github.io/jev-calibration-lab/",
+      "permanent": false
+    },
+    {
+      "source": "/jev-calibration-lab/:path*",
+      "destination": "https://veermshah.github.io/jev-calibration-lab/:path*",
+      "permanent": false
+    }
+  ],
+  "headers": [
+    {
+      "source": "/_astro/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
+}

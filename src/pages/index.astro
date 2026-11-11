@@ -1,0 +1,120 @@
+---
+import Base from '../layouts/Base.astro';
+import ProjectLinks from '../components/ProjectLinks.astro';
+import { profile } from '../data/profile';
+import { projects } from '../data/projects';
+import { roleSummary, myPart } from '../lib/format';
+
+const links = profile.links.filter((l) => l.href);
+---
+
+<Base title={`${profile.name}, software engineer`} description={profile.description}>
+  <header class="intro">
+    <h1>{profile.name}</h1>
+    <p class="bio">{profile.bio}</p>
+    <ul class="contact">
+      {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+    </ul>
+  </header>
+
+  <section aria-labelledby="projects-heading">
+    <h2 id="projects-heading" class="section-title">Projects</h2>
+    <ol class="projects">
+      {
+        projects.map((p) => (
+          <li class="project">
+            <h3>
+              <a href={`/projects/${p.slug}/`}>{p.title}</a>
+              {p.award && <span class="award">{p.award}</span>}
+            </h3>
+            <p class="pitch">{p.pitch}</p>
+            <p class="role">{roleSummary(p) + (myPart(p) ? `. My part: ${myPart(p)}.` : '')}</p>
+            <ul class="tags" aria-label="Stack">
+              {p.stack.map((t) => <li>{t}</li>)}
+            </ul>
+            <ProjectLinks project={p} />
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+</Base>
+
+<style>
+  .intro h1 {
+    font-size: clamp(2.25rem, 7vw, 3rem);
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+  }
+
+  .bio {
+    margin-top: 1rem;
+    font-size: 1.125rem;
+    color: var(--muted);
+    max-width: 36rem;
+  }
+
+  .contact {
+    list-style: none;
+    padding: 0;
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+  }
+
+  .section-title {
+    margin-top: 4.5rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--rule);
+    font-size: 0.9375rem;
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  .projects {
+    list-style: none;
+    padding: 0;
+  }
+
+  .project {
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .project h3 {
+    font-size: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.65rem;
+  }
+
+  .project h3 a {
+    text-decoration: none;
+  }
+
+  .project h3 a:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+  }
+
+  .pitch {
+    margin-top: 0.4rem;
+  }
+
+  .role {
+    margin-top: 0.4rem;
+    font-size: 0.9375rem;
+    color: var(--muted);
+  }
+
+  .tags {
+    margin-top: 0.6rem;
+  }
+
+  .project :global(.actions) {
+    margin-top: 0.6rem;
+    font-size: 0.9375rem;
+  }
+</style>

@@ -1,0 +1,231 @@
+---
+import type { GetStaticPaths, ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import ProjectLinks from '../../components/ProjectLinks.astro';
+import { projects, type Project } from '../../data/projects';
+import { roleSummary, myPart } from '../../lib/format';
+
+export const getStaticPaths = (() =>
+  projects.map((project, i) => ({
+    params: { slug: project.slug },
+    props: { project, prev: projects[i - 1], next: projects[i + 1] },
+  }))) satisfies GetStaticPaths;
+
+interface Props {
+  project: Project;
+  prev?: Project;
+  next?: Project;
+}
+
+const { project: p, prev, next } = Astro.props;
+
+const assets = import.meta.glob<{ default: ImageMetadata }>('../../assets/projects/*/*.{png,jpg,jpeg,webp}', {
+  eager: true,
+});
+
+const images = p.images.map((img) => {
+  const mod = assets[`../../assets/projects/${p.slug}/${img.file}`];
+  if (!mod) throw new Error(`Missing image src/assets/projects/${p.slug}/${img.file}`);
+  return { ...img, src: mod.default };
+});
+
+/** Render `inline code` spans in otherwise plain copy. */
+const inline = (text: string) =>
+  text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/`([^`]+)`/g, '<code>$1</code>');
+
+const [lead, ...rest] = images;
+const stripped = (s: string) => s.replace(/`/g, '');
+---
+
+<Base title={`${p.title} | Veer Shah`} description={stripped(p.pitch)}>
+  <nav class="crumb"><a href="/">Veer Shah</a></nav>
+
+  <article>
+    <header class="head">
+      <h1>{p.title}</h1>
+      {p.award && <p class="award-line"><span class="award">{p.award}</span></p>}
+      <p class="pitch" set:html={inline(p.pitch)} />
+    </header>
+
+    <dl class="facts">
+      <div>
+        <dt>Role</dt>
+        <dd>{roleSummary(p)}{myPart(p) && `. My part: ${myPart(p)}.`}</dd>
+      </div>
+      <div>
+        <dt>Stack</dt>
+        <dd><ul class="tags">{p.stack.map((t) => <li>{t}</li>)}</ul></dd>
+      </div>
+      <div>
+        <dt>Links</dt>
+        <dd>
+          <ProjectLinks project={p} writeup={false} />
+          {
+            p.extra && (
+              <p class="actions extra">
+                {p.extra.map((l) => (
+                  <a href={l.href}>{l.label}</a>
+                ))}
+              </p>
+            )
+          }
+        </dd>
+      </div>
+    </dl>
+
+    {
+      lead && (
+        <figure class="shot">
+          <Image src={lead.src} alt={lead.alt} widths={[680, 1360]} sizes="(max-width: 720px) 100vw, 680px" format="webp" quality={78} loading="eager" fetchpriority="high" />
+          {lead.caption && <figcaption>{lead.caption}</figcaption>}
+        </figure>
+      )
+    }
+
+    <section>
+      <h2>Problem</h2>
+      <p set:html={inline(p.problem)} />
+    </section>
+
+    <section>
+      <h2>What I built</h2>
+      {p.built.map((para) => <p set:html={inline(para)} />)}
+    </section>
+
+    <section>
+      <h2>Results</h2>
+      <ul class="results">{p.results.map((r) => <li set:html={inline(r)} />)}</ul>
+    </section>
+
+    {
+      rest.map((img) => (
+        <figure class="shot">
+          <Image src={img.src} alt={img.alt} widths={[680, 1360]} sizes="(max-width: 720px) 100vw, 680px" format="webp" quality={78} />
+          {img.caption && <figcaption>{img.caption}</figcaption>}
+        </figure>
+      ))
+    }
+  </article>
+
+  <nav class="pager" aria-label="More projects">
+    {prev ? <a href={`/projects/${prev.slug}/`} rel="prev">Previous: {prev.title}</a> : <span />}
+    {next ? <a href={`/projects/${next.slug}/`} rel="next">Next: {next.title}</a> : <a href="/">All projects</a>}
+  </nav>
+</Base>
+
+<style>
+  .crumb {
+    font-size: 0.9375rem;
+  }
+
+  .head {
+    margin-top: 2.5rem;
+  }
+
+  .head h1 {
+    font-size: clamp(2rem, 6vw, 2.5rem);
+    letter-spacing: -0.02em;
+  }
+
+  .award-line {
+    margin-top: 0.6rem;
+  }
+
+  .head .pitch {
+    margin-top: 0.75rem;
+    font-size: 1.1875rem;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+
+  .facts {
+    margin: 2rem 0 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .facts > div {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 1rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .facts dt {
+    color: var(--muted);
+    font-size: 0.9375rem;
+    padding-top: 0.05rem;
+  }
+
+  .facts dd {
+    margin: 0;
+    font-size: 0.9375rem;
+    min-width: 0;
+  }
+
+  .facts .tags {
+    padding-top: 0.15rem;
+  }
+
+  .extra {
+    margin-top: 0.25rem;
+  }
+
+  @media (max-width: 30rem) {
+    .facts > div {
+      grid-template-columns: 1fr;
+      gap: 0.2rem;
+    }
+  }
+
+  .shot {
+    margin-top: 2.5rem;
+  }
+
+  .shot :global(img) {
+    width: 100%;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: #fff;
+  }
+
+  .shot figcaption {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+
+  section {
+    margin-top: 2.75rem;
+  }
+
+  section h2 {
+    font-size: 1.125rem;
+    margin-bottom: 0.6rem;
+  }
+
+  section p + p {
+    margin-top: 0.85rem;
+  }
+
+  .results {
+    padding-left: 1.15rem;
+  }
+
+  .results li + li {
+    margin-top: 0.5rem;
+  }
+
+  .pager {
+    margin-top: 4rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    font-size: 0.9375rem;
+  }
+</style>

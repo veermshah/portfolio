@@ -1,0 +1,23 @@
+---
+import type { Project } from '../data/projects';
+
+interface Props {
+  project: Project;
+  /** Include the link to the project's own page. */
+  writeup?: boolean;
+}
+
+const { project: p, writeup = true } = Astro.props;
+---
+
+<p class="actions">
+  {p.live && <a href={p.live}>Live<span class="visually-hidden"> site for {p.title}</span></a>}
+  {
+    p.codePrivate ? (
+      <span class="pending">Code (soon)</span>
+    ) : (
+      <a href={p.code}>Code<span class="visually-hidden"> for {p.title}</span></a>
+    )
+  }
+  {writeup && <a href={`/projects/${p.slug}/`}>Write-up<span class="visually-hidden"> on {p.title}</span></a>}
+</p>
