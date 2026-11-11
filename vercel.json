@@ -15,8 +15,13 @@
       "permanent": false
     },
     {
-      "source": "/dishbrain-playground/:path*",
-      "destination": "https://veermshah.github.io/dishbrain-playground/:path*",
+      "source": "/dishbrain-playground/:path+/",
+      "destination": "https://veermshah.github.io/dishbrain-playground/:path+/",
+      "permanent": false
+    },
+    {
+      "source": "/dishbrain-playground/:path+",
+      "destination": "https://veermshah.github.io/dishbrain-playground/:path+",
       "permanent": false
     },
     {
@@ -30,8 +35,13 @@
       "permanent": false
     },
     {
-      "source": "/wetware-emulator/:path*",
-      "destination": "https://veermshah.github.io/wetware-emulator/:path*",
+      "source": "/wetware-emulator/:path+/",
+      "destination": "https://veermshah.github.io/wetware-emulator/:path+/",
+      "permanent": false
+    },
+    {
+      "source": "/wetware-emulator/:path+",
+      "destination": "https://veermshah.github.io/wetware-emulator/:path+",
       "permanent": false
     },
     {
@@ -45,8 +55,13 @@
       "permanent": false
     },
     {
-      "source": "/jev-calibration-lab/:path*",
-      "destination": "https://veermshah.github.io/jev-calibration-lab/:path*",
+      "source": "/jev-calibration-lab/:path+/",
+      "destination": "https://veermshah.github.io/jev-calibration-lab/:path+/",
+      "permanent": false
+    },
+    {
+      "source": "/jev-calibration-lab/:path+",
+      "destination": "https://veermshah.github.io/jev-calibration-lab/:path+",
       "permanent": false
     }
   ],
