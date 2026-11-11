@@ -147,7 +147,7 @@ export const projects: Project[] = [
     slug: 'dishbrain-playground',
     title: 'DishBrain Playground',
     pitch:
-      'A thousand simulated spiking neurons on a virtual electrode array play Pong in the browser, to test what the DishBrain paper’s feedback actually does.',
+      'A thousand simulated spiking neurons on a virtual electrode array play Pong in the browser. The paper’s feedback teaches them nothing; feedback the network can switch off itself does.',
     role: { kind: 'Solo' },
     stack: ['TypeScript', 'Vite', 'Canvas', 'Vitest', 'Statistics'],
     live: 'https://veermshah.github.io/dishbrain-playground/',
@@ -157,12 +157,13 @@ export const projects: Project[] = [
     built: [
       '1000 Izhikevich neurons (80% excitatory) with STDP, sitting under an 8×8 virtual electrode array with sensory and motor regions, place and rate coding for the ball, and a population-rate decoder for the paddle.',
       'The paper’s feedback protocol (a predictable burst after a hit, 4 s of random stimulation after a miss) plus three ablations that change only what follows a miss: predictable, unpredictable and silent.',
+      'Two candidate mechanisms as extra modes: stimulation avoidance (stimulation that stops within 1 ms once the paddle steers toward the ball) and reward-modulated STDP with eligibility traces, each with a matched control.',
       'A browser playground with a live raster, electrode map and rally curves with 95% confidence bands, plus a headless `npm run experiment` that runs paired seeds and Mann-Whitney U tests.',
     ],
     results: [
-      '12 paired seeds per condition, 20 simulated minutes each (one DishBrain session).',
-      'No condition learned. Rally length stayed near 0.3 hits per rally throughout, the same as with plasticity switched off. The DishBrain protocol against silent on late-session rally length: p = 0.30. Across 36 comparisons in three presets, no p-value falls below 0.23.',
-      'I report the null rather than searching for a setting that clears p < 0.05. My read is a credit-assignment problem: STDP sees spike pairs about 20 ms apart, and a miss arrives hundreds of milliseconds later.',
+      'Paper protocol, 12 paired seeds, 20 simulated minutes each: no learning. Rally length stayed near 0.3 hits per rally, the same as with plasticity off (DishBrain vs silent, p = 0.30). STDP links spikes about 20 ms apart, and the feedback arrives seconds later regardless of what the network did.',
+      'Stimulation avoidance, on held-out seeds after tuning only on separate dev seeds: the correct sensory-to-motor wiring formed (mapping index 0.75 vs 0.01 with STDP off, p < 0.001) and late rallies beat the STDP-off control on 10 of 12 seeds (p = 0.002). The gain is real but modest: median late rally 0.56 vs about 0.35.',
+      'Reward-modulated STDP did not beat its shuffled-reward control (p = 0.53). Each reward nudges about 64,000 synapses and a session has only about 230 rewards. I report both nulls as they came out.',
     ],
     images: [
       { file: 'playground.webp', alt: 'DishBrain Playground: the Pong game next to a spike raster and electrode map', caption: 'The playground in the browser' },
