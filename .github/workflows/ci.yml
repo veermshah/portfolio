@@ -1,0 +1,29 @@
+# Builds the site and checks internal links on every push and pull request.
+# Deploys are handled by Vercel's Git integration, not by this workflow.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel an older run on the same branch when a newer commit arrives.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24 # Astro 7 needs >= 22.23.4
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm run check:links
