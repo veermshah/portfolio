@@ -1,6 +1,6 @@
 # portfolio
 
-My portfolio site: a short intro and fifteen projects, each with its own write-up page.
+My portfolio site: a short intro and eighteen projects, each with its own write-up page.
 
 Static [Astro](https://astro.build) with hand-written CSS. No client-side JavaScript, no trackers. Deployed on Vercel.
 

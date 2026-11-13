@@ -422,6 +422,87 @@ export const projects: Project[] = [
       { file: 'markets.webp', alt: 'Markets list with binary and multi-outcome markets', caption: 'Markets' },
     ],
   },
+  {
+    slug: 'chainfund',
+    title: 'ChainFund',
+    pitch: 'All-or-nothing crowdfunding on Ethereum: creators withdraw only if the goal is met, and backers can reclaim their ETH if it isn’t.',
+    context: 'Blockchain course project, UT Dallas',
+    role: { kind: 'Team', size: 2, mine: 'the Solidity contract and its tests, the Sepolia deployment, and wiring the frontend to the chain' },
+    stack: ['Solidity', 'Hardhat', 'viem', 'wagmi', 'Next.js', 'TypeScript', 'Tailwind'],
+    live: 'https://chainfunded.vercel.app',
+    code: 'https://github.com/veermshah/CrowdfundingDapp',
+    extra: [
+      { label: 'Contract on Etherscan (Sepolia)', href: 'https://sepolia.etherscan.io/address/0xe0B93a16313F71B77A73de546557F6483e20B408' },
+    ],
+    problem:
+      'On a normal crowdfunding site the platform holds the money and decides when the creator gets it. We wanted the rules themselves (the goal, the deadline, who can take the money out and when) to be enforced by a contract anyone can read.',
+    built: [
+      'A Solidity contract where anyone can create a campaign with a goal and deadline. Contributions are tracked per backer. The creator can withdraw once, and only after the goal is reached; if the deadline passes short of the goal, each backer can pull back exactly what they put in. State is updated before ETH is sent, so a second withdraw or refund reverts.',
+      'Thirteen Hardhat tests cover the happy paths and every revert: contributing after the deadline, withdrawing early, withdrawing twice, a non-creator withdrawing, and refunds when the goal was met, the campaign is still open, or the caller never contributed.',
+      'My part: the contract, the tests, the Sepolia deployment with Hardhat Ignition, and connecting the Next.js app to the chain with wagmi and viem: wallet connection, create and contribute flows, and campaign history read from the contract’s events. Casey Nguyen built the first version of the web UI.',
+    ],
+    results: [
+      'Live on Vercel against the Sepolia contract `0xe0B93a16313F71B77A73de546557F6483e20B408`, with real test-ETH campaigns, backers and USD conversions from CoinGecko.',
+    ],
+    images: [
+      { file: 'explore.webp', alt: 'ChainFund explore page listing three on-chain campaigns with goals, amounts raised and funding progress', caption: 'Campaigns read from the Sepolia contract' },
+      { file: 'home.webp', alt: 'ChainFund home page with a featured campaign and totals raised', caption: 'Home' },
+    ],
+  },
+  {
+    slug: 'ebby',
+    title: 'Ebby',
+    pitch: 'A student well-being app: an AI health assistant, anonymous peer support groups, and webcam exercise tracking that counts your reps.',
+    award: 'OIT Track winner and MLH Best Use of PropelAuth, HackSMU VI',
+    context: 'HackSMU VI (2024)',
+    role: { kind: 'Team', mine: 'the Next.js app, PropelAuth login, the design, the support-groups flow and questionnaire, and the exercise pages' },
+    stack: ['Next.js', 'TypeScript', 'Tailwind', 'PropelAuth', 'TalkJS', 'Flask-SocketIO', 'MediaPipe', 'OpenAI'],
+    code: 'https://github.com/sachi-jh/hacksmu',
+    extra: [{ label: 'Devpost', href: 'https://devpost.com/software/ibm-please-hire-us' }],
+    problem:
+      'Students juggle mental and physical health on their own, and campus resources are scattered across pages nobody reads. We wanted one place to ask questions, find people going through the same thing, and keep moving.',
+    built: [
+      'Ebby, a chat assistant for wellness questions. Peer support groups: a short questionnaire recommends groups, and members chat anonymously through TalkJS. Exercise tracking: the webcam stream goes over a WebSocket to a Flask server that uses MediaPipe pose landmarks and joint angles to count squats and bends.',
+      'My part (top committer): I set up the Next.js app and its design system, added PropelAuth login and route protection, built the questionnaire and the support-groups pages (group recommendations, joining, and the anonymous TalkJS group chat), and reworked the exercise pages and rep-counter UI. Caleb Bae built the pose-detection server and sachi-jh the chat assistant.',
+    ],
+    results: [
+      'Won the OIT Track and MLH’s Best Use of PropelAuth at HackSMU VI.',
+      'We also scraped university resources into a retrieval index for the assistant, but didn’t get it wired into the frontend before judging.',
+    ],
+    images: [
+      { file: 'landing.webp', alt: 'Ebby landing page: “Welcome to Ebby, your personal health secretary” above an animated wave', caption: 'Landing page' },
+      { file: 'groups.webp', alt: 'Recommended support groups with cards to join depression, anxiety, stress and anger management groups', caption: 'Support groups recommended from the questionnaire' },
+    ],
+  },
+  {
+    slug: 'moneyplant',
+    title: 'Moneyplant',
+    pitch: 'A robo-advisor that turns a risk questionnaire into a sector portfolio, using LSTM forecasts as the views in a Black-Litterman model.',
+    award: 'Third place, PIMCO Challenge, TAMUhack X',
+    context: 'TAMUhack X (2024)',
+    role: { kind: 'Team', mine: 'the React app, the Django REST backend and login, and the risk questionnaire' },
+    stack: ['React', 'Django REST Framework', 'Python', 'Keras', 'Black-Litterman', 'IBM watsonx'],
+    code: 'https://github.com/veermshah/TAMUhacks',
+    extra: [
+      { label: 'Devpost', href: 'https://devpost.com/software/moneyplant-vjar92' },
+      { label: 'Demo video', href: 'https://www.youtube.com/watch?v=qsREk5vVNe8' },
+    ],
+    problem:
+      'PIMCO’s challenge asked for a robo-advisor. Big firms automate allocation for their clients; we wanted a version anyone could use, which starts from how much risk you can stomach rather than from a ticker list.',
+    built: [
+      'A risk-tolerance questionnaire sets the investor’s risk aversion. An LSTM trained on historical prices forecasts each of the 11 S&P sectors, and those forecasts become the views in a Black-Litterman model that starts from a near-equal prior and ten years of sector covariance. The output is a set of sector weights.',
+      'A React app with the questionnaire, a portfolio page with allocation charts and a TradingView chart, a watsonx Assistant chatbot, and breathing reminders to keep investing calm. A Django REST Framework backend with registration, JWT login and portfolio endpoints.',
+      'My part: the whole React frontend, the Django backend and auth, and the questionnaire. Sourish Pasula built the LSTM and Black-Litterman optimizer, and Noel Emmanuel the portfolio API model.',
+    ],
+    results: [
+      'Third place in the PIMCO Challenge at TAMUhack X.',
+      'Built in 24 hours. In the submitted code the Advisor page’s call to the portfolio API is commented out, so the optimizer ran as its own script rather than end to end from the questionnaire.',
+    ],
+    images: [
+      { file: 'home.webp', alt: 'Moneyplant home page with a jungle illustration and the watsonx chat assistant open', caption: 'Home, with the chat assistant' },
+      { file: 'questionnaire.webp', alt: 'Risk tolerance questionnaire with multiple-choice questions about risk', caption: 'Risk tolerance questionnaire' },
+    ],
+  },
 ];
 
 export const projectBySlug = (slug: string) => projects.find((p) => p.slug === slug);
