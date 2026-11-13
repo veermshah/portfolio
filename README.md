@@ -50,6 +50,10 @@ Profile text and the top links (GitHub, LinkedIn, email, resume) are in [`src/da
 
 ## Deploy
 
+Pushing to `main` deploys to production through Vercel's Git integration. Every pull request gets a preview URL. GitHub Actions (`.github/workflows/ci.yml`) builds the site and runs `npm run check:links` on every push and PR.
+
+Manual deploy, if ever needed:
+
 ```sh
 npx vercel login       # once
 npx vercel --prod
