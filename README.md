@@ -85,3 +85,9 @@ Checklist, only when switching:
 4. Set `SITE` in `astro.config.mjs` to `https://veermickey.com`, update `SITE` default in `scripts/check-links.mjs`, and redeploy.
 5. Update the DishBrain, Wetware and Jev entries in `src/data/projects.ts` and their repo homepages if any still use `veermickey.com/<repo>`.
 6. Check: `curl -sIL https://veermickey.com/dishbrain-playground/` ends in a 200 on `veermshah.github.io`.
+
+## Notes and featured projects
+
+Add Markdown files in `src/content/notes/` with quoted `title`, `description`, and ISO `date` frontmatter. Set `draft: true` to exclude a post from the site. Published notes appear at `/notes/<filename>/`, in the notes index, and on the home page. The two initial notes summarize the existing Veer and DishBrain project write-ups.
+
+The `featured` list in `src/pages/index.astro` selects the three home-page highlights. The contact button uses the Email link in `src/data/profile.ts`.

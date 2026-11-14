@@ -1,0 +1,9 @@
+---
+import { profile } from '../data/profile';
+const email = profile.links.find((link) => link.label === 'Email')?.href;
+---
+{email && <a class="contact-button" href={email}>Get in touch</a>}
+<style>
+  .contact-button { display: inline-flex; align-items: center; gap: 1rem; padding: 0.65rem 1rem; border-radius: 5px; background: var(--accent); color: var(--bg); text-decoration: none; font-size: 0.9375rem; font-weight: 700; }
+  .contact-button:hover { opacity: 0.85; }
+</style>

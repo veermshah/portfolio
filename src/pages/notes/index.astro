@@ -1,0 +1,26 @@
+---
+import Base from '../../layouts/Base.astro';
+import { notes, formatDate } from '../../data/notes';
+---
+<Base title="Notes | Veer Shah" description="Short technical notes on compilers, AI systems and experiments.">
+  <a href="/">← Veer Shah</a>
+  <h1>Notes</h1>
+  <p class="lede">Short write-ups about building things and testing the ideas behind them.</p>
+  <ol>
+    {notes.map((note) => (
+      <li>
+        <time datetime={note.frontmatter.date}>{formatDate(note.frontmatter.date)}</time>
+        <h2><a href={`/notes/${note.slug}/`}>{note.frontmatter.title}</a></h2>
+        <p>{note.frontmatter.description}</p>
+      </li>
+    ))}
+  </ol>
+</Base>
+<style>
+  h1 { margin-top: 2rem; }
+  .lede { margin-top: 0.75rem; color: var(--muted); }
+  ol { list-style: none; padding: 0; margin-top: 2rem; }
+  li { padding: 1.5rem 0; border-top: 1px solid var(--rule); }
+  time { color: var(--muted); font-size: 0.8125rem; }
+  h2 { margin: 0.4rem 0 0.6rem; font-size: 1.35rem; }
+</style>
