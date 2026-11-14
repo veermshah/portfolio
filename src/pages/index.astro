@@ -6,6 +6,7 @@ import Base from '../layouts/Base.astro';
 import ProjectLinks from '../components/ProjectLinks.astro';
 import { profile } from '../data/profile';
 import { projects } from '../data/projects';
+import { projectCategories, categoriesByProject } from '../data/project-categories';
 import { roleSummary, myPart } from '../lib/format';
 
 const assets = import.meta.glob<{ default: ImageMetadata }>('../assets/projects/*/*.{png,jpg,jpeg,webp}', { eager: true });
@@ -15,6 +16,17 @@ const thumbnail = (p: (typeof projects)[number]) => {
 };
 
 const logos = import.meta.glob<{ default: ImageMetadata }>('../assets/experience/*.{jpg,png}', { eager: true });
+
+for (const project of projects) {
+  if (!categoriesByProject[project.slug]?.length) throw new Error(`Missing categories for ${project.slug}`);
+}
+const filters = [
+  { id: 'all', label: 'All', count: projects.length },
+  ...projectCategories.map((category) => ({
+    ...category,
+    count: projects.filter((project) => categoriesByProject[project.slug].includes(category.id)).length,
+  })),
+];
 
 const links = profile.links.filter((l) => l.href);
 ---
@@ -56,10 +68,20 @@ const links = profile.links.filter((l) => l.href);
 
   <section aria-labelledby="projects-heading">
     <h2 id="projects-heading" class="section-title">Projects</h2>
-    <ol class="projects">
+    <div class="project-filter-controls" hidden>
+      <div class="project-filters" role="group" aria-label="Filter projects by type">
+        {filters.map((filter) => (
+          <button type="button" data-project-filter={filter.id} aria-pressed={filter.id === 'all' ? 'true' : 'false'} aria-controls="project-list">
+            {filter.label} <span>{filter.count}</span>
+          </button>
+        ))}
+      </div>
+      <p class="filter-status" role="status" aria-live="polite" aria-atomic="true">Showing all {projects.length} projects</p>
+    </div>
+    <ol class="projects" id="project-list">
       {
         projects.map((p) => (
-          <li class="project">
+          <li class="project" data-categories={categoriesByProject[p.slug].join(' ')}>
             <a class="thumbnail" href={`/projects/${p.slug}/`} tabindex="-1" aria-hidden="true">
               {thumbnail(p) ? (
                 <Image src={thumbnail(p)!} alt="" widths={[240, 480]} sizes="(max-width: 480px) 100vw, 160px" format="webp" loading="lazy" />
@@ -86,7 +108,52 @@ const links = profile.links.filter((l) => l.href);
   </section>
 </Base>
 
+<script>
+  const controls = document.querySelector<HTMLElement>('.project-filter-controls');
+  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-project-filter]'));
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('#project-list > .project'));
+  const status = document.querySelector<HTMLElement>('.filter-status');
+
+  function selectFilter(requested: string | null) {
+    const selected = buttons.find((button) => button.dataset.projectFilter === requested) ?? buttons[0];
+    const filter = selected.dataset.projectFilter;
+    for (const button of buttons) button.setAttribute('aria-pressed', String(button === selected));
+    let visible = 0;
+    for (const card of cards) {
+      card.hidden = filter !== 'all' && !card.dataset.categories?.split(' ').includes(filter!);
+      if (!card.hidden) visible++;
+    }
+    if (status) status.textContent = filter === 'all'
+      ? `Showing all ${cards.length} projects`
+      : `Showing ${visible} of ${cards.length} projects`;
+  }
+
+  for (const button of buttons) {
+    button.addEventListener('click', () => {
+      const filter = button.dataset.projectFilter!;
+      selectFilter(filter);
+      const url = new URL(window.location.href);
+      if (filter === 'all') url.searchParams.delete('type');
+      else url.searchParams.set('type', filter);
+      window.history.pushState(null, '', url);
+    });
+  }
+  window.addEventListener('popstate', () => selectFilter(new URLSearchParams(window.location.search).get('type')));
+  selectFilter(new URLSearchParams(window.location.search).get('type'));
+  if (controls) controls.hidden = false;
+</script>
+
 <style>
+  .project-filter-controls { margin-top: 1.25rem; }
+  .project-filters { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .project-filters button { font: inherit; font-size: 0.875rem; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 5px; background: var(--bg); color: var(--muted); cursor: pointer; }
+  .project-filters button span { margin-left: 0.3rem; font-family: var(--mono); font-size: 0.75rem; }
+  .project-filters button[aria-pressed='true'] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .project-filters button:hover { border-color: var(--accent); color: var(--accent); }
+  .project-filters button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .filter-status { margin-top: 0.75rem; color: var(--muted); font-size: 0.8125rem; }
+  .project[hidden] { display: none; }
+
   .section-nav { display: flex; gap: 1.5rem; margin-top: 2rem; font-size: 0.9375rem; }
   .section-nav span { color: var(--muted); font-family: var(--mono); font-size: 0.8rem; }
   .experience { list-style: none; padding: 0; }

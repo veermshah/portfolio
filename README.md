@@ -2,7 +2,7 @@
 
 My portfolio site: a short intro and twenty-four projects, each with its own write-up page.
 
-Static [Astro](https://astro.build) with hand-written CSS. No client-side JavaScript, no trackers. Deployed on Vercel.
+Static [Astro](https://astro.build) with hand-written CSS. A small client-side script filters projects; no trackers. Deployed on Vercel.
 
 ## Run it
 
@@ -20,6 +20,8 @@ npm run check:external # internal links plus a request to every external link
 ## Edit experience
 
 Experience entries live in `src/data/experience.ts`. The home page uses the first project image as its thumbnail; projects without screenshots get a text cover.
+
+Project filters are defined in `src/data/project-categories.ts`. Projects may belong to several types. Add each new project’s slug there; a missing category fails the build. Filters support shareable `?type=ai-ml` URLs, and all projects remain visible when JavaScript is disabled.
 
 ## Edit projects
 
