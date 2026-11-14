@@ -29,16 +29,6 @@ export const experience = [
     ],
   },
   {
-    company: 'Investamark',
-    role: 'Software Engineering Intern',
-    period: 'June – July 2024',
-    location: 'Irving, TX',
-    highlights: [
-      'Ran local AI models with Ollama and Docker and customized OpenWebUI’s Svelte frontend for client branding.',
-      'Created synthetic fine-tuning data and built retrieval over more than 10,000 documents with ChromaDB, OpenAI embeddings and LangChain.',
-    ],
-  },
-  {
     company: 'University of Texas at Dallas',
     role: 'Undergraduate Research Intern',
     period: 'June 2023 – January 2024',
