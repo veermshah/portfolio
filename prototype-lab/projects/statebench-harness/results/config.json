@@ -1,0 +1,15 @@
+{
+  "backend": "offline",
+  "models": "qwen3:4b,qwen3:8b",
+  "lengths": [
+    8,
+    32,
+    128,
+    512,
+    2048
+  ],
+  "samples": 3,
+  "seed": 42,
+  "chunk_size": 128,
+  "output": "results"
+}

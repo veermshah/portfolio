@@ -42,6 +42,112 @@ export interface Project {
 
 export const projects: Project[] = [
   {
+  "slug": "fog-map",
+  "title": "Fog Map",
+  "pitch": "Compare interpretations of a spec and rank the decisions that need clarification.",
+  "stack": [
+    "Python",
+    "LLM APIs",
+    "Ollama",
+    "HTML"
+  ],
+  "problem": "Small ambiguities in a spec can produce incompatible data models, APIs and behavior. A ranked comparison makes those decisions visible before implementation.",
+  "built": [
+    "An AI-assisted prototype fans out independent backend, frontend and QA prompts, preserving each interpretation’s data model, endpoint sketch and line-attributed assumptions.",
+    "The CLI groups decisions by source line and topic and exports ranked HTML, Markdown and JSON evidence. Severity combines disagreement and impact. Live Ollama and API adapters are implemented."
+  ],
+  "results": [
+    "The authored offline demo flags six line/topic ambiguities across five topics in a habit-tracking spec. These are demonstration policies, not measured independent LLM interpretations.",
+    "Four tests pass for attribution, scoring, agreement handling and HTML escaping. Live providers were unavailable and remain unverified."
+  ],
+  "context": "AI-assisted prototype session",
+  "role": {
+    "kind": "Solo"
+  },
+  "code": "https://github.com/veermshah/portfolio/tree/main/prototype-lab/projects/fog-map",
+  "images": []
+},
+  {
+  "slug": "dynaflow-orchestrator",
+  "title": "DynaFlow-style Orchestrator",
+  "pitch": "Executable agent coordination with an honest solo-versus-pipeline cost comparison.",
+  "stack": [
+    "Python",
+    "AST interpreter",
+    "Ollama",
+    "LLM evaluation"
+  ],
+  "problem": "Agent teams add calls and context. The useful question is whether task-specific coordination improves cost per solved task against the same model running alone.",
+  "built": [
+    "An AI-assisted prototype prompts a lead to emit constrained executable Python workflows. Solvers can run in parallel, followed by verification and aggregation, with full original context and prior outputs.",
+    "An AST interpreter permits only coordination functions. A benchmark compares solo, fixed planner/solver/reviewer and generated workflows, including planning-call cost and raw traces."
+  ],
+  "results": [
+    "All three deterministic CPU-surrogate arms solve 12/12 original toy tasks. Generated orchestration loses: math proxy units per solved task are 440.0 versus 78.0 solo and 257.2 fixed; multi-hop is 562.3 versus 118.0 and 381.5.",
+    "Units are character-based proxies, not model tokens; dollar costs are unavailable. No model was available, so this does not reproduce DynaFlow’s claimed 88.08% overall or 100% AIME accuracy.",
+    "Four tests pass, including execution restrictions and parallel full-context handoffs. Training and official benchmark evaluation remain outstanding."
+  ],
+  "context": "AI-assisted prototype session",
+  "role": {
+    "kind": "Solo"
+  },
+  "code": "https://github.com/veermshah/portfolio/tree/main/prototype-lab/projects/dynaflow-orchestrator",
+  "images": []
+},
+  {
+  "slug": "popup-optimizer",
+  "title": "Pop-Up Optimizer",
+  "pitch": "Rank civic-service stops on a Dallas map using need-weighted clustering.",
+  "stack": [
+    "Python",
+    "JavaScript",
+    "SVG",
+    "Weighted k-means"
+  ],
+  "problem": "Pop-up health vans, food banks and vaccine clinics need locations that balance population, need and travel distance. A transparent placement heuristic makes those tradeoffs inspectable.",
+  "built": [
+    "An AI-assisted offline web app offers three services, one to ten stops and adjustable travel windows. Weighted k-means proposes centers, snaps them to sample locations and ranks them by incremental need-weighted coverage.",
+    "An SVG geographic map and plain-English explanations show coverage and high-need counts. Shared residents are counted only once in the overall served total."
+  ],
+  "results": [
+    "The default five-stop health demo covers 96,805 of 269,985 synthetic residents. Population, need indicators and clinic flags are invented demo data, not Dallas demographic estimates.",
+    "Nine optimizer configurations and five HTTP routes pass checks; independent live HTTP requests confirm five recommendations. The schematic map, approximate travel times and unverified venues limit this to an illustrative demo."
+  ],
+  "context": "AI-assisted prototype session",
+  "role": {
+    "kind": "Solo"
+  },
+  "code": "https://github.com/veermshah/portfolio/tree/main/prototype-lab/projects/popup-optimizer",
+  "images": []
+},
+  {
+  "slug": "statebench-harness",
+  "title": "StateBench-style Harness",
+  "pitch": "State-tracking chains, bounded replay controls and exact memory tools with reproducible curves.",
+  "stack": [
+    "Python",
+    "Matplotlib",
+    "Ollama",
+    "State tracking"
+  ],
+  "problem": "Long assignment chains test whether a model can preserve changing state. A useful harness must separate reasoning failure from context truncation and tool-assisted execution.",
+  "built": [
+    "An AI-assisted generator produces immutable, overwrite, self-referential and aliased-reference/swap chains from 8 to 64,000 assignments, with explicit semantics and an exact interpreter.",
+    "The harness supports Ollama and API calls, bounded CPU replay controls, persisted JSON scratchpads and chunked execution. It emits per-example records, tables and a chart. Oversized local prompts are rejected before inference."
+  ],
+  "results": [
+    "Across four levels and three seeds, replay-32 falls from 100% at eight assignments to 0% at 2,048; replay-128 reaches 50%. Exact scratchpad and chunked tools remain at 100%.",
+    "These are deliberately bounded algorithms and deterministic interpreters, not two language models or model-mediated fixes. No transformer failure curve or frontier score has been reproduced.",
+    "Four tests pass, including aliases/swaps, fixes, context preflight and all four generators at 64,000 assignments. The synthetic task distribution is not the official StateBench dataset."
+  ],
+  "context": "AI-assisted prototype session",
+  "role": {
+    "kind": "Solo"
+  },
+  "code": "https://github.com/veermshah/portfolio/tree/main/prototype-lab/projects/statebench-harness",
+  "images": []
+},
+  {
     slug: 'veer',
     title: 'Veer',
     pitch:

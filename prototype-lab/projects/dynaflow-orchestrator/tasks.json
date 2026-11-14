@@ -1,0 +1,206 @@
+[
+  {
+    "id": "math-01",
+    "benchmark": "math",
+    "question": "Find the remainder when 7^13 is divided by 19. Return only the integer.",
+    "answer": "7"
+  },
+  {
+    "id": "math-02",
+    "benchmark": "math",
+    "question": "How many unordered pairs can be selected from 12 distinct objects? Return only the integer.",
+    "answer": "66"
+  },
+  {
+    "id": "math-03",
+    "benchmark": "math",
+    "question": "An arithmetic progression has first term 3 and common difference 4. Find the sum of its first 25 terms.",
+    "answer": "1275"
+  },
+  {
+    "id": "math-04",
+    "benchmark": "math",
+    "question": "Find the greatest common divisor of 252 and 198. Return only the integer.",
+    "answer": "18"
+  },
+  {
+    "id": "math-05",
+    "benchmark": "math",
+    "question": "A fair six-sided die is rolled twice. How many ordered outcomes have sum 8? Return only the integer.",
+    "answer": "5"
+  },
+  {
+    "id": "math-06",
+    "benchmark": "math",
+    "question": "Find the coefficient of x^3 in (1+x)^8. Return only the integer.",
+    "answer": "56"
+  },
+  {
+    "id": "hop-01",
+    "benchmark": "multihop",
+    "question": "In which country was the author of The Glass Orchard born?",
+    "facts": [
+      [
+        "The Glass Orchard",
+        "author",
+        "Mira Vale"
+      ],
+      [
+        "Mira Vale",
+        "birth city",
+        "Riverton"
+      ],
+      [
+        "Riverton",
+        "country",
+        "Bellora"
+      ],
+      [
+        "The Iron Field",
+        "author",
+        "Ari Stone"
+      ]
+    ],
+    "answer": "Bellora"
+  },
+  {
+    "id": "hop-02",
+    "benchmark": "multihop",
+    "question": "What is the capital of the country containing the headquarters city of Cedar Labs?",
+    "facts": [
+      [
+        "Cedar Labs",
+        "headquarters",
+        "Eastport"
+      ],
+      [
+        "Eastport",
+        "country",
+        "Norvia"
+      ],
+      [
+        "Norvia",
+        "capital",
+        "Lanwick"
+      ],
+      [
+        "Westport",
+        "country",
+        "Bellora"
+      ]
+    ],
+    "answer": "Lanwick"
+  },
+  {
+    "id": "hop-03",
+    "benchmark": "multihop",
+    "question": "Which instrument does the sibling of the director of Blue Horizon play?",
+    "facts": [
+      [
+        "Blue Horizon",
+        "director",
+        "Sol Reed"
+      ],
+      [
+        "Sol Reed",
+        "sibling",
+        "Nia Reed"
+      ],
+      [
+        "Nia Reed",
+        "instrument",
+        "cello"
+      ],
+      [
+        "Nia Reed",
+        "occupation",
+        "teacher"
+      ]
+    ],
+    "answer": "cello"
+  },
+  {
+    "id": "hop-04",
+    "benchmark": "multihop",
+    "question": "Which river flows through the city where the founder of Amber House studied?",
+    "facts": [
+      [
+        "Amber House",
+        "founder",
+        "Eli Moss"
+      ],
+      [
+        "Eli Moss",
+        "studied in",
+        "Dunmere"
+      ],
+      [
+        "Dunmere",
+        "river",
+        "Luma"
+      ],
+      [
+        "Eastport",
+        "river",
+        "Tarn"
+      ]
+    ],
+    "answer": "Luma"
+  },
+  {
+    "id": "hop-05",
+    "benchmark": "multihop",
+    "question": "What language is spoken in the home country of the winner of the Silver Kite prize?",
+    "facts": [
+      [
+        "Silver Kite",
+        "winner",
+        "Tess Orr"
+      ],
+      [
+        "Tess Orr",
+        "home country",
+        "Estara"
+      ],
+      [
+        "Estara",
+        "language",
+        "Estari"
+      ],
+      [
+        "Norvia",
+        "language",
+        "Norvic"
+      ]
+    ],
+    "answer": "Estari"
+  },
+  {
+    "id": "hop-06",
+    "benchmark": "multihop",
+    "question": "Which university employs the mentor of the inventor of the Tide Clock?",
+    "facts": [
+      [
+        "Tide Clock",
+        "inventor",
+        "Bo Lin"
+      ],
+      [
+        "Bo Lin",
+        "mentor",
+        "Una Frost"
+      ],
+      [
+        "Una Frost",
+        "university",
+        "North Academy"
+      ],
+      [
+        "Bo Lin",
+        "university",
+        "South College"
+      ]
+    ],
+    "answer": "North Academy"
+  }
+]

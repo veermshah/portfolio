@@ -1,0 +1,170 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Fog Map</title><style>body{font:16px system-ui;background:#f1f5f9;color:#172033;max-width:1000px;margin:40px auto;padding:20px}article{background:white;padding:24px;margin:20px 0;border-radius:12px}small{float:right;color:#a32d16}th,td{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid #ddd}blockquote{margin:20px 0;color:#526172}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style><h1>Fog Map</h1><p>OFFLINE RULES DEMO — no LLM calls or independent model evidence</p><p>Severity: differing agent pairs × impact. Textual comparison can overflag equivalent phrasing.</p><article><h2>1. team habit ownership <small>9/9</small></h2><blockquote>Line 2: Build a habit-tracking app with streaks and teams.</blockquote><table><tr><th>backend engineer</th><td>shared team habit with individual check-ins</td></tr><tr><th>frontend engineer</th><td>one collective team completion</td></tr><tr><th>QA engineer</th><td>copied personal habits with aggregate progress</td></tr></table></article><article><h2>2. day boundary <small>9/9</small></h2><blockquote>Line 3: Users can complete each habit daily and keep their streak alive.</blockquote><table><tr><th>backend engineer</th><td>UTC calendar day</td></tr><tr><th>frontend engineer</th><td>user local calendar day</td></tr><tr><th>QA engineer</th><td>rolling 24-hour window</td></tr></table></article><article><h2>3. missed-day grace <small>9/9</small></h2><blockquote>Line 4: A missed day can be forgiven with a grace period.</blockquote><table><tr><th>backend engineer</th><td>24 hours after deadline</td></tr><tr><th>frontend engineer</th><td>one forgiveness token per week</td></tr><tr><th>QA engineer</th><td>no reset until 48 hours of inactivity</td></tr></table></article><article><h2>4. team habit ownership <small>9/9</small></h2><blockquote>Line 5: Team members share habits and see team progress.</blockquote><table><tr><th>backend engineer</th><td>shared team habit with individual check-ins</td></tr><tr><th>frontend engineer</th><td>one collective team completion</td></tr><tr><th>QA engineer</th><td>copied personal habits with aggregate progress</td></tr></table></article><article><h2>5. historical edits <small>9/9</small></h2><blockquote>Line 6: Users should be able to edit past check-ins.</blockquote><table><tr><th>backend engineer</th><td>edits recalculate all subsequent streaks</td></tr><tr><th>frontend engineer</th><td>edits change calendar display only</td></tr><tr><th>QA engineer</th><td>edits restricted to previous seven days</td></tr></table></article><article><h2>6. notification delivery <small>6/9</small></h2><blockquote>Line 7: Notify people when their streak is at risk.</blockquote><table><tr><th>backend engineer</th><td>email at 20:00 UTC</td></tr><tr><th>frontend engineer</th><td>in-app banner at local 20:00</td></tr><tr><th>QA engineer</th><td>push two hours before each personal deadline</td></tr></table></article><h1>Full interpretations</h1><h2>backend engineer</h2><pre>{
+  &quot;persona&quot;: &quot;backend engineer&quot;,
+  &quot;data_model&quot;: {
+    &quot;Habit&quot;: [
+      &quot;id&quot;,
+      &quot;owner_id&quot;,
+      &quot;team_id&quot;
+    ],
+    &quot;CheckIn&quot;: [
+      &quot;habit_id&quot;,
+      &quot;user_id&quot;,
+      &quot;utc_date&quot;
+    ]
+  },
+  &quot;endpoints&quot;: [
+    &quot;POST /habits/{id}/check-ins&quot;,
+    &quot;PATCH /check-ins/{id}&quot;,
+    &quot;GET /teams/{id}/progress&quot;
+  ],
+  &quot;decisions&quot;: [
+    {
+      &quot;line&quot;: 2,
+      &quot;topic&quot;: &quot;team habit ownership&quot;,
+      &quot;impact&quot;: 3,
+      &quot;assumption&quot;: &quot;shared team habit with individual check-ins&quot;
+    },
+    {
+      &quot;line&quot;: 3,
+      &quot;topic&quot;: &quot;day boundary&quot;,
+      &quot;impact&quot;: 3,
+      &quot;assumption&quot;: &quot;UTC calendar day&quot;
+    },
+    {
+      &quot;line&quot;: 4,
+      &quot;topic&quot;: &quot;missed-day grace&quot;,
+      &quot;impact&quot;: 3,
+      &quot;assumption&quot;: &quot;24 hours after deadline&quot;
+    },
+    {
+      &quot;line&quot;: 5,
+      &quot;topic&quot;: &quot;team habit ownership&quot;,
+      &quot;impact&quot;: 3,
+      &quot;assumption&quot;: &quot;shared team habit with individual check-ins&quot;
+    },
+    {
+      &quot;line&quot;: 6,
+      &quot;topic&quot;: &quot;historical edits&quot;,
+      &quot;impact&quot;: 3,
+      &quot;assumption&quot;: &quot;edits recalculate all subsequent streaks&quot;
+    },
+    {
+      &quot;line&quot;: 7,
+      &quot;topic&quot;: &quot;notification delivery&quot;,
+      &quot;impact&quot;: 2,
+      &quot;assumption&quot;: &quot;email at 20:00 UTC&quot;
+    }
+  ]
+}</pre><h2>frontend engineer</h2><pre>{
+  &quot;persona&quot;: &quot;frontend engineer&quot;,
+  &quot;data_model&quot;: {
+    &quot;HabitCard&quot;: [
+      &quot;id&quot;,
+      &quot;team_id&quot;,
+      &quot;collective_done&quot;
+    ],
+    &quot;CalendarEntry&quot;: [
+      &quot;habit_id&quot;,
+      &quot;local_day&quot;
+    ]
+  },
+  &quot;endpoints&quot;: [
+    &quot;POST /teams/{id}/habits/{habit}/complete&quot;,
+    &quot;GET /calendar&quot;,
+    &quot;GET /notifications&quot;
+  ],
+  &quot;decisions&quot;: [
+    {
+      &quot;line&quot;: 2,
+      &quot;topic&quot;: &quot;team habit ownership&quot;,
+      &quot;impact&quot;: 3,
+      &quot;assumption&quot;: &quot;one collective team completion&quot;
+    },
+    {
+      &quot;line&quot;: 3,
+      &quot;topic&quot;: &quot;day boundary&quot;,
+      &quot;impact&quot;: 3,
+      &quot;assumption&quot;: &quot;user local calendar day&quot;
+    },
+    {
+      &quot;line&quot;: 4,
+      &quot;topic&quot;: &quot;missed-day grace&quot;,
+      &quot;impact&quot;: 3,
+      &quot;assumption&quot;: &quot;one forgiveness token per week&quot;
+    },
+    {
+      &quot;line&quot;: 5,
+      &quot;topic&quot;: &quot;team habit ownership&quot;,
+      &quot;impact&quot;: 3,
+      &quot;assumption&quot;: &quot;one collective team completion&quot;
+    },
+    {
+      &quot;line&quot;: 6,
+      &quot;topic&quot;: &quot;historical edits&quot;,
+      &quot;impact&quot;: 3,
+      &quot;assumption&quot;: &quot;edits change calendar display only&quot;
+    },
+    {
+      &quot;line&quot;: 7,
+      &quot;topic&quot;: &quot;notification delivery&quot;,
+      &quot;impact&quot;: 2,
+      &quot;assumption&quot;: &quot;in-app banner at local 20:00&quot;
+    }
+  ]
+}</pre><h2>QA engineer</h2><pre>{
+  &quot;persona&quot;: &quot;QA engineer&quot;,
+  &quot;data_model&quot;: {
+    &quot;PersonalHabit&quot;: [
+      &quot;id&quot;,
+      &quot;source_team_habit&quot;
+    ],
+    &quot;CheckIn&quot;: [
+      &quot;habit_id&quot;,
+      &quot;timestamp&quot;,
+      &quot;edit_audit&quot;
+    ]
+  },
+  &quot;endpoints&quot;: [
+    &quot;POST /personal-habits/{id}/check-ins&quot;,
+    &quot;PATCH /check-ins/{id}&quot;,
+    &quot;GET /streak-audit&quot;
+  ],
+  &quot;decisions&quot;: [
+    {
+      &quot;line&quot;: 2,
+      &quot;topic&quot;: &quot;team habit ownership&quot;,
+      &quot;impact&quot;: 3,
+      &quot;assumption&quot;: &quot;copied personal habits with aggregate progress&quot;
+    },
+    {
+      &quot;line&quot;: 3,
+      &quot;topic&quot;: &quot;day boundary&quot;,
+      &quot;impact&quot;: 3,
+      &quot;assumption&quot;: &quot;rolling 24-hour window&quot;
+    },
+    {
+      &quot;line&quot;: 4,
+      &quot;topic&quot;: &quot;missed-day grace&quot;,
+      &quot;impact&quot;: 3,
+      &quot;assumption&quot;: &quot;no reset until 48 hours of inactivity&quot;
+    },
+    {
+      &quot;line&quot;: 5,
+      &quot;topic&quot;: &quot;team habit ownership&quot;,
+      &quot;impact&quot;: 3,
+      &quot;assumption&quot;: &quot;copied personal habits with aggregate progress&quot;
+    },
+    {
+      &quot;line&quot;: 6,
+      &quot;topic&quot;: &quot;historical edits&quot;,
+      &quot;impact&quot;: 3,
+      &quot;assumption&quot;: &quot;edits restricted to previous seven days&quot;
+    },
+    {
+      &quot;line&quot;: 7,
+      &quot;topic&quot;: &quot;notification delivery&quot;,
+      &quot;impact&quot;: 2,
+      &quot;assumption&quot;: &quot;push two hours before each personal deadline&quot;
+    }
+  ]
+}</pre></html>
