@@ -67,7 +67,7 @@ const stripped = (s: string) => s.replace(/`/g, '');
           {
             p.extra && (
               <p class="actions extra">
-                {p.extra.map((l) => (
+                {p.extra.filter((l) => l.label !== 'Devpost').map((l) => (
                   <a href={l.href}>{l.label}</a>
                 ))}
               </p>

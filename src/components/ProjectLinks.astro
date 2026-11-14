@@ -19,5 +19,6 @@ const { project: p, writeup = true } = Astro.props;
       <a href={p.code}>Code<span class="visually-hidden"> for {p.title}</span></a>
     )
   }
+  {p.extra?.filter((link) => link.label === 'Devpost').map((link) => <a href={link.href}>Devpost<span class="visually-hidden"> for {p.title}</span></a>)}
   {writeup && <a href={`/projects/${p.slug}/`}>Write-up<span class="visually-hidden"> on {p.title}</span></a>}
 </p>

@@ -26,7 +26,7 @@ export interface Project {
   award?: string;
   /** Hackathon, course or context, shown next to the role. */
   context?: string;
-  role: { kind: 'Solo' } | { kind: 'Team'; size?: number; mine: string };
+  role: { kind: 'Solo' } | { kind: 'Team'; size?: number; mine?: string };
   stack: string[];
   live?: string;
   code: string;
@@ -82,6 +82,7 @@ export const projects: Project[] = [
     stack: ['Swift', 'ARKit', 'Python', 'FastAPI', 'Modal', 'Next.js', 'OpenAI', 'Elasticsearch'],
     live: 'https://wander-htn.vercel.app',
     code: 'https://github.com/veermshah/hackthenorth',
+    extra: [{ label: 'Devpost', href: 'https://devpost.com/software/wander-hlqxz2' }],
     problem:
       'GPS stops at the door. A white cane finds the ground in front of you, but it can’t say which hallway leads to room 3B. We wanted to add the layer the cane was never meant to cover, and let someone you trust help from anywhere.',
     built: [
@@ -281,6 +282,7 @@ export const projects: Project[] = [
     stack: ['Solana', 'Anchor', 'Rust', 'C++', 'ESP32', 'Raspberry Pi', 'WebSockets', 'React'],
     code: 'https://github.com/veermshah/hacktx_26',
     extra: [
+      { label: 'Devpost', href: 'https://devpost.com/software/destina' },
       { label: 'My pull requests', href: 'https://github.com/Dhivyeshp/hacktx_26/pulls?q=is%3Apr+author%3Aveermshah' },
     ],
     problem:
@@ -381,6 +383,7 @@ export const projects: Project[] = [
     stack: ['Python', 'Flask-SocketIO', 'Raspberry Pi', 'Arduino', 'React Three Fiber', 'MediaPipe'],
     live: 'https://sa-night-drive.vercel.app',
     code: 'https://github.com/veermshah/rowdyhacks',
+    extra: [{ label: 'Devpost', href: 'https://devpost.com/software/hackstash' }],
     problem:
       'We wanted a heist game that used real San Antonio streets, needed no controller, and spilled out of the browser: each landmark vault opens a challenge on physical hardware or a real phone call.',
     built: [
@@ -407,6 +410,7 @@ export const projects: Project[] = [
     live: 'https://hackodds.vercel.app',
     code: 'https://github.com/veermshah/hacksmu26',
     extra: [
+      { label: 'Devpost', href: 'https://devpost.com/software/hackodds' },
       { label: 'Program on Solana Explorer', href: 'https://explorer.solana.com/address/5L1zpnbgDyqcWeqKXp3cBmxhZ3kkX9GmsuZuajSxwme5?cluster=devnet' },
     ],
     problem:
@@ -502,6 +506,215 @@ export const projects: Project[] = [
       { file: 'home.webp', alt: 'Moneyplant home page with a jungle illustration and the watsonx chat assistant open', caption: 'Home, with the chat assistant' },
       { file: 'questionnaire.webp', alt: 'Risk tolerance questionnaire with multiple-choice questions about risk', caption: 'Risk tolerance questionnaire' },
     ],
+  },
+  {
+    "slug": "jev-support-desk",
+    "title": "Jev Support Desk",
+    "pitch": "Developer-support tooling that routes tickets by confidence, prepares shift handoffs, and diagnoses API requests offline.",
+    "role": {
+      "kind": "Solo"
+    },
+    "stack": [
+      "Python",
+      "TypeSafe Jev",
+      "CLI",
+      "Evaluation"
+    ],
+    "code": "https://github.com/veermshah/jev-support-desk",
+    "extra": [
+      {
+        "label": "Evaluation report",
+        "href": "https://github.com/veermshah/jev-support-desk/blob/main/results/eval.md"
+      }
+    ],
+    "problem": "Support queues mix judgment calls with rules about priorities, deadlines and escalation. I wanted to measure which decisions a model can handle and send uncertain cases to a person.",
+    "built": [
+      "One Jev request asks seven typed questions per ticket. Python handles priorities, SLAs and escalation, with a confidence gate before automatic routing.",
+      "An offline request doctor checks API request shapes, authentication headers and error responses, then produces a reproduction command without the customer’s key.",
+      "A CLI shares cached results across triage, shift handoff and evaluation commands."
+    ],
+    "results": [
+      "On 36 synthetic labeled tickets, Jev routed 33 correctly (92%), versus 27 (75%) for keyword rules. At a 0.8 confidence threshold, 81% were auto-routed with no routing errors in that sample.",
+      "This is a small synthetic evaluation, not a production accuracy estimate."
+    ],
+    "images": []
+  },
+  {
+    "slug": "utdlang",
+    "title": "UTDLang Compiler",
+    "pitch": "A Java compiler front-end with a generated lexer and parser, an AST, scoped symbol tables and semantic type checking.",
+    "role": {
+      "kind": "Solo"
+    },
+    "stack": [
+      "Java",
+      "JFlex",
+      "CUP",
+      "Compilers"
+    ],
+    "code": "https://github.com/veermshah/CompilerProject",
+    "problem": "A parser can recognize a program without knowing whether it makes sense. This project connects parsing to scoped name resolution and semantic checks.",
+    "built": [
+      "Lexer and parser specifications in JFlex and CUP build an abstract syntax tree.",
+      "Symbol tables, type information and a semantic-analysis pass check programs after parsing.",
+      "A Makefile regenerates the front-end and runs test drivers against sample programs and expected outputs."
+    ],
+    "results": [
+      "The repository includes lexer, scanner and type-checking drivers, plus test inputs and expected semantic-analysis outputs."
+    ],
+    "images": []
+  },
+  {
+    "slug": "midpoint",
+    "title": "Midpoint",
+    "pitch": "An AI group travel planner that brings friends’ preferences, budgets and schedules into one trip plan.",
+    "context": "HackUPC 2025",
+    "award": "MLH Best Use of MongoDB Atlas, HackUPC",
+    "role": {
+      "kind": "Team"
+    },
+    "stack": [
+      "Next.js",
+      "React",
+      "Gemini",
+      "Auth0",
+      "MongoDB"
+    ],
+    "code": "https://github.com/veermshah/HackUPC",
+    "extra": [
+      {
+        "label": "Devpost",
+        "href": "https://devpost.com/software/a-wk0ple"
+      }
+    ],
+    "problem": "Planning with friends means reconciling different budgets, schedules and ideas about where to go.",
+    "built": [
+      "A shared travel-planning experience that uses AI to recommend destinations and activities from the group’s preferences.",
+      "A Next.js and React app with Gemini, Auth0 and MongoDB."
+    ],
+    "results": [
+      "Won the MLH Best Use of MongoDB Atlas prize at HackUPC 2025."
+    ],
+    "images": [
+      {
+        "file": "cover.jpg",
+        "alt": "Midpoint landing page: Plan your next trip with your friends"
+      }
+    ]
+  },
+  {
+    "slug": "whatdoesdafoxsay",
+    "title": "WhatDoesDaFoxSay",
+    "pitch": "A playful reading companion for children with dyslexia, using speech, gaze and emotion-aware feedback.",
+    "context": "HackUTA 7",
+    "award": "MLH Best Use of Auth0, HackUTA 7",
+    "role": {
+      "kind": "Team"
+    },
+    "stack": [
+      "Gemini",
+      "ElevenLabs",
+      "OpenFace",
+      "MediaPipe",
+      "Firebase"
+    ],
+    "code": "https://github.com/veermshah/hackuta25",
+    "extra": [
+      {
+        "label": "Devpost",
+        "href": "https://devpost.com/software/whatdoesdafoxsay"
+      }
+    ],
+    "problem": "Reading practice can be frustrating for children with dyslexia. We built a companion designed to make that practice calmer and more playful.",
+    "built": [
+      "A reading companion combining speech with gaze and emotion-aware feedback.",
+      "Gemini and ElevenLabs support the reading experience, alongside OpenFace, MediaPipe and Firebase."
+    ],
+    "results": [
+      "Won MLH Best Use of Auth0 at HackUTA 7."
+    ],
+    "images": [
+      {
+        "file": "cover.jpg",
+        "alt": "WhatDoesDaFoxSay introduction slide with its fox mascot and team credits"
+      }
+    ]
+  },
+  {
+    "slug": "charity-clarity",
+    "title": "Charity Clarity",
+    "pitch": "A Solana donation-transparency prototype that gives donors a way to follow where their contributions go.",
+    "context": "HackTheChains",
+    "award": "GoDaddy and Solana prizes, HackTheChains",
+    "role": {
+      "kind": "Team",
+      "mine": "React interface, Node.js and Express API, wallet integration, and donation charts"
+    },
+    "stack": [
+      "React",
+      "Solana",
+      "Phantom Wallet",
+      "Web3.js",
+      "AWS"
+    ],
+    "code": "https://github.com/jeremiahboban/HackTheChains",
+    "extra": [
+      {
+        "label": "Devpost",
+        "href": "https://devpost.com/software/jeremiahisfat"
+      }
+    ],
+    "problem": "Donors often have little visibility into how charities allocate their contributions. We explored a public transaction record as a way to make that flow easier to inspect.",
+    "built": [
+      "A donation platform built around recording contributions on Solana.",
+      "A React interface with Phantom wallet integration and Web3.js."
+    ],
+    "results": [
+      "Won GoDaddy Best Domain Name and a Solana prize at HackTheChains."
+    ],
+    "images": [
+      {
+        "file": "cover.jpg",
+        "alt": "Charity Clarity project presentation"
+      }
+    ]
+  },
+  {
+    "slug": "aerovision",
+    "title": "Aerovision Pro Max",
+    "pitch": "A gesture-controlled robotics prototype inspired by aircraft marshalling, built with computer vision and a Viam rover.",
+    "context": "PennApps XXIV",
+    "award": "Best Use of Viam Software in Robotics, PennApps",
+    "role": {
+      "kind": "Team"
+    },
+    "stack": [
+      "Python",
+      "OpenCV",
+      "MediaPipe",
+      "Viam"
+    ],
+    "code": "https://github.com/RCoder01/pennapps-xxiv",
+    "extra": [
+      {
+        "label": "Devpost",
+        "href": "https://devpost.com/software/wordle-wniql2"
+      }
+    ],
+    "problem": "As autonomous and human-operated aircraft share space, familiar marshalling gestures offer an interface between people and machines. We explored the idea on a rover.",
+    "built": [
+      "A computer-vision prototype that interprets gestures using Python, OpenCV and MediaPipe.",
+      "Viam rover integration to translate the gesture interface into a physical robotics demonstration."
+    ],
+    "results": [
+      "Won Best Use of Viam Software in Robotics at PennApps XXIV."
+    ],
+    "images": [
+      {
+        "file": "cover.jpg",
+        "alt": "Aerovision Pro Max robotics project presentation"
+      }
+    ]
   },
 ];
 

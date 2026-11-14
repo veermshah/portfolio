@@ -1,6 +1,6 @@
 # portfolio
 
-My portfolio site: a short intro and eighteen projects, each with its own write-up page.
+My portfolio site: a short intro and twenty-four projects, each with its own write-up page.
 
 Static [Astro](https://astro.build) with hand-written CSS. No client-side JavaScript, no trackers. Deployed on Vercel.
 
@@ -16,6 +16,10 @@ npm run preview        # serve dist/ locally
 npm run check:links    # internal links in dist/ (run after build)
 npm run check:external # internal links plus a request to every external link
 ```
+
+## Edit experience
+
+Experience entries live in `src/data/experience.ts`. The home page uses the first project image as its thumbnail; projects without screenshots get a text cover.
 
 ## Edit projects
 
@@ -41,7 +45,7 @@ Profile text and the top links (GitHub, LinkedIn, email, resume) are in [`src/da
 
 ### TODO
 
-- [ ] **Resume.** Put the current PDF at `public/resume.pdf` and set `href: '/resume.pdf'` on the Resume link in `src/data/profile.ts`. It's hidden until then.
+- [x] **Resume.** Served at `public/resume.pdf` and linked in `src/data/profile.ts`. Replace the PDF there to update it.
 - [ ] Check the bio line in `src/data/profile.ts` is current.
 
 ## Social card and icons
