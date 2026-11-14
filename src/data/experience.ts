@@ -5,6 +5,7 @@
 export const experience = [
   {
     company: 'Capital One',
+    logo: 'capital-one.jpg',
     role: 'Technology Intern Program',
     period: 'Summer 2026',
     location: 'Plano, TX',
@@ -12,6 +13,7 @@ export const experience = [
   },
   {
     company: 'HackUTD · ACM',
+    logo: 'hackutd.png',
     role: 'Director',
     period: 'December 2025 – present',
     location: 'Richardson, TX',
@@ -19,6 +21,7 @@ export const experience = [
   },
   {
     company: 'Fidelity Investments',
+    logo: 'fidelity.jpg',
     role: 'Full Stack Software Engineering Intern',
     period: 'June – December 2025',
     location: 'Westlake, TX',
@@ -30,6 +33,7 @@ export const experience = [
   },
   {
     company: 'University of Texas at Dallas',
+    logo: 'ut-dallas.jpg',
     role: 'Undergraduate Research Intern',
     period: 'June 2023 – January 2024',
     location: 'Richardson, TX',

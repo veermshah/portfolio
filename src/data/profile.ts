@@ -16,6 +16,7 @@ export const profile = {
     { label: 'Devpost', href: 'https://devpost.com/veermickey' },
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/veermickeyshah/' },
     { label: 'Email', href: 'mailto:veermickey@gmail.com' },
+    { label: 'Unsplash', href: 'https://unsplash.com/@veermickey' },
     { label: 'Resume', href: '/resume.pdf' },
   ] satisfies ProfileLink[],
 };

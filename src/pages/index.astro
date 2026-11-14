@@ -14,6 +14,8 @@ const thumbnail = (p: (typeof projects)[number]) => {
   return first ? assets[`../assets/projects/${p.slug}/${first.file}`]?.default : undefined;
 };
 
+const logos = import.meta.glob<{ default: ImageMetadata }>('../assets/experience/*.{jpg,png}', { eager: true });
+
 const links = profile.links.filter((l) => l.href);
 ---
 
@@ -36,9 +38,16 @@ const links = profile.links.filter((l) => l.href);
     <ol class="experience">
       {experience.map((item) => (
         <li>
-          <p class="experience-meta">{item.period} · {item.location}</p>
-          <h3>{item.company}</h3>
-          <p class="experience-role">{item.role}</p>
+          <div class="experience-heading">
+            <div class="experience-logo">
+              <Image src={logos[`../assets/experience/${item.logo}`].default} alt="" width={52} height={52} format="webp" loading="lazy" />
+            </div>
+            <div>
+              <p class="experience-meta">{item.period} · {item.location}</p>
+              <h3>{item.company}</h3>
+              <p class="experience-role">{item.role}</p>
+            </div>
+          </div>
           <ul>{item.highlights.map((line) => <li>{line}</li>)}</ul>
         </li>
       ))}
@@ -82,6 +91,10 @@ const links = profile.links.filter((l) => l.href);
   .section-nav span { color: var(--muted); font-family: var(--mono); font-size: 0.8rem; }
   .experience { list-style: none; padding: 0; }
   .experience > li { padding: 1.6rem 0; border-bottom: 1px solid var(--rule); }
+  .experience-heading { display: flex; align-items: center; gap: 1rem; }
+  .experience-heading > div:last-child { min-width: 0; }
+  .experience-logo { flex: 0 0 3.75rem; width: 3.75rem; height: 3.75rem; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--rule); border-radius: 8px; background: #fff; }
+  .experience-logo :global(img) { width: 3.25rem; height: 3.25rem; object-fit: contain; }
   .experience h3 { font-size: 1.125rem; margin-top: 0.3rem; }
   .experience-meta { color: var(--muted); font-size: 0.8125rem; }
   .experience-role { margin-top: 0.25rem; }
