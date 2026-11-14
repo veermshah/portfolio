@@ -186,3 +186,6 @@ img {
   justify-content: space-between;
   gap: 0.5rem 1.5rem;
 }
+
+/* Decorative icons accompany visible link labels. */
+.icon-link { display: inline-flex; align-items: center; gap: 0.4em; }

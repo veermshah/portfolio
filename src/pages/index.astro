@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { experience } from '../data/experience';
+import LinkIcon from '../components/LinkIcon.astro';
 import ContactButton from '../components/ContactButton.astro';
 import { notes, formatDate } from '../data/notes';
 import Base from '../layouts/Base.astro';
@@ -48,15 +49,15 @@ const links = profile.links.filter((l) => l.href);
     <p class="bio">{profile.bio}</p>
     <div class="intro-contact"><ContactButton /></div>
     <ul class="contact">
-      {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+      {links.map((l) => <li><a class="icon-link" href={l.href}><LinkIcon name={l.label} />{l.label}</a></li>)}
     </ul>
   </header>
 
   <nav class="section-nav" aria-label="On this page">
     <a href="#featured">Featured</a>
     <a href="#experience">Experience</a>
-    <a href="#projects-heading">Projects <span>{projects.length}</span></a>
-    <a href="/notes/">Notes</a>
+    <a class="icon-link" href="#projects-heading"><LinkIcon name="Write-up" />Projects <span>{projects.length}</span></a>
+    <a class="icon-link" href="/notes/"><LinkIcon name="Notes" />Notes</a>
   </nav>
 
   <section id="featured" aria-labelledby="featured-heading">

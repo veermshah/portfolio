@@ -1,4 +1,5 @@
 ---
+import LinkIcon from './LinkIcon.astro';
 import type { Project } from '../data/projects';
 
 interface Props {
@@ -11,14 +12,14 @@ const { project: p, writeup = true } = Astro.props;
 ---
 
 <p class="actions">
-  {p.live && <a href={p.live}>Live<span class="visually-hidden"> site for {p.title}</span></a>}
+  {p.live && <a class="icon-link" href={p.live}><LinkIcon name="Live" />Live<span class="visually-hidden"> site for {p.title}</span></a>}
   {
     p.codePrivate ? (
       <span class="pending">Code (soon)</span>
     ) : (
-      <a href={p.code}>Code<span class="visually-hidden"> for {p.title}</span></a>
+      <a class="icon-link" href={p.code}><LinkIcon name="GitHub" />Code<span class="visually-hidden"> for {p.title}</span></a>
     )
   }
-  {p.extra?.filter((link) => link.label === 'Devpost').map((link) => <a href={link.href}>Devpost<span class="visually-hidden"> for {p.title}</span></a>)}
-  {writeup && <a href={`/projects/${p.slug}/`}>Write-up<span class="visually-hidden"> on {p.title}</span></a>}
+  {p.extra?.filter((link) => link.label === 'Devpost').map((link) => <a class="icon-link" href={link.href}><LinkIcon name="Devpost" />Devpost<span class="visually-hidden"> for {p.title}</span></a>)}
+  {writeup && <a class="icon-link" href={`/projects/${p.slug}/`}><LinkIcon name="Write-up" />Write-up<span class="visually-hidden"> on {p.title}</span></a>}
 </p>
