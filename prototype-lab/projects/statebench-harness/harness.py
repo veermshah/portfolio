@@ -85,7 +85,7 @@ def call_model(backend,model,ops,query):
         if len(prompt.encode('utf-8'))+2048 > context:
             raise ValueError('context_limit: conservative byte-token bound plus 2048 reserve exceeds OLLAMA_NUM_CTX; skipped before request')
         url=os.getenv('OLLAMA_HOST','http://localhost:11434').rstrip('/')+'/api/chat'
-        body={'model':model,'messages':[{'role':'user','content':prompt}], 'stream':False,'think':False,'format':'json','options':{'temperature':0,'num_ctx':context,'num_predict':512}}
+        body={'model':model,'messages':[{'role':'user','content':prompt}], 'stream':False,'keep_alive':0,'think':False,'format':'json','options':{'temperature':0,'num_ctx':context,'num_predict':512}}
         headers={}
     else:
         url=os.getenv('OPENAI_BASE_URL','https://api.openai.com/v1').rstrip('/')+'/chat/completions'
@@ -127,7 +127,7 @@ def run(args):
     (out/'config.json').write_text(json.dumps(vars(args),indent=2))
     summarize(records,out,args.backend)
 
-def summarize(records,out,backend):
+def summarize(records,out,backend,title=None):
     os.environ.setdefault('MPLCONFIGDIR', '/tmp/statebench-matplotlib')
     import matplotlib
     matplotlib.use('Agg')
@@ -147,7 +147,7 @@ def summarize(records,out,backend):
       for name,points in series.items():
         points.sort();ax.plot([p[0] for p in points],[p[1] for p in points],marker='o',label=name)
       ax.set(title=level,xlabel='Assignments',ylabel='Exact final-state accuracy',ylim=(-.05,1.05),xscale='log');ax.legend(fontsize=7);ax.grid(alpha=.3)
-    fig.suptitle('CPU control experiment — not transformer failure curves' if backend=='offline' else 'State-tracking model experiment with deterministic tool upper bounds')
+    fig.suptitle(title or ('CPU control experiment — not transformer failure curves' if backend=='offline' else 'State-tracking model experiment with deterministic tool upper bounds'))
     fig.tight_layout();fig.savefig(out/'accuracy.png',dpi=140);plt.close(fig)
     (out/'results.md').write_text('\n'.join(lines)+'\n')
     print('\n'.join(lines))

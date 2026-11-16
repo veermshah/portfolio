@@ -53,19 +53,25 @@ export const projects: Project[] = [
   ],
   "problem": "Small ambiguities in a spec can produce incompatible data models, APIs and behavior. A ranked comparison makes those decisions visible before implementation.",
   "built": [
-    "An AI-assisted prototype fans out independent backend, frontend and QA prompts, preserving each interpretation’s data model, endpoint sketch and line-attributed assumptions.",
+    "An AI-assisted prototype makes three independent model calls with backend, frontend and QA personas, preserving data models, endpoint sketches and line-attributed implementation assumptions.",
     "The CLI groups decisions by source line and topic and exports ranked HTML, Markdown and JSON evidence. Severity combines disagreement and impact. Live Ollama and API adapters are implemented."
   ],
   "results": [
-    "The authored offline demo flags six line/topic ambiguities across five topics in a habit-tracking spec. These are demonstration policies, not measured independent LLM interpretations.",
-    "Four tests pass for attribution, scoring, agreement handling and HTML escaping. Live providers were unavailable and remain unverified."
+    "Three real Qwen3 1.7B Q4 CPU calls produce six ranked line/topic findings across five topics, including concrete conflicts over day boundaries, grace policies, historical edits and notification timing. Total usage: 2,876 tokens (1,444 input and 1,432 output).",
+    "Five tests pass, including provider evidence capture, attribution, scoring and HTML escaping. Earlier failed small-model and interrupted runtime attempts are retained. The comparison is textual; the live result is a sample demonstration, not an accuracy estimate on arbitrary specifications."
   ],
   "context": "AI-assisted prototype session",
   "role": {
     "kind": "Solo"
   },
   "code": "https://github.com/veermshah/portfolio/tree/main/prototype-lab/projects/fog-map",
-  "images": []
+  "images": [],
+  "extra": [
+    {
+      "label": "Measured ambiguity report",
+      "href": "/demos/fog-map/"
+    }
+  ]
 },
   {
   "slug": "dynaflow-orchestrator",
@@ -79,20 +85,30 @@ export const projects: Project[] = [
   ],
   "problem": "Agent teams add calls and context. The useful question is whether task-specific coordination improves cost per solved task against the same model running alone.",
   "built": [
-    "An AI-assisted prototype prompts a lead to emit constrained executable Python workflows. Solvers can run in parallel, followed by verification and aggregation, with full original context and prior outputs.",
-    "An AST interpreter permits only coordination functions. A benchmark compares solo, fixed planner/solver/reviewer and generated workflows, including planning-call cost and raw traces."
+    "An AI-assisted prototype prompts a lead to emit constrained executable Python workflows. Frozen solvers can run in parallel, followed by verification and aggregation, with full original context and prior outputs. Real Qwen3 0.6B Q4 CPU calls exercise the coordination.",
+    "An AST interpreter permits only coordination functions. Two separately reported datasets compare solo, fixed planner/solver/reviewer and generated workflows: six published AIME plus six HotpotQA questions, and twelve original easy calibration tasks. Raw responses, programs, token usage and failed plans are retained."
   ],
   "results": [
-    "All three deterministic CPU-surrogate arms solve 12/12 original toy tasks. Generated orchestration loses: math proxy units per solved task are 440.0 versus 78.0 solo and 257.2 fixed; multi-hop is 562.3 versus 118.0 and 381.5.",
-    "Units are character-based proxies, not model tokens; dollar costs are unavailable. No model was available, so this does not reproduce DynaFlow’s claimed 88.08% overall or 100% AIME accuracy.",
-    "Four tests pass, including execution restrictions and parallel full-context handoffs. Training and official benchmark evaluation remain outstanding."
+    "On the published subset, every setup scores 0/6 AIME; HotpotQA scores are 0/6 solo, 1/6 fixed and 0/6 generated. The run uses 87 successful provider calls and 84,774 actual tokens, with no provider errors. Cost per solved task is undefined when no task is solved.",
+    "On the separate easier calibration, math accuracy is 1/6 for every setup; actual tokens per solved task are 1,039 solo, 4,875 fixed and 3,257 generated. Multi-hop is 4/6, 4/6 and 1/6, at 292, 1,060.5 and 2,915 tokens per solved task. Generated orchestration loses token efficiency by 3.13× and 9.98×.",
+    "Local API fees are $0, excluding hardware and energy. All unsolved-task and invalid-plan tokens are charged. Ten tests pass. These tiny-model results, with different output budgets for the two datasets, do not reproduce the trained 27B paper’s headline accuracy."
   ],
   "context": "AI-assisted prototype session",
   "role": {
     "kind": "Solo"
   },
   "code": "https://github.com/veermshah/portfolio/tree/main/prototype-lab/projects/dynaflow-orchestrator",
-  "images": []
+  "images": [],
+  "extra": [
+    {
+      "label": "Published-subset measurements",
+      "href": "https://github.com/veermshah/portfolio/blob/main/prototype-lab/projects/dynaflow-orchestrator/results-qwen3-cpu/RESULTS.md"
+    },
+    {
+      "label": "Separate calibration measurements",
+      "href": "https://github.com/veermshah/portfolio/blob/main/prototype-lab/projects/dynaflow-orchestrator/results-qwen3-toy/RESULTS.md"
+    }
+  ]
 },
   {
   "slug": "popup-optimizer",
@@ -111,14 +127,20 @@ export const projects: Project[] = [
   ],
   "results": [
     "The default five-stop health demo covers 96,805 of 269,985 synthetic residents. Population, need indicators and clinic flags are invented demo data, not Dallas demographic estimates.",
-    "Nine optimizer configurations and five HTTP routes pass checks; independent live HTTP requests confirm five recommendations. The schematic map, approximate travel times and unverified venues limit this to an illustrative demo."
+    "Nine optimizer configurations and five HTTP routes pass checks. Real Chromium checks also cover all service controls, map links, a 390px mobile viewport and standalone offline rendering without network requests. The schematic map, approximate travel times and unverified venues limit this to an illustrative demo."
   ],
   "context": "AI-assisted prototype session",
   "role": {
     "kind": "Solo"
   },
   "code": "https://github.com/veermshah/portfolio/tree/main/prototype-lab/projects/popup-optimizer",
-  "images": []
+  "images": [],
+  "extra": [
+    {
+      "label": "Default placement snapshot",
+      "href": "/demos/popup-optimizer/"
+    }
+  ]
 },
   {
   "slug": "statebench-harness",
@@ -132,21 +154,35 @@ export const projects: Project[] = [
   ],
   "problem": "Long assignment chains test whether a model can preserve changing state. A useful harness must separate reasoning failure from context truncation and tool-assisted execution.",
   "built": [
-    "An AI-assisted generator produces immutable, overwrite, self-referential and aliased-reference/swap chains from 8 to 64,000 assignments, with explicit semantics and an exact interpreter.",
-    "The harness supports Ollama and API calls, bounded CPU replay controls, persisted JSON scratchpads and chunked execution. It emits per-example records, tables and a chart. Oversized local prompts are rejected before inference."
+    "An AI-assisted generator produces immutable, overwrite, self-referential and aliased-reference/swap chains from 8 to 64,000 assignments, with explicit semantics and an exact interpreter. Real Qwen3 0.6B and 1.7B Q4 CPU models are evaluated at 8, 32 and 128 assignments.",
+    "The live experiment compares direct answers, model-written JSON scratchpads passed between chunks, and model-delegated execution with persisted state. Model-written values are never repaired from the answer key. Exact token/context guards prevent silent input truncation."
   ],
   "results": [
-    "Across four levels and three seeds, replay-32 falls from 100% at eight assignments to 0% at 2,048; replay-128 reaches 50%. Exact scratchpad and chunked tools remain at 100%.",
-    "These are deliberately bounded algorithms and deterministic interpreters, not two language models or model-mediated fixes. No transformer failure curve or frontier score has been reproduced.",
-    "Four tests pass, including aliases/swaps, fixes, context preflight and all four generators at 64,000 assignments. The synthetic task distribution is not the official StateBench dataset."
+    "Both models’ direct accuracy falls from 75% at 8 assignments to 25% at 32 and 0% at 128. Each point contains only four cases, one per difficulty level; all 72 model/method records are audited, with 171 actual calls and zero transport or context errors.",
+    "Model-written state does not improve aggregate accuracy: 2/12 correct for 0.6B and 3/12 for 1.7B. The separate execution-tool method reaches 12/12 for 1.7B, recovering 100 percentage points at 128 assignments. The 0.6B model gets only 1/12 because it frequently fails the tool protocol.",
+    "Tool delegation offloads tracking to a deterministic interpreter, then requires the model to read its output; it is not improved intrinsic memory. Twelve tests pass, including all four generators at 64K. The frontier 13% figure, official dataset, 64K live inference and recurrent hybrid were not reproduced."
   ],
   "context": "AI-assisted prototype session",
   "role": {
     "kind": "Solo"
   },
   "code": "https://github.com/veermshah/portfolio/tree/main/prototype-lab/projects/statebench-harness",
-  "images": []
+  "images": [
+    {
+      "file": "accuracy.png",
+      "alt": "Measured Qwen3 0.6B and 1.7B accuracy versus assignment length, comparing direct answers, model-written state and execution-tool delegation",
+      "caption": "Actual CPU runs: four cases per point, seed 42, 8/32/128 assignments. The raw curves coincide. Tool delegation helps 1.7B; model-written state does not."
+    }
+  ],
+  "extra": [
+    {
+      "label": "Measurements and protocol",
+      "href": "https://github.com/veermshah/portfolio/blob/main/prototype-lab/projects/statebench-harness/MEASUREMENTS.md"
+    }
+  ]
 },
+
+
   {
     slug: 'veer',
     title: 'Veer',

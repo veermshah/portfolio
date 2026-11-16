@@ -1,0 +1,102 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Fog Map</title><style>body{font:16px system-ui;background:#f1f5f9;color:#172033;max-width:1000px;margin:40px auto;padding:20px}article{background:white;padding:24px;margin:20px 0;border-radius:12px}small{float:right;color:#a32d16}th,td{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid #ddd}blockquote{margin:20px 0;color:#526172}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style><h1>Fog Map</h1><p>Live api: three independent model requests</p><p>Severity: differing agent pairs × impact. Textual comparison can overflag equivalent phrasing.</p><h1>Full interpretations</h1><h2>backend engineer</h2><pre>{
+  &quot;data_model&quot;: {
+    &quot;Entity&quot;: [
+      &quot;user&quot;,
+      &quot;habit&quot;,
+      &quot;streak&quot;,
+      &quot;team&quot;,
+      &quot;check_in&quot;
+    ]
+  },
+  &quot;endpoints&quot;: [
+    {
+      &quot;METHOD&quot;: &quot;/api/habit&quot;,
+      &quot;path&quot;: &quot;/api/habit&quot;
+    }
+  ],
+  &quot;decisions&quot;: [
+    {
+      &quot;line&quot;: 2,
+      &quot;topic&quot;: &quot;short canonical topic&quot;,
+      &quot;impact&quot;: 1,
+      &quot;assumption&quot;: &quot;concrete choice&quot;
+    }
+  ],
+  &quot;persona&quot;: &quot;backend engineer&quot;,
+  &quot;provider_evidence&quot;: {
+    &quot;model&quot;: &quot;Qwen3-0.6B-Q4_K_M&quot;,
+    &quot;usage&quot;: {
+      &quot;prompt_tokens&quot;: 265,
+      &quot;completion_tokens&quot;: 81,
+      &quot;total_tokens&quot;: 346
+    },
+    &quot;elapsed_seconds&quot;: 13.064,
+    &quot;raw_content&quot;: &quot;{\&quot;data_model\&quot;: {\&quot;Entity\&quot;: [\&quot;user\&quot;, \&quot;habit\&quot;, \&quot;streak\&quot;, \&quot;team\&quot;, \&quot;check_in\&quot;]}, \&quot;endpoints\&quot;: [{\&quot;METHOD\&quot;: \&quot;/api/habit\&quot;, \&quot;path\&quot;: \&quot;/api/habit\&quot;}], \&quot;decisions\&quot;: [{\&quot;line\&quot;: 2, \&quot;topic\&quot;: \&quot;short canonical topic\&quot;, \&quot;impact\&quot;: 1, \&quot;assumption\&quot;: \&quot;concrete choice\&quot;}] }&quot;
+  }
+}</pre><h2>frontend engineer</h2><pre>{
+  &quot;data_model&quot;: {
+    &quot;Entity&quot;: [
+      &quot;habit&quot;,
+      &quot;team&quot;,
+      &quot;streak&quot;
+    ]
+  },
+  &quot;endpoints&quot;: [
+    {
+      &quot;METHOD&quot;: &quot;/api/v1/habit&quot;,
+      &quot;endpoints&quot;: [
+        &quot;create&quot;,
+        &quot;read&quot;,
+        &quot;update&quot;,
+        &quot;delete&quot;
+      ]
+    }
+  ],
+  &quot;decisions&quot;: [
+    {
+      &quot;line&quot;: 2,
+      &quot;topic&quot;: &quot;missed-day grace&quot;,
+      &quot;impact&quot;: 1,
+      &quot;assumption&quot;: &quot;a grace period of 24 hours is allowed for missed days&quot;
+    }
+  ],
+  &quot;persona&quot;: &quot;frontend engineer&quot;,
+  &quot;provider_evidence&quot;: {
+    &quot;model&quot;: &quot;Qwen3-0.6B-Q4_K_M&quot;,
+    &quot;usage&quot;: {
+      &quot;prompt_tokens&quot;: 265,
+      &quot;completion_tokens&quot;: 94,
+      &quot;total_tokens&quot;: 359
+    },
+    &quot;elapsed_seconds&quot;: 20.373,
+    &quot;raw_content&quot;: &quot;{\&quot;data_model\&quot;: {\&quot;Entity\&quot;: [\&quot;habit\&quot;, \&quot;team\&quot;, \&quot;streak\&quot;]}, \&quot;endpoints\&quot;: [{\&quot;METHOD\&quot;: \&quot;/api/v1/habit\&quot;, \&quot;endpoints\&quot;: [\&quot;create\&quot;, \&quot;read\&quot;, \&quot;update\&quot;, \&quot;delete\&quot;]}], \&quot;decisions\&quot;: [{\&quot;line\&quot;: 2, \&quot;topic\&quot;: \&quot;missed-day grace\&quot;, \&quot;impact\&quot;: 1, \&quot;assumption\&quot;: \&quot;a grace period of 24 hours is allowed for missed days\&quot;}]}&quot;
+  }
+}</pre><h2>QA engineer</h2><pre>{
+  &quot;data_model&quot;: {
+    &quot;Entity&quot;: [
+      &quot;field&quot;
+    ]
+  },
+  &quot;endpoints&quot;: [
+    &quot;METHOD /path&quot;
+  ],
+  &quot;decisions&quot;: [
+    {
+      &quot;line&quot;: 2,
+      &quot;topic&quot;: &quot;short canonical topic&quot;,
+      &quot;impact&quot;: 1,
+      &quot;assumption&quot;: &quot;concrete choice&quot;
+    }
+  ],
+  &quot;persona&quot;: &quot;QA engineer&quot;,
+  &quot;provider_evidence&quot;: {
+    &quot;model&quot;: &quot;Qwen3-0.6B-Q4_K_M&quot;,
+    &quot;usage&quot;: {
+      &quot;prompt_tokens&quot;: 265,
+      &quot;completion_tokens&quot;: 55,
+      &quot;total_tokens&quot;: 320
+    },
+    &quot;elapsed_seconds&quot;: 6.311,
+    &quot;raw_content&quot;: &quot;{\&quot;data_model\&quot;: {\&quot;Entity\&quot;: [\&quot;field\&quot;]}, \&quot;endpoints\&quot;: [\&quot;METHOD /path\&quot;], \&quot;decisions\&quot;: [{\&quot;line\&quot;: 2, \&quot;topic\&quot;: \&quot;short canonical topic\&quot;, \&quot;impact\&quot;: 1, \&quot;assumption\&quot;: \&quot;concrete choice\&quot;}]}&quot;
+  }
+}</pre></html>

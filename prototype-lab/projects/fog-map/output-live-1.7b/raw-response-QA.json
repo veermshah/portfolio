@@ -1,0 +1,38 @@
+{
+  "request": {
+    "model": "Qwen3-1.7B-Q4_K_M",
+    "messages": [
+      {
+        "role": "user",
+        "content": "You are a QA engineer. Prioritize predictable edge cases and testable acceptance criteria.\nIndependently design the application described below. Make concrete choices wherever the spec is ambiguous.\nReturn one JSON object with keys data_model (object mapping entity names to field lists), endpoints (list of at most 3 METHOD /path strings, never objects), and decisions (list of objects). Keep data_model to 3 entities with field NAME LISTS, never nested objects. Each decision must have line (integer), topic (string), impact (integer 1 cosmetic, 2 UX, 3 data/correctness), and assumption (your concrete implementation choice, at least one full sentence).\nFor every following source/topic pair, produce exactly one decision. Copy only its line and topic; Answer its question with a concrete implementation policy in <=25 words, using your engineering judgement. Do not paraphrase the requirement or leave the question unanswered. [{\"line\": 2, \"topic\": \"team habit ownership\", \"question\": \"Who owns a shared habit, and whose completion counts?\"}, {\"line\": 3, \"topic\": \"day boundary\", \"question\": \"Exactly when does the day end, and in which timezone?\"}, {\"line\": 4, \"topic\": \"missed-day grace\", \"question\": \"How long is the grace period, and how often is it available?\"}, {\"line\": 5, \"topic\": \"team habit ownership\", \"question\": \"Who owns a shared habit, and whose completion counts?\"}, {\"line\": 6, \"topic\": \"historical edits\", \"question\": \"What is the edit time limit, and do edits recompute streaks?\"}, {\"line\": 7, \"topic\": \"notification delivery\", \"question\": \"Which channel, recipients, and trigger time?\"}]\n\nDo not repeat schema placeholders. No Markdown. /no_think\nNumbered spec:\n1: # Habit tracking app\n2: Build a habit-tracking app with streaks and teams.\n3: Users can complete each habit daily and keep their streak alive.\n4: A missed day can be forgiven with a grace period.\n5: Team members share habits and see team progress.\n6: Users should be able to edit past check-ins.\n7: Notify people when their streak is at risk."
+      }
+    ],
+    "response_format": {
+      "type": "json_object"
+    },
+    "temperature": 0.7,
+    "max_tokens": 1800
+  },
+  "response": {
+    "id": "cmpl-507c4159-8654-45a9-943c-8194c71b42bf",
+    "object": "chat.completion",
+    "model": "Qwen3-1.7B-Q4_K_M",
+    "created": 1794789133,
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"data_model\": {\n    \"user\": [\n      \"user_id\",\n      \"name\",\n      \"email\",\n      \"timezone\"\n    ],\n    \"habit\": [\n      \"habit_id\",\n      \"name\",\n      \"team_id\",\n      \"user_id\",\n      \"created_at\",\n      \"last_updated\"\n    ],\n    \"edit\": [\n      \"edit_id\",\n      \"habit_id\",\n      \"user_id\",\n      \"timestamp\"\n    ]\n  },\n  \"endpoints\": [\n    \"/api/users\",\n    \"/api/habits\",\n    \"/api/edit-history\"\n  ],\n  \"decisions\": [\n    {\n      \"line\": 2,\n      \"topic\": \"team habit ownership\",\n      \"impact\": 2,\n      \"assumption\": \"The owner of a shared habit is the user who created it, and completion counts are tracked by the owner.\"\n    },\n    {\n      \"line\": 3,\n      \"topic\": \"day boundary\",\n      \"impact\": 1,\n      \"assumption\": \"The day ends at 23:59:59 UTC-8, and the app uses the user's timezone for time calculations.\"\n    },\n    {\n      \"line\": 4,\n      \"topic\": \"missed-day grace\",\n      \"impact\": 3,\n      \"assumption\": \"The grace period is 7 days, and it is available once per missed day.\"\n    },\n    {\n      \"line\": 5,\n      \"topic\": \"team habit ownership\",\n      \"impact\": 2,\n      \"assumption\": \"The owner of a shared habit is the user who created it, and completion counts are tracked by the owner.\"\n    },\n    {\n      \"line\": 6,\n      \"topic\": \"historical edits\",\n      \"impact\": 1,\n      \"assumption\": \"The edit time limit is 30 days, and edits do not recompute streaks.\"\n    },\n    {\n      \"line\": 7,\n      \"topic\": \"notification delivery\",\n      \"impact\": 2,\n      \"assumption\": \"Notifications are delivered via email, and are triggered 24 hours before a streak is at risk.\"\n    }\n  ]\n}"
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 482,
+      "completion_tokens": 456,
+      "total_tokens": 938
+    },
+    "local_seconds": 51.244404964999944
+  }
+}

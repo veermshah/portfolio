@@ -1,0 +1,47 @@
+{
+  "level": "self",
+  "seed": 42,
+  "operations": [
+    {
+      "op": "set",
+      "x": "v0",
+      "value": 1
+    },
+    {
+      "op": "set",
+      "x": "v1",
+      "value": 0
+    },
+    {
+      "op": "set",
+      "x": "v2",
+      "value": 4
+    },
+    {
+      "op": "set",
+      "x": "v3",
+      "value": 3
+    },
+    {
+      "op": "copy",
+      "x": "v1",
+      "y": "v0"
+    },
+    {
+      "op": "add",
+      "x": "v0",
+      "value": -3
+    },
+    {
+      "op": "add",
+      "x": "v0",
+      "value": 2
+    },
+    {
+      "op": "add",
+      "x": "v0",
+      "value": 3
+    }
+  ],
+  "query": "v0"
+}

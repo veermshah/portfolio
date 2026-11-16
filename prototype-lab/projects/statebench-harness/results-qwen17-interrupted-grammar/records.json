@@ -1,0 +1,46 @@
+[
+  {
+    "level": "immutable",
+    "length": 8,
+    "sample": 0,
+    "seed": 42,
+    "model": "Qwen3-1.7B-Q4_K_M",
+    "method": "raw",
+    "correct": true,
+    "error": null,
+    "failure": null,
+    "answer": {
+      "v7": 1
+    },
+    "expected": {
+      "v7": 1
+    },
+    "query": "v7",
+    "calls": 1,
+    "usage": {
+      "prompt_tokens": 202,
+      "completion_tokens": 7
+    },
+    "seconds": 66.98648437100002,
+    "trace": [
+      {
+        "error": null,
+        "prompt": "Track this integer program exactly in order. Variables hold integer cells.\nx = 5 writes 5 into x's existing cell; a new x gets its own cell.\nx = y copies y's CURRENT VALUE into x's cell; it does not create an alias.\nx += k increments the cell of x by k.\nalias x = y rebinds x to the SAME cell as y; later writes through either name change both.\nswap x, y exchanges their cell bindings simultaneously, not their integer values.\nAll arithmetic is exact, without overflow. Return JSON only. Do not explain.\nProgram:\nv0 = 1\nv1 = 0\nv2 = 4\nv3 = 3\nv4 = v0\nv5 = 1\nv6 = v0\nv7 = v5\nWhat is the final integer value of v7? Return exactly {\"v7\": INTEGER}.",
+        "response": "{\"v7\": 1}",
+        "parsed": {
+          "v7": 1
+        },
+        "finish_reason": "stop",
+        "server_model": "Qwen3-1.7B-Q4_K_M",
+        "usage": {
+          "prompt_tokens": 202,
+          "completion_tokens": 7,
+          "total_tokens": 209
+        },
+        "estimated_input_tokens": 642,
+        "called": true,
+        "seconds": 66.97693755
+      }
+    ]
+  }
+]

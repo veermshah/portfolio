@@ -4,12 +4,12 @@ A runnable synthetic assignment-chain benchmark with exact reference semantics,
 Ollama/OpenAI-compatible model adapters, JSON scratchpad and chunked state tools,
 per-example evidence, tables and PNG failure curves. Runs without a GPU.
 
-**Research status: incomplete model reproduction.** No API keys, local model weights,
-Ollama, or GPU were available in this build environment. The shipped measurements
-are two explicitly bounded CPU replay algorithms, **not language models**. Their
-failure curves are structural controls, not evidence about transformer limits.
-Neither the requested two-model failure curve nor a model-mediated fix has been
-measured. No frontier score is invented.
+**Research scope:** this is a synthetic StateBench-style test, not a reproduction
+of the official dataset or a frontier-model result. The actual-model experiment
+uses Qwen3 0.6B/1.7B Q4 CPU substitutions and measures raw predictions,
+model-produced JSON state, and a separately labeled model-delegated execution
+tool. See [LIVE.md](LIVE.md) for the protocol and commands. Original bounded CPU
+replay controls remain below and are **not language model results**.
 
 Paper: [A Fine-Grained Hierarchy and Benchmark for State Tracking in Language
 Models / StateBench](https://arxiv.org/abs/2611.03094). The brief cites a frontier
@@ -19,6 +19,41 @@ This generator is inspired by its topic, not its official dataset, complexity
 hierarchy, or training protocol. Persistent aliasing here is an explicit design
 choice; it should not be equated to the paper's reference-assignment definitions.
 No Gated DeltaNet training or hybrid recurrent model has been implemented.
+
+## Actual model driver
+
+See [MEASUREMENTS.md](MEASUREMENTS.md) for actual scores and
+[LIVE.md](LIVE.md) for the two-model CPU experiment, model-produced JSON
+state and model-delegated tool fixes, exact commands and protocol limits.
+The original CPU control artifacts below remain available separately.
+
+|Model (Q4)|Method|8 assignments|32 assignments|128 assignments|Overall|
+|---|---|---:|---:|---:|---:|
+|Qwen3-0.6B|Raw|3/4 (75.0%)|1/4 (25.0%)|0/4 (0.0%)|4/12 (33.3%)|
+|Qwen3-0.6B|Model-written JSON state|2/4 (50.0%)|0/4 (0.0%)|0/4 (0.0%)|2/12 (16.7%)|
+|Qwen3-0.6B|Model-delegated exact tool|0/4 (0.0%)|1/4 (25.0%)|0/4 (0.0%)|1/12 (8.3%)|
+|Qwen3-1.7B|Raw|3/4 (75.0%)|1/4 (25.0%)|0/4 (0.0%)|4/12 (33.3%)|
+|Qwen3-1.7B|Model-written JSON state|2/4 (50.0%)|1/4 (25.0%)|0/4 (0.0%)|3/12 (25.0%)|
+|Qwen3-1.7B|Model-delegated exact tool|4/4 (100.0%)|4/4 (100.0%)|4/4 (100.0%)|12/12 (100.0%)|
+
+Each length has four synthetic cases per model. Both raw curves fall to 0% at
+128 assignments. The 1.7B execution-tool arm recovers to 100%; the 0.6B model
+frequently fails the tool protocol. Model-written state does not improve either
+model overall. This is a small CPU-model experiment, not the paper's frontier
+13% result or a proof of a transformer ceiling.
+
+![Actual two-model accuracy](results-models/accuracy-overall.png)
+
+For a 60-second model demo, open the combined chart and
+`results-models/summary.md`, inspect a prediction's `trace` in `records.json`,
+then run `python -m unittest test_live_experiment -v`. The full live rerun commands
+and deployment setup are in [LIVE.md](LIVE.md).
+Rebuild the two-model charts from the shipped measured records without inference:
+
+```bash
+python summarize_live.py results-qwen06 results-qwen17 --output results-models
+```
+
 
 ## Setup and offline measurement
 
@@ -60,7 +95,7 @@ small and no statistical significance is claimed.
 ## Live local model experiment (16GB target)
 
 Install Ollama separately, then run one model at a time; the driver does not
-load both simultaneously:
+load both simultaneously (requests use `keep_alive: 0` to unload after each call):
 
 ```bash
 ollama pull qwen3:4b
@@ -123,11 +158,11 @@ arithmetic. The
 synthetic chain distribution can erase dependencies through later writes, so
 neither control nor genuine model accuracy need decrease monotonically.
 
-## 60-second demo
+## 60-second CPU control demo
 
 1. Open shipped `results/accuracy.png`: the title explicitly says CPU controls.
 2. Show `results/results.md` and the table above: replay fails; exact tools recover.
 3. Run `python harness.py --lengths 8 32 128 --samples 1 --output demo-results`.
 4. Inspect `demo-results/records.json` for predictions and exact expected states.
-5. Explain that live local models are wired up, but were unavailable here; the
-   requested transformer reproduction remains outstanding.
+5. Explain that these are CPU controls. For actual Qwen3 model measurements and
+   the model-produced/model-delegated fixes, use the separate [live demo](LIVE.md).

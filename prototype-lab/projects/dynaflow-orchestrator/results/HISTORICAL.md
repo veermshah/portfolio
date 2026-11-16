@@ -1,0 +1,1 @@
+Historical deterministic smoke run from 2026-11-14, before reasoning-prompt improvements. Not real-model evidence. Current smoke output is results-surrogate; the real-model experiment uses results-qwen3-cpu.

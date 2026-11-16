@@ -1,43 +1,89 @@
-# Four-project prototype session
+# Four-project build report
 
-Four parallel agents built isolated projects, each with a PLAN, README, environment-variable example, and runnable CPU demo. **The two research reproductions remain incomplete:** no model credentials, local weights, Ollama, or GPU were available. Their shipped CPU controls are explicitly labeled and are not LLM results.
+All four MVPs now include working code and verified demos. Real Qwen3 CPU inference replaces the initial model-unavailable gap; the earlier deterministic controls remain separately labeled. Every project ships PLAN.md, README.md, .env.example and a 60-second demo.
 
-Run commands below from the `prototype-lab/` directory (Python 3.10+).
+## Setup and exact commands
 
-| Project | Command | Verified result |
-|---|---|---|
-| [Fog Map](fog-map/README.md) | `cd projects/fog-map && python fog.py sample-spec.md --backend offline --out output` | Six ranked ambiguities across five topics; HTML, Markdown, full JSON evidence. Three authored policies substitute for live interpretations. |
-| [DynaFlow](dynaflow-orchestrator/README.md) | `cd projects/dynaflow-orchestrator && python orchestrator.py --backend surrogate` | Executable constrained workflows and three benchmark arms; coordination loses on proxy cost. |
-| [Pop-Up Optimizer](popup-optimizer/README.md) | `cd projects/popup-optimizer && python app.py --port 8003` | Five ranked Dallas points at http://127.0.0.1:8003; 96,805 / 269,985 synthetic residents covered. |
-| [StateBench](statebench-harness/README.md) | `cd projects/statebench-harness && python -m pip install -r requirements.txt && python harness.py --backend offline --output results` | Accuracy chart, per-example evidence, two bounded replay controls and exact tools. |
+Provision the free local CPU endpoint using [MODEL_RUNS.md](../MODEL_RUNS.md). It downloads pinned, checksum-verified Qwen3 0.6B/1.7B Q4 models. Run one server with both aliases on port 8090; commands below start in `prototype-lab/`. No GPU or paid API is needed. For your RTX 5070 Ti with 16GB, project READMEs retain conservative Qwen3 4B/8B Q4 Ollama instructions; GPU memory was not measured.
 
-## Research measurements
+**Fog Map — three real independent persona calls:**
 
-DynaFlow's paper reports 88.08% overall versus 77.18% and 100% on three AIME years. Its Table 1 gives solo CoT AIME 2026 as 86.67%, rather than the brief's approximately 52%. Our twelve original toy questions are not official AIME/HotpotQA items. All CPU-surrogate arms solve 6/6 per family:
+```sh
+(cd projects/fog-map && OPENAI_API_KEY=local OPENAI_BASE_URL=http://127.0.0.1:8090/v1 FOG_MODEL=Qwen3-1.7B-Q4_K_M python fog.py sample-spec.md --backend api --out output-reproduced)
+```
 
-| Family | Solo proxy units/solved | Fixed pipeline | Generated workflow |
-|---|---:|---:|---:|
-| Math | 78.0 | 257.2 | 440.0 |
-| Multi-hop | 118.0 | 381.5 | 562.3 |
+The committed [live report](fog-map/output-live-1.7b/report.html) contains six ranked line/topic findings across five topics, including four definite policy conflicts. Three actual calls used 2,876 tokens: 1,444 input and 1,432 output. Failed smaller-model and interrupted runtime attempts are retained. Textual comparison can overflag paraphrases, and endpoint sketches omit HTTP methods.
 
-Units are ceil(characters/4), not measured model tokens. Dollar costs are unavailable. This does not establish any real-model advantage or reproduce the paper.
+**DynaFlow-style orchestrator — published-question benchmark:**
 
-StateBench's brief cites at most 13% frontier accuracy on the hardest/longest tasks. The paper confirms degradation toward chance; the precise 13% was not confirmed in searchable text. Our inspired generator is not the official benchmark. Across four levels and three seeds:
+```sh
+(cd projects/dynaflow-orchestrator && OPENAI_BASE_URL=http://127.0.0.1:8090/v1 python orchestrator.py --backend openai --model Qwen3-0.6B-Q4_K_M --tasks benchmark_tasks.json --max-tokens 256 --plan-max-tokens 256 --timeout 600 --input-per-million 0 --output-per-million 0 --output results-reproduced)
+(cd projects/dynaflow-orchestrator && python regrade.py results-reproduced/results.json --tasks benchmark_tasks.json)
+```
 
-| Assignments | Replay last 32 | Replay last 128 | JSON scratchpad | Chunked tool |
+The lead generates constrained executable Python coordination programs; frozen calls pass full task context and prior outputs. The benchmark bundles the first six AIME 2024 and six HotpotQA distractor validation records with source IDs and provenance. Normalization of explicit answer wrappers is uniform and label-independent; original derived scores and every raw response remain available.
+
+|Published subset|Arm|Correct|Tokens including unsolved calls|Tokens / solved|Invalid plans|
+|---|---|---:|---:|---:|---:|
+|aime2024|solo|0/6|1,676|undefined|0|
+|aime2024|fixed|0/6|9,481|undefined|0|
+|aime2024|generated|0/6|7,660|undefined|0|
+|hotpotqa|solo|0/6|9,612|undefined|0|
+|hotpotqa|fixed|1/6|29,744|29,744.0|0|
+|hotpotqa|generated|0/6|26,601|undefined|3|
+
+This weak small-model run has a floor effect: it establishes no orchestrator advantage. It completed 87 provider calls and 84,774 actual tokenizer-counted tokens with zero provider errors. Invalid programs are model/orchestration failures, not infrastructure failures. API fees total $0; fee per solved task is $0 where at least one is solved and undefined otherwise. Hardware, energy and cloud execution are excluded.
+
+A separate real-model calibration uses the original twelve easy toy examples, with 128 solver tokens and 192 planner tokens rather than the published run’s 256/256. It does not replace the published subset or share its denominator:
+
+|Calibration family|Arm|Correct|Actual tokens / solved|
+|---|---|---:|---:|
+|math|solo|1/6|1,039.0|
+|math|fixed|1/6|4,875.0|
+|math|generated|1/6|3,257.0|
+|multihop|solo|4/6|292.0|
+|multihop|fixed|4/6|1,060.5|
+|multihop|generated|1/6|2,915.0|
+
+Generated workflows lose token efficiency versus solo by 3.13× on calibration math and 9.98× on multi-hop. All failed-task and invalid-plan tokens are included. Local API fees remain $0. See [DynaFlow README](dynaflow-orchestrator/README.md) for calibration reproduction, complete tables, output limits and audit artifacts.
+
+[DynaFlow’s paper](https://arxiv.org/abs/2610.34467) reports trained Qwen3.5-27B Forced-mode accuracy of 88.08% versus 77.18% overall and 100% on three AIME years. Its solo CoT AIME 2026 score is 86.67%, correcting the brief’s roughly 52%. Our small untrained CPU experiment does not confirm or refute those headline numbers.
+
+**Pop-Up Optimizer — interactive offline Dallas map:**
+
+```sh
+python projects/popup-optimizer/app.py --port 8003
+```
+
+Open http://127.0.0.1:8003. The five-stop default covers 96,805 of 269,985 synthetic residents, counting overlaps once. Three services, stop counts and travel windows work. Demographics and clinic flags are invented, coordinates approximate, the map schematic and travel times heuristic; points are not validated venues. A standalone static snapshot is also bundled.
+
+**StateBench-style harness — two real models plus memory/tool fixes:**
+
+```sh
+(cd projects/statebench-harness && python live_experiment.py --base-url http://127.0.0.1:8090/v1 --model Qwen3-0.6B-Q4_K_M --context 8192 --max-tokens 256 --raw-max-tokens 64 --lengths 8 32 128 --samples 1 --chunk-size 8 --timeout 600 --output results-qwen06)
+(cd projects/statebench-harness && python live_experiment.py --base-url http://127.0.0.1:8090/v1 --model Qwen3-1.7B-Q4_K_M --context 8192 --max-tokens 256 --raw-max-tokens 64 --lengths 8 32 128 --samples 1 --chunk-size 8 --timeout 600 --output results-qwen17)
+(cd projects/statebench-harness && python summarize_live.py results-qwen06 results-qwen17 --output results-models)
+```
+
+|CPU model|Assignments|Raw accuracy|Model-written state|Model-delegated execution tool|
 |---|---:|---:|---:|---:|
-| 8 | 100% | 100% | 100% | 100% |
-| 32 | 100% | 100% | 100% | 100% |
-| 128 | 25% | 100% | 100% | 100% |
-| 512 | 16.7% | 58.3% | 100% | 100% |
-| 2048 | 0% | 50% | 100% | 100% |
+|Qwen3-0.6B-Q4_K_M|8|75%|50%|0%|
+|Qwen3-0.6B-Q4_K_M|32|25%|0%|25%|
+|Qwen3-0.6B-Q4_K_M|128|0%|0%|0%|
+|Qwen3-1.7B-Q4_K_M|8|75%|50%|100%|
+|Qwen3-1.7B-Q4_K_M|32|25%|25%|100%|
+|Qwen3-1.7B-Q4_K_M|128|0%|0%|100%|
 
-These deliberately bounded algorithms are not models. Both fixes are deterministic interpreters, not LLM-maintained memory. The two-model transformer failure curve and model-mediated recovery are outstanding.
+Each point contains only four cases: one per difficulty level, fixed seed 42 and one queried variable. All 72 task/method records are complete, use identical paired input files across models and have zero transport/context errors. There were 171 actual model calls. Small samples and structured-output failures limit interpretation.
 
-## Verification and limits
+Model-written JSON state did not improve the baseline here. The 1.7B model’s execution-tool method recovered 100 percentage points at 128 assignments; the 0.6B model often failed the tool-call protocol. Tool delegation explicitly offloads computation to a deterministic interpreter that persists input-program state, then requires the model to read the answer. It does not demonstrate improved intrinsic tracking, and no expected answer is supplied to repair model state.
 
-The coordinator copied each project to a fresh temporary directory without generated results or Python caches, regenerated outputs, and ran its documented checks. Fog and DynaFlow each pass four tests; StateBench checks all four generators through 64,000 assignments and its tool semantics. Pop-Up checks nine optimizer configurations and five handler routes; an independent live HTTP check confirmed five returned stops and the served SVG page. Matplotlib was already installed. Browser interaction was not tested because the installed Playwright package had no browser executable.
+![Two-model measured accuracy](statebench-harness/results-models/accuracy-overall.png)
 
-All live LLM adapters remain unverified against real providers. No training, recurrent hybrid, official research benchmark score, or GPU memory measurement is claimed. Local instructions target Qwen3 4B/8B Q4 with modest context on a 16GB RTX 5070 Ti; long contexts need separate memory checks. Fog's offline rules cover only the documented sample concepts. Pop-Up uses synthetic demographics and clinic flags, approximate neighborhood coordinates, a schematic map, and heuristic travel times; recommendations are not validated venues.
+Generation and exact semantics are tested through 64,000 assignments; live inference was measured at 8, 32 and 128, with exact context-budget refusal rather than silent truncation. These synthetic tasks are not the official StateBench dataset. The [paper](https://arxiv.org/abs/2611.03094) studies different scales and metrics; the brief’s frontier 13% figure was not independently confirmed in searchable text. No frontier model, Gated DeltaNet/recurrent hybrid, paper training or GPU memory result is claimed. [Protocol, costs and evidence](statebench-harness/LIVE.md).
 
-Each project README contains its full setup, reproduction steps, limitations, and 60-second demo script. No real secrets are included.
+## Verification and remaining limits
+
+Fresh source-only copies pass 27 unit tests and the documented CLI/optimizer smoke checks without models or GPUs. The portfolio production build passes and its checker validates 495 internal links on 35 pages. Browser verification covers Dallas controls, map links, a 390px mobile viewport, the actual Fog report and the standalone snapshot. The managed browser disallowed file:// navigation; standalone content was tested with zero network requests. Model provenance includes pinned revisions, file sizes and SHA-256; the adapter’s context guard and model switching were exercised.
+
+The shipped research deliverable is the actual small-model core experiment, including negative results, not an independent replication of either paper’s headline score. Native Ollama 4B/8B GPU deployment remains a documented target, not measured hardware. The recurrent hybrid is an unimplemented stretch goal. Per-project READMEs contain setup, exact demos, measurements and limitations. No real secrets are included.

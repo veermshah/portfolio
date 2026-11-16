@@ -1,6 +1,9 @@
 import tempfile
 from pathlib import Path
 import unittest
+from unittest.mock import patch
+import io
+import json
 import fog
 
 class FogTests(unittest.TestCase):
@@ -28,6 +31,20 @@ class FogTests(unittest.TestCase):
             page = (Path(td) / 'report.html').read_text()
             self.assertNotIn('<script>', page)
             self.assertIn('&lt;script&gt;', page)
+
+    def test_live_transport_preserves_evidence(self):
+        interpretation = dict(data_model={'Habit': ['id']}, endpoints=['GET /habits'],
+                              decisions=[dict(line=1, topic='day boundary', impact=3, assumption='Local midnight.')])
+        response = dict(model='test-model', usage={'total_tokens': 123},
+                        choices=[{'message': {'content': json.dumps(interpretation)}}])
+        with patch.dict('os.environ', {'OPENAI_API_KEY': 'placeholder'}), patch('urllib.request.urlopen', return_value=io.BytesIO(json.dumps(response).encode())) as send:
+            answer = fog.remote('daily habits', 'backend engineer', 'api')
+        fog.validate(answer, 1)
+        self.assertEqual(answer['provider_evidence']['usage']['total_tokens'], 123)
+        self.assertEqual(json.loads(answer['provider_evidence']['raw_content']), interpretation)
+        request_body = json.loads(send.call_args.args[0].data)
+        self.assertIn('Numbered spec:', request_body['messages'][0]['content'])
+        self.assertIn('day boundary', request_body['messages'][0]['content'])
 
     def test_empty_recognized_topics(self):
         self.assertEqual(fog.compare('Build a blue button.', [fog.offline('Build a blue button.', p) for p in fog.PERSONAS]), [])

@@ -44,6 +44,18 @@ HTTP example:
 curl 'http://127.0.0.1:8003/api/optimize?city=Dallas&service=food&stops=5&minutes=15'
 ```
 
+Optional browser verification (development only; the app still has no dependencies):
+
+```bash
+python -m pip install playwright
+python -m playwright install chromium
+python browser_smoke.py
+```
+
+The check uses a system `chromium` if present, or Playwright's installed browser. Override with `CHROMIUM_PATH=/path/to/chromium`. It creates and removes a fresh source-file copy, runs its smoke tests and export, starts its live HTTP server on port 18903, and drives the controls in a real browser.
+
+Verified on 2026-11-16 with Chromium: food/3 stops/15 minutes reached **83,650**, vaccine/10/25 reached **269,985**, health/1/5 reached **5,431**, and default health/5/15 reached **96,805 synthetic residents**. Map-to-explanation links and 390-pixel mobile layout passed with no JavaScript errors. The standalone exported HTML rendered five stops without network requests. Managed browser policy blocked `file://` navigation in this environment, so the export was loaded directly as a document for that check; opening the file through the desktop UI was not verified.
+
 ## 60-second demo
 
 1. Start the app and open its local URL (10 seconds).
@@ -54,4 +66,4 @@ curl 'http://127.0.0.1:8003/api/optimize?city=Dallas&service=food&stops=5&minute
 
 ## Files
 
-`app.py`: optimizer and HTTP server. `index.html`: responsive map and controls. `data.json`: bundled synthetic sample. `smoke.py`: reproducible verification. `export_demo.py`: static default export. `.env.example`: no secrets required.
+`app.py`: optimizer and HTTP server. `index.html`: responsive map and controls. `data.json`: bundled synthetic sample. `smoke.py`: reproducible verification. `export_demo.py`: static default export. `.env.example`: no secrets required. `browser_smoke.py`: optional real-browser verification from a clean source copy.

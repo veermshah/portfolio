@@ -1,0 +1,54 @@
+aime-60 solo: incorrect; 253+8 tokens
+aime-60 fixed: incorrect; 1336+272 tokens
+aime-60 generated: incorrect; 1350+44 tokens
+aime-61 solo: incorrect; 230+9 tokens
+aime-61 fixed: incorrect; 1257+272 tokens
+aime-61 generated: incorrect; 1258+44 tokens
+aime-62 solo: incorrect; 196+253 tokens
+aime-62 fixed: incorrect; 1127+272 tokens
+aime-62 generated: incorrect; 1416+55 tokens
+aime-63 solo: incorrect; 203+53 tokens
+aime-63 fixed: incorrect; 1187+270 tokens
+aime-63 generated: incorrect; 1233+64 tokens
+aime-64 solo: incorrect; 184+8 tokens
+aime-64 fixed: incorrect; 1092+270 tokens
+aime-64 generated: incorrect; 1074+44 tokens
+aime-65 solo: incorrect; 271+8 tokens
+aime-65 fixed: incorrect; 1617+509 tokens
+aime-65 generated: incorrect; 1044+34 tokens
+hotpot-5a8b57f25542995d1e6f1371 solo: incorrect; 1449+7 tokens
+hotpot-5a8b57f25542995d1e6f1371 fixed: incorrect; 4553+112 tokens
+hotpot-5a8b57f25542995d1e6f1371 generated: ERROR; 1581+6 tokens
+hotpot-5a8c7595554299585d9e36b6 solo: incorrect; 1600+40 tokens
+hotpot-5a8c7595554299585d9e36b6 fixed: incorrect; 5006+115 tokens
+hotpot-5a8c7595554299585d9e36b6 generated: ERROR; 1732+28 tokens
+hotpot-5a85ea095542994775f606a8 solo: incorrect; 1805+49 tokens
+hotpot-5a85ea095542994775f606a8 fixed: incorrect; 5606+112 tokens
+hotpot-5a85ea095542994775f606a8 generated: incorrect; 7702+129 tokens
+hotpot-5adbf0a255429947ff17385a solo: incorrect; 1263+71 tokens
+hotpot-5adbf0a255429947ff17385a fixed: incorrect; 3945+87 tokens
+hotpot-5adbf0a255429947ff17385a generated: ERROR; 1395+29 tokens
+hotpot-5a8e3ea95542995a26add48d solo: incorrect; 1598+27 tokens
+hotpot-5a8e3ea95542995a26add48d fixed: incorrect; 4922+79 tokens
+hotpot-5a8e3ea95542995a26add48d generated: incorrect; 8584+79 tokens
+hotpot-5abd94525542992ac4f382d2 solo: incorrect; 1639+64 tokens
+hotpot-5abd94525542992ac4f382d2 fixed: incorrect; 5082+125 tokens
+hotpot-5abd94525542992ac4f382d2 generated: incorrect; 5222+114 tokens
+# Measured results
+
+Backend: **openai**, model: `Qwen3-0.6B-Q4_K_M`.
+
+Token units: provider reported.
+
+Dataset: public AIME 2024 and HotpotQA subset. This is not the paper's complete evaluation. Errors denote execution/provider failures, not demonstrated reasoning failures.
+
+| Benchmark | Arm | Correct | Errors | Calls | Token units / correct | Dollars / correct |
+|---|---|---:|---:|---:|---:|---:|
+| aime2024 | solo | 0/6 | 0 | 6 | undefined | unavailable |
+| aime2024 | fixed | 0/6 | 0 | 18 | undefined | unavailable |
+| aime2024 | generated | 0/6 | 0 | 24 | undefined | unavailable |
+| hotpotqa | solo | 0/6 | 0 | 6 | undefined | unavailable |
+| hotpotqa | fixed | 0/6 | 0 | 18 | undefined | unavailable |
+| hotpotqa | generated | 0/6 | 3 | 15 | undefined | unavailable |
+
+Raw traces: results-qwen3-cpu/results.json

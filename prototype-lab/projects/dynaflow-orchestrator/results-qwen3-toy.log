@@ -1,0 +1,54 @@
+math-01 solo: incorrect; 129+8 tokens
+math-01 fixed: incorrect; 661+142 tokens
+math-01 generated: incorrect; 646+41 tokens
+math-02 solo: correct; 127+77 tokens
+math-02 fixed: correct; 670+144 tokens
+math-02 generated: ERROR; 259+7 tokens
+math-03 solo: incorrect; 133+128 tokens
+math-03 fixed: incorrect; 691+146 tokens
+math-03 generated: correct; 656+45 tokens
+math-04 solo: incorrect; 129+23 tokens
+math-04 fixed: incorrect; 664+144 tokens
+math-04 generated: incorrect; 640+38 tokens
+math-05 solo: incorrect; 131+7 tokens
+math-05 fixed: incorrect; 667+142 tokens
+math-05 generated: incorrect; 618+31 tokens
+math-06 solo: incorrect; 127+20 tokens
+math-06 fixed: incorrect; 660+144 tokens
+math-06 generated: ERROR; 259+17 tokens
+hop-01 solo: correct; 177+8 tokens
+hop-01 fixed: correct; 622+56 tokens
+hop-01 generated: ERROR; 309+40 tokens
+hop-02 solo: incorrect; 175+8 tokens
+hop-02 fixed: correct; 608+52 tokens
+hop-02 generated: incorrect; 752+33 tokens
+hop-03 solo: correct; 173+52 tokens
+hop-03 fixed: correct; 630+66 tokens
+hop-03 generated: ERROR; 305+30 tokens
+hop-04 solo: incorrect; 179+26 tokens
+hop-04 fixed: incorrect; 675+81 tokens
+hop-04 generated: correct; 756+31 tokens
+hop-05 solo: correct; 179+8 tokens
+hop-05 fixed: correct; 660+72 tokens
+hop-05 generated: ERROR; 311+17 tokens
+hop-06 solo: correct; 175+8 tokens
+hop-06 fixed: incorrect; 648+72 tokens
+hop-06 generated: ERROR; 307+24 tokens
+# Measured results
+
+Backend: **openai**, model: `Qwen3-0.6B-Q4_K_M`.
+
+Token units: provider reported.
+
+Dataset: original toy examples. This is not the paper's complete evaluation. Errors denote execution/provider failures, not demonstrated reasoning failures.
+
+| Benchmark | Arm | Correct | Errors | Calls | Token units / correct | Dollars / correct |
+|---|---|---:|---:|---:|---:|---:|
+| math | solo | 1/6 | 0 | 6 | 1039.0 | 0.000000 |
+| math | fixed | 1/6 | 0 | 18 | 4875.0 | 0.000000 |
+| math | generated | 1/6 | 2 | 14 | 3257.0 | 0.000000 |
+| multihop | solo | 4/6 | 0 | 6 | 292.0 | 0.000000 |
+| multihop | fixed | 4/6 | 0 | 18 | 1060.5 | 0.000000 |
+| multihop | generated | 1/6 | 4 | 10 | 2915.0 | 0.000000 |
+
+Raw traces: results-qwen3-toy/results.json

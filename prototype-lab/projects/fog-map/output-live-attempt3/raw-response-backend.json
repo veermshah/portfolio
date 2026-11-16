@@ -1,0 +1,38 @@
+{
+  "request": {
+    "model": "Qwen3-0.6B-Q4_K_M",
+    "messages": [
+      {
+        "role": "user",
+        "content": "You are a backend engineer. Prioritize storage consistency and simple server-side implementation.\nIndependently design the application described below. Make concrete choices wherever the spec is ambiguous.\nReturn one JSON object with keys data_model (object mapping entity names to field lists), endpoints (list of METHOD /path strings), and decisions (list of objects). Each decision must have line (integer), topic (string), impact (integer 1 cosmetic, 2 UX, 3 data/correctness), and assumption (your concrete implementation choice, at least one full sentence).\nFor every following source/topic pair, produce exactly one decision. Copy only its line and topic; invent your own specific assumption, using your engineering judgement. [{\"line\": 2, \"topic\": \"team habit ownership\"}, {\"line\": 3, \"topic\": \"day boundary\"}, {\"line\": 4, \"topic\": \"missed-day grace\"}, {\"line\": 5, \"topic\": \"team habit ownership\"}, {\"line\": 6, \"topic\": \"historical edits\"}, {\"line\": 7, \"topic\": \"notification delivery\"}]\n\nDo not repeat schema placeholders. No Markdown. /no_think\nNumbered spec:\n1: # Habit tracking app\n2: Build a habit-tracking app with streaks and teams.\n3: Users can complete each habit daily and keep their streak alive.\n4: A missed day can be forgiven with a grace period.\n5: Team members share habits and see team progress.\n6: Users should be able to edit past check-ins.\n7: Notify people when their streak is at risk."
+      }
+    ],
+    "response_format": {
+      "type": "json_object"
+    },
+    "temperature": 0.7,
+    "max_tokens": 1800
+  },
+  "response": {
+    "id": "cmpl-d8b0ff5a-db9c-4822-9533-a67259cd9051",
+    "object": "chat.completion",
+    "model": "Qwen3-0.6B-Q4_K_M",
+    "created": 1794788893,
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"data_model\": {\n    \"user\": {\n      \"username\": \"string\",\n      \"username_password\": \"string\",\n      \"email\": \"string\"\n    },\n    \"habit\": {\n      \"habit_id\": \"string\",\n      \"habit_name\": \"string\",\n      \"date\": \"string\",\n      \"completed\": \"boolean\",\n      \"streak\": \"number\"\n    },\n    \"team\": {\n      \"team_id\": \"string\",\n      \"team_name\": \"string\",\n      \"members\": [\n        {\n          \"name\": \"string\",\n          \"user_id\": \"string\"\n        }\n      ]\n    }\n  },\n  \"endpoints\": [\n    {\n      \"line\": 2,\n      \"topic\": \"team habit ownership\",\n      \"impact\": 1,\n      \"assumption\": \"team members are given a username/password to track their habits\"\n    },\n    {\n      \"line\": 3,\n      \"topic\": \"day boundary\",\n      \"impact\": 2,\n      \"assumption\": \"users complete each habit daily, and streaks are tracked daily\"\n    },\n    {\n      \"line\": 4,\n      \"topic\": \"missed-day grace\",\n      \"impact\": 1,\n      \"assumption\": \"users can complete a habit on a missed day with a grace period\"\n    },\n    {\n      \"line\": 5,\n      \"topic\": \"team habit ownership\",\n      \"impact\": 1,\n      \"assumption\": \"team members share their habits and see team progress\"\n    },\n    {\n      \"line\": 6,\n      \"topic\": \"historical edits\",\n      \"impact\": 1,\n      \"assumption\": \"users can edit past check-ins by updating their habit data\"\n    },\n    {\n      \"line\": 7,\n      \"topic\": \"notification delivery\",\n      \"impact\": 1,\n      \"assumption\": \"users receive notifications when their streak is at risk\"\n    }\n  ],\n  \"decisions\": [\n    {\n      \"line\": 2,\n      \"topic\": \"team habit ownership\",\n      \"impact\": 1,\n      \"assumption\": \"team members are given a username/password to track their habits\"\n    },\n    {\n      \"line\": 3,\n      \"topic\": \"day boundary\",\n      \"impact\": 2,\n      \"assumption\": \"users complete each habit daily, and streaks are tracked daily\"\n    },\n    {\n      \"line\": 4,\n      \"topic\": \"missed-day grace\",\n      \"impact\": 1,\n      \"assumption\": \"users can complete a habit on a missed day with a grace period\"\n    },\n    {\n      \"line\": 5,\n      \"topic\": \"team habit ownership\",\n      \"impact\": 1,\n      \"assumption\": \"team members share their habits and see team progress\"\n    },\n    {\n      \"line\": 6,\n      \"topic\": \"historical edits\",\n      \"impact\": 1,\n      \"assumption\": \"users can edit past check-ins by updating their habit data\"\n    },\n    {\n      \"line\": 7,\n      \"topic\": \"notification delivery\",\n      \"impact\": 1,\n      \"assumption\": \"users receive notifications when their streak is at risk\"\n    }\n  ]\n}"
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 335,
+      "completion_tokens": 685,
+      "total_tokens": 1020
+    },
+    "local_seconds": 33.19784333400003
+  }
+}

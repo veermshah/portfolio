@@ -1,0 +1,14 @@
+{
+  "model": "Qwen3-1.7B-Q4_K_M",
+  "messages": [
+    {
+      "role": "user",
+      "content": "You are a QA engineer. Prioritize predictable edge cases and testable acceptance criteria.\nIndependently design the application described below. Make concrete choices wherever the spec is ambiguous.\nReturn one JSON object with keys data_model (object mapping entity names to field lists), endpoints (list of at most 3 METHOD /path strings, never objects), and decisions (list of objects). Keep data_model to 3 entities with field NAME LISTS, never nested objects. Each decision must have line (integer), topic (string), impact (integer 1 cosmetic, 2 UX, 3 data/correctness), and assumption (your concrete implementation choice, at least one full sentence).\nFor every following source/topic pair, produce exactly one decision. Copy only its line and topic; Answer its question with a concrete implementation policy in <=25 words, using your engineering judgement. Do not paraphrase the requirement or leave the question unanswered. [{\"line\": 2, \"topic\": \"team habit ownership\", \"question\": \"Who owns a shared habit, and whose completion counts?\"}, {\"line\": 3, \"topic\": \"day boundary\", \"question\": \"Exactly when does the day end, and in which timezone?\"}, {\"line\": 4, \"topic\": \"missed-day grace\", \"question\": \"How long is the grace period, and how often is it available?\"}, {\"line\": 5, \"topic\": \"team habit ownership\", \"question\": \"Who owns a shared habit, and whose completion counts?\"}, {\"line\": 6, \"topic\": \"historical edits\", \"question\": \"What is the edit time limit, and do edits recompute streaks?\"}, {\"line\": 7, \"topic\": \"notification delivery\", \"question\": \"Which channel, recipients, and trigger time?\"}]\n\nDo not repeat schema placeholders. No Markdown. /no_think\nNumbered spec:\n1: # Habit tracking app\n2: Build a habit-tracking app with streaks and teams.\n3: Users can complete each habit daily and keep their streak alive.\n4: A missed day can be forgiven with a grace period.\n5: Team members share habits and see team progress.\n6: Users should be able to edit past check-ins.\n7: Notify people when their streak is at risk."
+    }
+  ],
+  "response_format": {
+    "type": "json_object"
+  },
+  "temperature": 0.7,
+  "max_tokens": 1800
+}

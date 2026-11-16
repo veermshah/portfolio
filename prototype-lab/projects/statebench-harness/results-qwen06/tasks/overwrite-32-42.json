@@ -1,0 +1,167 @@
+{
+  "level": "overwrite",
+  "seed": 42,
+  "operations": [
+    {
+      "op": "set",
+      "x": "v0",
+      "value": 1
+    },
+    {
+      "op": "set",
+      "x": "v1",
+      "value": 0
+    },
+    {
+      "op": "set",
+      "x": "v2",
+      "value": 4
+    },
+    {
+      "op": "set",
+      "x": "v3",
+      "value": 3
+    },
+    {
+      "op": "copy",
+      "x": "v1",
+      "y": "v0"
+    },
+    {
+      "op": "set",
+      "x": "v0",
+      "value": 0
+    },
+    {
+      "op": "set",
+      "x": "v0",
+      "value": 9
+    },
+    {
+      "op": "set",
+      "x": "v0",
+      "value": 8
+    },
+    {
+      "op": "set",
+      "x": "v3",
+      "value": 4
+    },
+    {
+      "op": "copy",
+      "x": "v0",
+      "y": "v3"
+    },
+    {
+      "op": "set",
+      "x": "v2",
+      "value": 5
+    },
+    {
+      "op": "set",
+      "x": "v0",
+      "value": 5
+    },
+    {
+      "op": "set",
+      "x": "v2",
+      "value": 0
+    },
+    {
+      "op": "set",
+      "x": "v3",
+      "value": 6
+    },
+    {
+      "op": "set",
+      "x": "v0",
+      "value": 9
+    },
+    {
+      "op": "set",
+      "x": "v2",
+      "value": 1
+    },
+    {
+      "op": "set",
+      "x": "v0",
+      "value": 4
+    },
+    {
+      "op": "copy",
+      "x": "v0",
+      "y": "v3"
+    },
+    {
+      "op": "set",
+      "x": "v3",
+      "value": 5
+    },
+    {
+      "op": "set",
+      "x": "v1",
+      "value": 4
+    },
+    {
+      "op": "copy",
+      "x": "v0",
+      "y": "v2"
+    },
+    {
+      "op": "set",
+      "x": "v1",
+      "value": 4
+    },
+    {
+      "op": "set",
+      "x": "v1",
+      "value": 0
+    },
+    {
+      "op": "copy",
+      "x": "v1",
+      "y": "v0"
+    },
+    {
+      "op": "set",
+      "x": "v3",
+      "value": 9
+    },
+    {
+      "op": "copy",
+      "x": "v2",
+      "y": "v0"
+    },
+    {
+      "op": "set",
+      "x": "v3",
+      "value": 4
+    },
+    {
+      "op": "copy",
+      "x": "v1",
+      "y": "v0"
+    },
+    {
+      "op": "copy",
+      "x": "v2",
+      "y": "v3"
+    },
+    {
+      "op": "set",
+      "x": "v3",
+      "value": 2
+    },
+    {
+      "op": "copy",
+      "x": "v3",
+      "y": "v0"
+    },
+    {
+      "op": "copy",
+      "x": "v0",
+      "y": "v3"
+    }
+  ],
+  "query": "v0"
+}

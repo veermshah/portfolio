@@ -1,0 +1,38 @@
+{
+  "request": {
+    "model": "Qwen3-0.6B-Q4_K_M",
+    "messages": [
+      {
+        "role": "user",
+        "content": "You are a QA engineer. Prioritize predictable edge cases and testable acceptance criteria.\nIndependently design the application described below. Make concrete choices wherever the spec is ambiguous.\nReturn one JSON object with keys data_model (object mapping entity names to field lists), endpoints (list of METHOD /path strings), and decisions (list of objects). Each decision must have line (integer), topic (string), impact (integer 1 cosmetic, 2 UX, 3 data/correctness), and assumption (your concrete implementation choice, at least one full sentence).\nFor every following source/topic pair, produce exactly one decision. Copy only its line and topic; invent your own specific assumption, using your engineering judgement. [{\"line\": 2, \"topic\": \"team habit ownership\"}, {\"line\": 3, \"topic\": \"day boundary\"}, {\"line\": 4, \"topic\": \"missed-day grace\"}, {\"line\": 5, \"topic\": \"team habit ownership\"}, {\"line\": 6, \"topic\": \"historical edits\"}, {\"line\": 7, \"topic\": \"notification delivery\"}]\n\nDo not repeat schema placeholders. No Markdown. /no_think\nNumbered spec:\n1: # Habit tracking app\n2: Build a habit-tracking app with streaks and teams.\n3: Users can complete each habit daily and keep their streak alive.\n4: A missed day can be forgiven with a grace period.\n5: Team members share habits and see team progress.\n6: Users should be able to edit past check-ins.\n7: Notify people when their streak is at risk."
+      }
+    ],
+    "response_format": {
+      "type": "json_object"
+    },
+    "temperature": 0.7,
+    "max_tokens": 1800
+  },
+  "response": {
+    "id": "cmpl-a06f836f-3e02-4852-a9fe-72675bc75bea",
+    "object": "chat.completion",
+    "model": "Qwen3-0.6B-Q4_K_M",
+    "created": 1794788864,
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"data_model\": {\n    \"Habit\": {\n      \"id\": \"id\",\n      \"title\": \"title\",\n      \"completed\": \"completed\",\n      \"streak\": \"streak\"\n    },\n    \"Team\": {\n      \"id\": \"id\",\n      \"name\": \"name\",\n      \"members\": \"members\"\n    },\n    \"User\": {\n      \"id\": \"id\",\n      \"name\": \"name\",\n      \"habit_id\": \"habit_id\",\n      \"streak_id\": \"streak_id\",\n      \"team_id\": \"team_id\"\n    },\n    \"Streak\": {\n      \"id\": \"id\",\n      \"title\": \"title\",\n      \"completed\": \"completed\",\n      \"members\": \"members\",\n      \"grace\": \"grace\"\n    },\n    \"Notification\": {\n      \"id\": \"id\",\n      \"user_id\": \"user_id\",\n      \"streak_id\": \"streak_id\",\n      \"date\": \"date\"\n    }\n  },\n  \"endpoints\": [\n    {\n      \"path\": \"/api/v1/habit\",\n      \"method\": \"POST\"\n    },\n    {\n      \"path\": \"/api/v1/team\",\n      \"method\": \"POST\"\n    },\n    {\n      \"path\": \"/api/v1/user\",\n      \"method\": \"POST\"\n    },\n    {\n      \"path\": \"/api/v1/streak\",\n      \"method\": \"POST\"\n    },\n    {\n      \"path\": \"/api/v1/notification\",\n      \"method\": \"POST\"\n    }\n  ],\n  \"decisions\": [\n    {\n      \"line\": 2,\n      \"topic\": \"team habit ownership\",\n      \"impact\": 1,\n      \"assumption\": \"All team members are required to maintain their habit and track it through their streaks.\"\n    },\n    {\n      \"line\": 3,\n      \"topic\": \"day boundary\",\n      \"impact\": 1,\n      \"assumption\": \"A user can complete a habit on their designated day, which becomes part of their streak, and they are not required to complete it on other days.\"\n    },\n    {\n      \"line\": 4,\n      \"topic\": \"missed-day grace\",\n      \"impact\": 1,\n      \"assumption\": \"A user can complete a habit on a missed day by extending the grace period, which is part of their streak.\"\n    },\n    {\n      \"line\": 5,\n      \"topic\": \"team habit ownership\",\n      \"impact\": 1,\n      \"assumption\": \"Team members share their habits and track progress across all team members.\"\n    },\n    {\n      \"line\": 6,\n      \"topic\": \"historical edits\",\n      \"impact\": 1,\n      \"assumption\": \"Users can edit past check-ins by providing the necessary details and updating the information.\"\n    },\n    {\n      \"line\": 7,\n      \"topic\": \"notification delivery\",\n      \"impact\": 1,\n      \"assumption\": \"Notifications are sent to the user's device and team members when their streak is at risk.\"\n    }\n  ]\n}"
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 336,
+      "completion_tokens": 649,
+      "total_tokens": 985
+    },
+    "local_seconds": 28.972522440000034
+  }
+}
