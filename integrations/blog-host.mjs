@@ -17,8 +17,8 @@ export default function blogHost({ host, mainHosts = [] }) {
         const onBlog = [{ type: 'host', value: host }];
         config.routes.unshift(
           // Already-prefixed paths and shared build assets pass through unchanged.
-          { src: '^/(blog(?:/.*)?|_astro/.*|_vercel/.*|favicon\\.(?:svg|ico)|apple-touch-icon\\.png)$', has: onBlog, continue: true },
-          { src: '^/(?!blog(?:/|$)|_astro/|_vercel/|favicon\\.(?:svg|ico)$|apple-touch-icon\\.png$)(.*)$', has: onBlog, dest: '/blog/$1', continue: true },
+          { src: '^/(blog(?:/.*)?|_astro/.*|_vercel/.*|favicon\\.(?:svg|ico)|apple-touch-icon\\.png|og\\.png)$', has: onBlog, continue: true },
+          { src: '^/(?!blog(?:/|$)|_astro/|_vercel/|favicon\\.(?:svg|ico)$|apple-touch-icon\\.png$|og\\.png$)(.*)$', has: onBlog, dest: '/blog/$1', continue: true },
           // The main domains send /blog/* to the subdomain; previews keep /blog/* for testing.
           ...mainHosts.map((main) => ({
             src: '^/blog(?:/(.*))?$',
