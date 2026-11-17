@@ -151,6 +151,7 @@ img {
 
 .skip {
   position: absolute;
+  z-index: 20;
   left: var(--gutter);
   top: -3rem;
   background: var(--bg);
