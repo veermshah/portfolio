@@ -5,6 +5,8 @@ create table public.posts (
   id uuid primary key default gen_random_uuid(),
   title text not null default '',
   slug text not null unique check (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
+  -- These paths are already used by the blog's own pages.
+  constraint posts_slug_not_reserved check (slug not in ('admin', 'blog', 'tags')),
   excerpt text not null default '',
   content text not null default '',
   cover_image_url text,

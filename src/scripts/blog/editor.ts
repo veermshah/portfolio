@@ -1,5 +1,5 @@
 import { supabase, supabaseConfigured } from '../../lib/blog/supabase';
-import { IMAGE_BUCKET } from '../../lib/blog/config';
+import { IMAGE_BUCKET, RESERVED_SLUGS } from '../../lib/blog/config';
 import type { Post } from '../../lib/blog/posts';
 import { formatPostDate, readingMinutes, renderMarkdown, slugify } from '../../lib/blog/text';
 import { adminSession, adminUrl, base } from './auth';
@@ -176,7 +176,7 @@ function scheduleAutosave() {
   if (post?.status === 'published') return;
   autosaveTimer = window.setTimeout(() => {
     const draft = read();
-    if (draft.title && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(draft.slug)) void save('Draft autosaved');
+    if (draft.title && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(draft.slug) && !RESERVED_SLUGS.includes(draft.slug)) void save('Draft autosaved');
   }, AUTOSAVE_MS);
 }
 
@@ -190,6 +190,10 @@ async function save(doneText = 'Saved', extra: Partial<Post> = {}): Promise<bool
   }
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(draft.slug)) {
     setStatus('The slug can only use lowercase letters, numbers and single hyphens.');
+    return false;
+  }
+  if (RESERVED_SLUGS.includes(draft.slug)) {
+    setStatus(`“${draft.slug}” is used by the blog itself; pick another slug.`);
     return false;
   }
   setStatus('Saving…');
