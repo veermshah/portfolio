@@ -44,7 +44,7 @@ const jsonLd = {
   description={description}
   canonical={canonicalFor(`/${post.slug}`)}
   ogType="article"
-  ogImage={post.cover_image_url ?? undefined}
+  ogImage={post.cover_image_url ?? `${BLOG_ORIGIN}/og.png`}
   ogImageAlt={post.cover_image_url ? post.title : 'Veer Shah'}
   sitemap="/sitemap.xml"
 >
