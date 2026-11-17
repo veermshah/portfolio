@@ -10,8 +10,11 @@
 
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
+import { existsSync } from 'node:fs';
 
-const DIST = new URL('../dist/', import.meta.url).pathname;
+const ROOT = new URL('../dist/', import.meta.url).pathname;
+// With the Vercel adapter, static pages are written to dist/client/.
+const DIST = existsSync(join(ROOT, 'client')) ? join(ROOT, 'client') : ROOT;
 const external = process.argv.includes('--external');
 const BOT_BLOCKERS = ['linkedin.com'];
 

@@ -1,0 +1,27 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostList from './PostList.astro';
+import { publishedPosts } from '../../lib/blog/posts';
+import { BLOG_DESCRIPTION, BLOG_ORIGIN, blogBase } from '../../lib/blog/config';
+import { CDN_CACHE, canonicalFor } from '../../lib/blog/http';
+import '../../styles/blog.css';
+
+interface Props { tag?: string; }
+const { tag } = Astro.props;
+const base = blogBase(Astro.url.hostname);
+
+const posts = await publishedPosts(tag);
+if (tag && posts.length === 0) Astro.response.status = 404;
+Astro.response.headers.set('Cache-Control', CDN_CACHE);
+
+const title = tag ? `Posts tagged “${tag}” | Veer Shah` : 'Blog | Veer Shah';
+const canonical = canonicalFor(tag ? `/tags/${encodeURIComponent(tag)}` : '/');
+---
+<Base title={title} description={BLOG_DESCRIPTION} canonical={canonical} sitemap="/sitemap.xml" ogImageAlt="Veer Shah">
+  <link slot="head" rel="alternate" type="application/rss+xml" title="Veer Shah, blog" href={`${BLOG_ORIGIN}/rss.xml`} />
+  <a class="blog-back" href="https://veermickey.com/">← Veer Shah</a>
+  <h1 class="blog-title">Blog</h1>
+  {tag && <p class="blog-filter">Posts tagged <strong>{tag}</strong> · <a href={`${base}/`}>All posts</a></p>}
+  <PostList posts={posts} base={base} />
+  <p class="blog-filter"><a href={`${base}/rss.xml`}>RSS feed</a></p>
+</Base>

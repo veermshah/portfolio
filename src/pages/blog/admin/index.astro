@@ -1,0 +1,33 @@
+---
+import AdminShell from '../../../components/blog/AdminShell.astro';
+---
+<AdminShell title="Posts">
+  <p data-gate class="admin-status">Checking sign-in…</p>
+  <section data-view="login" hidden>
+    <h1 class="blog-title">Sign in</h1>
+    <form class="admin-form" data-login>
+      <label>Email <input type="email" name="email" autocomplete="username" required value="veermickey@gmail.com" /></label>
+      <label>Password <input type="password" name="password" autocomplete="current-password" required /></label>
+      <div class="actions"><button class="admin-button primary" type="submit">Sign in</button></div>
+      <p class="admin-status" data-login-status role="status"></p>
+    </form>
+  </section>
+
+  <section data-view="posts" hidden>
+    <div class="admin-bar">
+      <h1 class="blog-title">Posts</h1>
+      <div class="actions">
+        <a class="admin-button primary" data-new href="#">New post</a>
+        <button class="admin-button" type="button" data-signout>Sign out</button>
+      </div>
+    </div>
+    <p class="admin-status" data-list-status role="status"></p>
+    <p class="blog-empty" data-empty hidden>No posts yet.</p>
+    <ol class="post-list admin-list" data-list></ol>
+  </section>
+</AdminShell>
+
+<script>
+  import { initAdminList } from '../../../scripts/blog/admin-list';
+  initAdminList();
+</script>

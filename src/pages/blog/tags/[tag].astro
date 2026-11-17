@@ -1,0 +1,6 @@
+---
+import BlogIndex from '../../../components/blog/BlogIndex.astro';
+export const prerender = false;
+const tag = decodeURIComponent(Astro.params.tag ?? '');
+---
+<BlogIndex tag={tag} />

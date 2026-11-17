@@ -1,0 +1,11 @@
+---
+import Base from '../../layouts/Base.astro';
+import '../../styles/blog.css';
+import '../../styles/blog-admin.css';
+
+interface Props { title: string; }
+const { title } = Astro.props;
+---
+<Base title={`${title} | Blog admin`} description="Blog admin." noindex canonical="https://blog.veermickey.com/admin">
+  <slot />
+</Base>
