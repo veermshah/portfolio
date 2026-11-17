@@ -199,7 +199,7 @@ async function save(doneText = 'Saved', extra: Partial<Post> = {}): Promise<bool
     const values = { ...draft, ...extra };
     const query = post
       ? supabase().from('posts').update(values).eq('id', post.id).select('*').single()
-      : supabase().from('posts').insert({ ...values, status: 'draft' }).select('*').single();
+      : supabase().from('posts').insert({ status: 'draft', ...values }).select('*').single();
     const { data, error } = await query;
     if (error) {
       setStatus(error.code === '23505' ? 'Another post already uses that slug.' : `Save failed: ${error.message}`);
