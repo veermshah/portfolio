@@ -5,6 +5,6 @@ const email = profile.links.find((link) => link.label === 'Email')?.href;
 ---
 {email && <a class="contact-button" href={email}><LinkIcon name="Email" />Get in touch</a>}
 <style>
-  .contact-button { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.65rem 1rem; border-radius: 5px; background: var(--accent); color: var(--bg); text-decoration: none; font-size: 0.9375rem; font-weight: 700; }
-  .contact-button:hover { opacity: 0.85; }
+  .contact-button { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.15rem; border-radius: 999px; background: var(--ink); color: var(--bg); text-decoration: none; font-size: 0.9375rem; font-weight: 700; transition: transform 0.2s var(--ease), background 0.2s var(--ease); }
+  .contact-button:hover { color: var(--bg); background: var(--accent); transform: translateY(-1px); }
 </style>

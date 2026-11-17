@@ -10,9 +10,11 @@ interface Props {
   description: string;
   /** Path to an OG image under public/, defaults to the site card. */
   ogImage?: string;
+  /** Use the wide container (home page grids). */
+  wide?: boolean;
 }
 
-const { title, description, ogImage = '/og.png' } = Astro.props;
+const { title, description, ogImage = '/og.png', wide = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogUrl = new URL(ogImage, Astro.site);
 const year = new Date().getFullYear();
@@ -22,6 +24,7 @@ const year = new Date().getFullYear();
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <script is:inline>document.documentElement.classList.add('js');</script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
@@ -49,7 +52,19 @@ const year = new Date().getFullYear();
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
-    <div class="page">
+    <header class="site-header">
+      <div class="site-header-inner">
+        <a class="wordmark" href="/"><span class="wordmark-dot" aria-hidden="true"></span>{profile.name}</a>
+        <nav class="site-nav" aria-label="Site">
+          <a href="/#work">Work</a>
+          <a class="nav-optional" href="/#experience">Experience</a>
+          <a class="nav-optional" href="/#education">Education</a>
+          <a href="/notes/" aria-current={Astro.url.pathname.startsWith('/notes') ? 'page' : undefined}>Notes</a>
+          <a href="/resume.pdf">Resume</a>
+        </nav>
+      </div>
+    </header>
+    <div class:list={['page', { 'is-wide': wide }]}>
       <main id="main">
         <slot />
       </main>
@@ -58,6 +73,27 @@ const year = new Date().getFullYear();
         <a href="https://github.com/veermshah/portfolio">Site source</a>
       </footer>
     </div>
+    <script is:inline>
+      const header = document.querySelector('.site-header');
+      const onScroll = () => header?.classList.toggle('is-scrolled', scrollY > 8);
+      addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+      const revealed = document.querySelectorAll('[data-reveal]');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-in');
+              io.unobserve(entry.target);
+            }
+          }
+        }, { rootMargin: '0px 0px -8% 0px' });
+        revealed.forEach((el) => io.observe(el));
+      } else {
+        revealed.forEach((el) => el.classList.add('is-in'));
+      }
+    </script>
     <script is:inline>
       // Links that leave the site (GitHub, LinkedIn, live demos, the resume PDF) open in a new tab.
       for (const a of document.querySelectorAll('a[href]:not([href^="#"])')) {

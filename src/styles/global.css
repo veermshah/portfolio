@@ -10,7 +10,21 @@
   --mono: 'Atkinson Hyperlegible Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   --measure: 42.5rem;
-  --gutter: 1.25rem;
+  --wide: 74rem;
+  --gutter: clamp(1.25rem, 0.6rem + 3vw, 3rem);
+
+  /* Fluid type scale: 375px → 1440px viewports. */
+  --step--1: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+  --step-0: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
+  --step-1: clamp(1.125rem, 1.06rem + 0.3vw, 1.3125rem);
+  --step-2: clamp(1.3rem, 1.15rem + 0.65vw, 1.75rem);
+  --step-3: clamp(1.75rem, 1.4rem + 1.5vw, 2.75rem);
+  --step-display: clamp(3.1rem, 1.5rem + 7.2vw, 7.25rem);
+
+  --space-section: clamp(4.5rem, 3rem + 6vw, 8.5rem);
+  --radius: 10px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --shadow: 0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent), 0 12px 32px -12px color-mix(in srgb, var(--ink) 18%, transparent);
 
   color-scheme: light dark;
 }
@@ -46,6 +60,9 @@ html {
   text-size-adjust: 100%;
 }
 
+html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
 body {
   margin: 0;
   background: var(--bg);
@@ -61,6 +78,11 @@ body {
   max-width: calc(var(--measure) + 2 * var(--gutter));
   margin: 0 auto;
   padding: 4.5rem var(--gutter) 3rem;
+}
+
+.page.is-wide {
+  max-width: calc(var(--wide) + 2 * var(--gutter));
+  padding-top: clamp(3rem, 1.5rem + 6vw, 7rem);
 }
 
 @media (max-width: 30rem) {
@@ -189,3 +211,86 @@ img {
 
 /* Decorative icons accompany visible link labels. */
 .icon-link { display: inline-flex; align-items: center; gap: 0.4em; }
+
+/* Site header */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: saturate(1.4) blur(12px);
+  -webkit-backdrop-filter: saturate(1.4) blur(12px);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s var(--ease);
+}
+.site-header.is-scrolled { border-bottom-color: var(--rule); }
+.site-header-inner {
+  max-width: calc(var(--wide) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+.wordmark {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.wordmark-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+.site-nav {
+  display: flex;
+  gap: clamp(0.9rem, 0.4rem + 1.5vw, 1.75rem);
+  font-size: var(--step--1);
+  overflow-x: auto;
+  scrollbar-width: none;
+  mask-image: linear-gradient(to right, #000 85%, transparent);
+}
+.site-nav::-webkit-scrollbar { display: none; }
+@media (min-width: 40rem) { .site-nav { mask-image: none; } }
+@media (max-width: 34rem) { .site-nav { mask-image: none; } .site-nav .nav-optional { display: none; } }
+.site-nav a { color: var(--muted); text-decoration: none; white-space: nowrap; padding: 0.35rem 0; }
+.site-nav a:hover, .site-nav a[aria-current='page'] { color: var(--ink); }
+
+/* Buttons */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: border-color 0.2s var(--ease), transform 0.2s var(--ease), background 0.2s var(--ease);
+}
+.button:hover { color: var(--ink); border-color: color-mix(in srgb, var(--ink) 35%, var(--rule)); transform: translateY(-1px); }
+
+/* Scroll reveal: only hides content once JS has confirmed it can reveal it. */
+
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-reveal] {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    transition-delay: calc(var(--reveal-i, 0) * 60ms);
+  }
+  .js [data-reveal].is-in { opacity: 1; transform: none; }
+}
