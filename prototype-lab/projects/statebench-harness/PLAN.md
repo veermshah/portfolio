@@ -69,3 +69,22 @@ then summarize actual two-model evidence and honest paper comparison.
 - Integrity audit checked paired task bytes, seeded truths, correctness flags,
   model-call counts and token sums. Merge tooling refuses incomplete, duplicate,
   or mismatched-protocol runs. No official frontier percentage is claimed.
+
+## Static GitHub Pages viewer (2026-11-17)
+Build a read-only results viewer from finalized `results-models/records.json`
+(72 real case/method records), using a standard-library `build_pages.py` and
+local HTML/CSS/JavaScript assets in `docs/`. Validate the archived record set,
+copy its evidence and charts, generate fallback tables, then add accessible
+model/difficulty filters and per-case call-trace inspection. All URLs remain
+relative for a GitHub project subpath. No server-side inference or API keys
+enter the site. Smoke-test via HTTP at a project subpath and in Chromium at
+desktop/mobile widths. Pages setup is `main` / `docs`; publication is left to
+the repository owner because this task does not authorize remote writes.
+
+Pages completion evidence: standard-library build produced 13 deterministic
+output files; a second build was byte-identical. HTTP and real Chromium smoke
+checks passed at `/statebench-harness/`, including both filters, a genuine
+failed-state call trace, all evidence downloads, no-JavaScript fallback, mobile
+390px layout, and zero JavaScript/HTTP errors or external requests. The measured
+records and research backend were unchanged. Served assets are final; no remote
+repository, GitHub settings, or deployment was modified by this workstream.

@@ -18,9 +18,9 @@ model's internal or self-maintained state tracking.
 ## Reproduce
 
 Install the project requirements. Provision the repository's
-[`local_model_server.py`](../../local_model_server.py) and quantized weights using
-the instructions in [MODEL_RUNS.md](../../MODEL_RUNS.md). Weight provenance
-and hashes are in [`model_sources.json`](../../model_sources.json). The server
+[`local_model_server.py`](local_model_server.py) and quantized weights using
+the instructions in [MODEL_RUNS.md](MODEL_RUNS.md). Weight provenance
+and hashes are in [`model_sources.json`](model_sources.json). The server
 can run either model on CPU; both models and their 8192-token contexts are well
 below a 16GB GPU target. They substitute for larger Qwen3 4B/8B Q4 targets because
 this build environment has no GPU. No paid dependency or API credential is

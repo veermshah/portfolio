@@ -1,8 +1,64 @@
 # StateBench-style state-tracking harness
 
+**Hosted demo:** https://veermshah.github.io/statebench-harness/
+
+The hosted site is published from the account’s existing GitHub Pages deployment. It displays recorded model measurements; run the CLI for new experiments. The `docs/` folder can also be published from this standalone repository or a fork.
+
 A runnable synthetic assignment-chain benchmark with exact reference semantics,
 Ollama/OpenAI-compatible model adapters, JSON scratchpad and chunked state tools,
 per-example evidence, tables and PNG failure curves. Runs without a GPU.
+
+## GitHub Pages results viewer
+
+The static [results viewer](docs/index.html) shows only the finalized 72 real
+case/method records: two-model accuracy curves, model/difficulty filters,
+raw vs model-written-state vs tool-delegation tables, and per-case call traces.
+It includes downloadable records, configuration, token counts, integrity audit
+and model weight provenance. No model inference or API keys run in the browser.
+The small sample and missing frontier/13%, Gated DeltaNet and 64K live-inference
+claims are stated on the page.
+
+Build and preview from this checkout, with Python's standard library only:
+
+```bash
+python build_pages.py
+python -m http.server 8000 --directory docs
+```
+
+Open `http://localhost:8000`. Source templates are in `pages/`; generated assets
+and evidence are written under `docs/`; commit that folder for Pages. The builder reads finalized
+`results-models/records.json`, validates its 72-record structure, score/call/token
+consistency, and copies the actual charts and data. It performs no inference.
+After changing finalized measurements, rebuild the scientific charts with
+`summarize_live.py` before rebuilding Pages.
+
+For GitHub hosting, once these files are in the repository's `main` branch:
+open **Settings → Pages → Build and deployment**, select **Deploy from a branch**,
+then **main** and **/docs**, and save. Assets use relative URLs, and `docs/.nojekyll` disables Jekyll,
+so the viewer works beneath a project path such as
+`/statebench-harness/`. The expected URL after a successful deployment is
+`https://veermshah.github.io/statebench-harness/`; this local build does not create
+a remote repository, push, configure GitHub, or confirm that URL is live.
+
+Verify HTTP paths and archived evidence:
+
+```bash
+python smoke_pages.py
+```
+
+Optional real-browser verification (Playwright and Chromium required):
+
+```bash
+python -m pip install playwright
+python -m playwright install chromium
+python smoke_pages.py --browser
+```
+
+Browser smoke checks exercise an actual `/statebench-harness/` URL, filters,
+a real failed-state trace, desktop/mobile layouts, and zero external requests.
+Model experiments remain local CLI commands in [LIVE.md](LIVE.md) and
+[MODEL_RUNS.md](MODEL_RUNS.md). The static viewer needs no paid service.
+
 
 **Research scope:** this is a synthetic StateBench-style test, not a reproduction
 of the official dataset or a frontier-model result. The actual-model experiment

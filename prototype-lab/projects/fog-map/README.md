@@ -1,5 +1,9 @@
 # Fog Map
 
+**Hosted demo:** https://veermshah.github.io/fog-map/
+
+The hosted site is published from the account’s existing GitHub Pages deployment. It displays recorded model measurements; run the CLI for new experiments. The `docs/` folder can also be published from this standalone repository or a fork.
+
 Compare three independent interpretations of a Markdown specification. Each
 persona produces a data model, API sketch, and line-attributed assumptions;
 ranked HTML and Markdown reports show where their implementation choices differ.
@@ -50,7 +54,7 @@ Offline policies yield 6 flags but are **not independent LLM inference**.
 ## Reproduce the actual three model calls
 
 Install/download/start the CPU inference server using
-[the repository's model instructions](../../MODEL_RUNS.md). A server hosting the
+[the repository's model instructions](MODEL_RUNS.md). A server hosting the
 1.7B alias must be running. From this project directory, for the measured
 separate-port setup:
 
@@ -122,3 +126,51 @@ not runnable app builds. The product produces interpretation reports, not apps.
 5. Compare grace frequency and notification timing beside each source sentence.
 6. Inspect raw request/response evidence, then rerun with the CPU endpoint or
    point Ollama at a new spec.
+
+## GitHub Pages site
+
+`docs/` is a ready-to-publish static exhibit of the **recorded actual CPU run**.
+It contains all six ranked line/topic flags, each model's original assumption,
+run metrics, limitations, and downloadable source spec, Markdown report, JSON
+evidence, provenance, and original HTML report. It does not generate new model
+analyses in the browser; those use the CLI above. No API keys or external scripts
+are needed by the site.
+
+Rebuild after intentionally updating the recorded evidence:
+
+```sh
+python build_pages.py
+python verify_pages.py
+```
+
+Both scripts use only Python's standard library. The build takes its data from
+`output-live-1.7b/`, preserves the evidence file bytes, and uses only relative
+asset links, so the site works at a repository subpath such as `/fog-map/`.
+The verification starts a temporary HTTP server and checks that exact project
+path, asset responses, six flags, and source/evidence integrity.
+
+Optional browser verification (Playwright plus Chromium must be installed):
+
+```sh
+python -m pip install playwright
+python -m playwright install chromium
+python verify_pages.py --browser
+```
+
+The script prefers system `chromium` if available. It checks 1280×900 and 375×812
+viewports for six flags, 18 assumptions, no horizontal overflow or page errors,
+and working interpretation disclosures. Both viewport checks passed in the
+build environment using system Chromium.
+
+To publish after the repository and `docs/` are pushed to GitHub:
+
+1. Open the repository's **Settings → Pages**.
+2. Under **Build and deployment**, choose **Deploy from a branch**.
+3. Select branch **main**, folder **/docs**, and save.
+4. Wait for the Pages deployment to finish, then use the URL GitHub displays.
+   For a repository named `fog-map`, it normally ends in `/fog-map/`.
+
+`docs/.nojekyll` disables Jekyll processing. No build workflow, Node installation,
+server, model, or paid hosting is required for Pages. Editing Python source or
+recorded evidence does not automatically rebuild the committed site: rerun
+`python build_pages.py`, review `docs/`, and commit the generated files.

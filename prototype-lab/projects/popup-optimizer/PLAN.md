@@ -10,3 +10,8 @@ Milestones:
 3. Run functional smoke checks, document provenance and 60-second demo.
 
 Done: default Dallas/health/5 produces five mapped, ranked stops with explanatory coverage numbers; changes to service and stop count recompute; all assets and functions work offline on CPU with Python 3.10+ and no dependencies or API keys. No GPU or model needed. Recommendations are exploratory synthetic examples, not approved service sites.
+
+
+## GitHub Pages extension (2026-11-17)
+
+Keep the Python app intact and produce a static `docs/` deployment with the same UI and synthetic data. Port the deterministic optimizer to browser JavaScript with Python-compatible need-count rounding. Rebuild through `build_pages.py`; validate all 1,230 supported integer control combinations against Python and exercise the static site under a repository URL prefix with all controls working offline after load. Publication is a separate repository/Pages operation, not implied by prepared assets.

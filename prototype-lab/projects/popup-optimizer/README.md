@@ -1,13 +1,50 @@
 # Pop-Up Optimizer
 
+**Hosted demo:** https://veermshah.github.io/popup-optimizer/
+
+The hosted site is published from the account’s existing GitHub Pages deployment. It computes placements in your browser over synthetic data. The `docs/` folder can also be published from this standalone repository or a fork.
+
 An offline Dallas civic-service planning demo. Select health vans, food banks, or vaccine clinics, choose 1–10 stops and a 5–45 minute travel window, and receive ranked locations with coverage circles and plain-English explanations.
+
+## GitHub Pages (fully interactive static app)
+
+The publish-ready site is in `docs/`. It runs weighted k-means entirely in the browser: no Python server, API keys, paid service, CDN, or external map tiles. Its map, service selector, stop count, travel-time controls, and explanations remain interactive after loading. The data remains explicitly **synthetic**. This checkout prepares the deployment; it does not establish that a repository or site has been published.
+
+Rebuild assets and check Python/JavaScript parity from the repository root:
+
+```bash
+python build_pages.py
+python pages_parity.py
+```
+
+The build uses only Python's standard library. Parity verification additionally needs Node.js 16.9+ and checks complete results for all **1,230** supported combinations (3 services × 10 stop counts × 41 integer travel windows), including explanations, need-count rounding, ranking, and coverage. Explicit tests cover ties-to-even rounding and invalid inputs. The JavaScript source is `optimizer.js`; `build_pages.py` copies it plus the bundled dataset into `docs/` and reuses the existing UI. Edit sources and rebuild rather than editing generated assets.
+
+Preview the Pages version locally:
+
+```bash
+python -m http.server 8004 --directory docs
+```
+
+Open http://127.0.0.1:8004. All asset paths are relative, so a GitHub project URL such as `https://OWNER.github.io/popup-optimizer/` also works. The generated files are committed deployment assets; Pages does not need a build command or Python runtime.
+
+After the separate GitHub repository exists and these files are on its `main` branch, set **Settings → Pages → Build and deployment → Deploy from a branch → main → /docs → Save**. Use the URL displayed by GitHub after deployment completes. Repository creation and deployment have not been performed by these build scripts.
+
+Optional real-browser verification:
+
+```bash
+python -m pip install playwright
+python -m playwright install chromium
+python pages_browser_smoke.py
+```
+
+This serves only static assets under `/popup-optimizer/`, then tests all three services, changed stop counts and travel windows, map anchors, and 390-pixel mobile layout. It switches the browser offline before testing the controls and asserts zero API requests and JavaScript errors. Use `CHROMIUM_PATH` to override the browser executable. Verified on 2026-11-17: the complete 1,230-case parity suite and browser smoke passed. The original Python optimizer/server remain unchanged.
 
 ## Run
 
 Python 3.10+ only; no installation, GPU, API key, model, paid service, or internet required.
 
 ```bash
-cd projects/popup-optimizer
+# Run from this repository root
 python app.py --port 8003
 ```
 

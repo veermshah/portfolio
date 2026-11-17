@@ -58,13 +58,14 @@ export const projects: Project[] = [
   ],
   "results": [
     "Three real Qwen3 1.7B Q4 CPU calls produce six ranked line/topic findings across five topics, including concrete conflicts over day boundaries, grace policies, historical edits and notification timing. Total usage: 2,876 tokens (1,444 input and 1,432 output).",
-    "Five tests pass, including provider evidence capture, attribution, scoring and HTML escaping. Earlier failed small-model and interrupted runtime attempts are retained. The comparison is textual; the live result is a sample demonstration, not an accuracy estimate on arbitrary specifications."
+    "Five tests pass, including provider evidence capture, attribution, scoring and HTML escaping. Earlier failed small-model and interrupted runtime attempts are retained. The comparison is textual; the live result is a sample demonstration, not an accuracy estimate on arbitrary specifications.",
+    "The GitHub Pages exhibit displays the recorded model run with downloadable evidence; new model analyses remain a local CLI operation."
   ],
   "context": "AI-assisted prototype session",
   "role": {
     "kind": "Solo"
   },
-  "code": "https://github.com/veermshah/portfolio/tree/main/prototype-lab/projects/fog-map",
+  "code": "https://github.com/veermshah/fog-map",
   "images": [],
   "extra": [
     {
@@ -91,22 +92,23 @@ export const projects: Project[] = [
   "results": [
     "On the published subset, every setup scores 0/6 AIME; HotpotQA scores are 0/6 solo, 1/6 fixed and 0/6 generated. The run uses 87 successful provider calls and 84,774 actual tokens, with no provider errors. Cost per solved task is undefined when no task is solved.",
     "On the separate easier calibration, math accuracy is 1/6 for every setup; actual tokens per solved task are 1,039 solo, 4,875 fixed and 3,257 generated. Multi-hop is 4/6, 4/6 and 1/6, at 292, 1,060.5 and 2,915 tokens per solved task. Generated orchestration loses token efficiency by 3.13× and 9.98×.",
-    "Local API fees are $0, excluding hardware and energy. All unsolved-task and invalid-plan tokens are charged. Ten tests pass. These tiny-model results, with different output budgets for the two datasets, do not reproduce the trained 27B paper’s headline accuracy."
+    "Local API fees are $0, excluding hardware and energy. All unsolved-task and invalid-plan tokens are charged. Ten tests pass. These tiny-model results, with different output budgets for the two datasets, do not reproduce the trained 27B paper’s headline accuracy.",
+    "The GitHub Pages explorer exposes both saved datasets, measured tables, actual workflows and complete call traces. It runs no live model inference."
   ],
   "context": "AI-assisted prototype session",
   "role": {
     "kind": "Solo"
   },
-  "code": "https://github.com/veermshah/portfolio/tree/main/prototype-lab/projects/dynaflow-orchestrator",
+  "code": "https://github.com/veermshah/dynaflow-orchestrator",
   "images": [],
   "extra": [
     {
       "label": "Published-subset measurements",
-      "href": "https://github.com/veermshah/portfolio/blob/main/prototype-lab/projects/dynaflow-orchestrator/results-qwen3-cpu/RESULTS.md"
+      "href": "https://github.com/veermshah/dynaflow-orchestrator/blob/main/results-qwen3-cpu/RESULTS.md"
     },
     {
       "label": "Separate calibration measurements",
-      "href": "https://github.com/veermshah/portfolio/blob/main/prototype-lab/projects/dynaflow-orchestrator/results-qwen3-toy/RESULTS.md"
+      "href": "https://github.com/veermshah/dynaflow-orchestrator/blob/main/results-qwen3-toy/RESULTS.md"
     }
   ]
 },
@@ -127,13 +129,13 @@ export const projects: Project[] = [
   ],
   "results": [
     "The default five-stop health demo covers 96,805 of 269,985 synthetic residents. Population, need indicators and clinic flags are invented demo data, not Dallas demographic estimates.",
-    "Nine optimizer configurations and five HTTP routes pass checks. Real Chromium checks also cover all service controls, map links, a 390px mobile viewport and standalone offline rendering without network requests. The schematic map, approximate travel times and unverified venues limit this to an illustrative demo."
+    "All 1,230 Python/JavaScript parity cases pass across services, stop counts and travel windows. Chromium checks cover fully offline browser controls, map links and a 390px mobile viewport. The GitHub Pages version computes locally in the browser and needs no Python server. Data remain synthetic; travel times are approximate and venues unverified."
   ],
   "context": "AI-assisted prototype session",
   "role": {
     "kind": "Solo"
   },
-  "code": "https://github.com/veermshah/portfolio/tree/main/prototype-lab/projects/popup-optimizer",
+  "code": "https://github.com/veermshah/popup-optimizer",
   "images": [],
   "extra": [
     {
@@ -160,13 +162,14 @@ export const projects: Project[] = [
   "results": [
     "Both models’ direct accuracy falls from 75% at 8 assignments to 25% at 32 and 0% at 128. Each point contains only four cases, one per difficulty level; all 72 model/method records are audited, with 171 actual calls and zero transport or context errors.",
     "Model-written state does not improve aggregate accuracy: 2/12 correct for 0.6B and 3/12 for 1.7B. The separate execution-tool method reaches 12/12 for 1.7B, recovering 100 percentage points at 128 assignments. The 0.6B model gets only 1/12 because it frequently fails the tool protocol.",
-    "Tool delegation offloads tracking to a deterministic interpreter, then requires the model to read its output; it is not improved intrinsic memory. Twelve tests pass, including all four generators at 64K. The frontier 13% figure, official dataset, 64K live inference and recurrent hybrid were not reproduced."
+    "Tool delegation offloads tracking to a deterministic interpreter, then requires the model to read its output; it is not improved intrinsic memory. Twelve tests pass, including all four generators at 64K. The frontier 13% figure, official dataset, 64K live inference and recurrent hybrid were not reproduced.",
+    "The GitHub Pages explorer provides model/difficulty filters, the actual failure curve, tables and recorded traces. New experiments still run through the local CLI."
   ],
   "context": "AI-assisted prototype session",
   "role": {
     "kind": "Solo"
   },
-  "code": "https://github.com/veermshah/portfolio/tree/main/prototype-lab/projects/statebench-harness",
+  "code": "https://github.com/veermshah/statebench-harness",
   "images": [
     {
       "file": "accuracy.png",
@@ -177,10 +180,12 @@ export const projects: Project[] = [
   "extra": [
     {
       "label": "Measurements and protocol",
-      "href": "https://github.com/veermshah/portfolio/blob/main/prototype-lab/projects/statebench-harness/MEASUREMENTS.md"
+      "href": "https://github.com/veermshah/statebench-harness/blob/main/MEASUREMENTS.md"
     }
   ]
 },
+
+
 
 
   {

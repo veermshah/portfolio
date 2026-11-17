@@ -6,7 +6,7 @@ lengths 8/32/128, one case per level/length: **four cases per aggregate point**.
 Temperature zero, no thinking, no JSON grammar; raw/tool answers have 64 output
 tokens, model-written state 256. Invalid model output is incorrect; transport
 or context errors are separate. See [LIVE.md](LIVE.md) for exact commands and
-[model provenance](../../model_sources.json) for weight hashes.
+[model provenance](model_sources.json) for weight hashes.
 
 ## Accuracy
 

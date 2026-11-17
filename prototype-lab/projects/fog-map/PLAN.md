@@ -39,3 +39,13 @@ no candidate answers. Persona prompts emphasize consistency, user experience,
 and testability respectively. Full request/response JSON is persisted before
 validation. After two failed 0.6B attempts and a runtime interruption, try the
 1.7B Q4 CPU model with JSON prompt instructions and no constrained grammar.
+
+## Static Pages exhibit
+
+Build a deterministic `docs/` exhibit from the successful actual CPU evidence,
+never from authored offline policies. Preserve six ranked source-line/topic
+entries and model text, show run provenance/limitations prominently, and provide
+relative downloadable artifacts. New analyses remain a CLI feature. Use a
+stdlib generator and verify HTTP at `/fog-map/`, plus desktop/mobile Chromium
+layout and disclosure interactions. Hosting uses GitHub Pages main `/docs`;
+remote repository creation and push are coordinator work, not performed here.

@@ -1,15 +1,43 @@
 # DynaFlow-style executable orchestrator
 
+**Hosted demo:** https://veermshah.github.io/dynaflow-orchestrator/
+
+The hosted site is published from the account’s existing GitHub Pages deployment. It displays recorded model measurements; run the CLI for new experiments. The `docs/` folder can also be published from this standalone repository or a fork.
+
 A working same-model comparison of solo reasoning, a fixed planner → solver → reviewer pipeline, and a lead model that emits a per-task Python coordination program. Generated workflows support concurrent independent solvers, verification and aggregation; all handoffs include the original task and complete previous outputs. A strict AST interpreter runs the allowed workflow calls without executing arbitrary Python.
 
 The completion pass uses **real Qwen3-0.6B Q4_K_M CPU inference**, substituting for the paper's trained 27B backbone. Bundled public benchmark records comprise six AIME 2024 and six HotpotQA distractor-validation questions. This is a small prompt-based reproduction of executable orchestration, not a reproduction of the trained paper system or its full benchmark score.
+
+## GitHub Pages recorded-results explorer
+
+The static [docs/index.html](docs/index.html) app lets visitors switch between the **recorded public subset** and **separate recorded calibration**, compare every arm's actual tokens per solved task, and inspect every saved task, emitted workflow, full-context handoff, model response and finish reason. It never runs a model, executes a workflow, reads an API key or presents saved output as live inference. Invalid model-generated plans and infrastructure/provider failures are separate. Raw source records, initial scoring snapshots, data/model provenance and SHA-256 hashes are downloadable.
+
+Build and preview from this standalone repository root:
+
+```bash
+python build_pages.py
+python -m http.server 8080 --bind 127.0.0.1 --directory docs
+```
+
+Open `http://127.0.0.1:8080/`. The build uses **only Python's standard library**, makes no network or inference calls, and copies the finalized measured records byte-for-byte. `pages/` contains editable HTML/CSS/JavaScript source; `docs/` is the complete generated publish directory, including `.nojekyll`. All runtime assets are local relative paths, so the site also works under a project prefix such as `/dynaflow-orchestrator/`. Use HTTP rather than opening `file://` because browsers restrict JSON fetching from local files. There is no server-side/API component or paid dependency for the static explorer.
+
+For GitHub Pages, after the repository and files are available on GitHub:
+
+1. Include the generated `docs/` folder on **main**.
+2. Open **Settings → Pages → Build and deployment**.
+3. Select **Deploy from a branch**, branch **main**, folder **/docs**, then save.
+4. Open the Pages URL that GitHub reports. A repository/project site normally uses `https://OWNER.github.io/REPOSITORY/`; substitute the actual owner/repository, not a fabricated deployment URL.
+
+The files here are ready for that configuration; generating them does not create a repository, push changes, enable Pages or establish a public deployment. Regenerate `docs/` whenever measured source records, documentation or templates change. A repeat build with unchanged inputs produces identical files; `docs/data/manifest.json` records the exact source bytes and hashes. Use `python build_pages.py --output /tmp/dynaflow-pages` for an isolated build.
+
+Optional browser verification (development-only dependencies, not required by visitors/build): install Playwright and its Chromium browser, or use a system `chromium`, then run `python smoke_pages.py`. The test hosts an isolated copy under `/dynaflow-orchestrator/`, verifies local HTTP assets, official/calibration values and budgets, selectors and full-context trace inspection, checks mobile page overflow, and rejects JavaScript errors or external runtime requests. The build-session test passed on desktop and a 390px mobile viewport. Screenshots go to ignored `.pages-preview/`. No LLM/server inference is invoked by this test.
 
 ## Setup and quick smoke test
 
 Python 3.10+; the harness itself uses the standard library, with no pip requirements. From the repository root:
 
 ```bash
-cd projects/dynaflow-orchestrator
+# Run from this repository root
 python orchestrator.py --backend surrogate --output results-surrogate
 python -m unittest -q
 ```
@@ -27,7 +55,7 @@ OPENAI_BASE_URL=http://127.0.0.1:8090/v1 python orchestrator.py \
   --max-tokens 256 --plan-max-tokens 256 --output results-qwen3-cpu
 ```
 
-Runtime installation/server launch instructions are in [../../MODEL_RUNS.md](../../MODEL_RUNS.md). Exact pinned weight revision, SHA-256, runtime and prompt settings are recorded in `RUN_METADATA.json`; the source model is `unsloth/Qwen3-0.6B-GGUF`, file `Qwen3-0.6B-Q4_K_M.gguf`, SHA-256 `ac2d97712095a558e31573f62f466a3f9d93990898b0ec79d7c974c1780d524a`. Weights are downloaded separately and are not bundled.
+Runtime installation/server launch instructions are in [MODEL_RUNS.md](MODEL_RUNS.md). Exact pinned weight revision, SHA-256, runtime and prompt settings are recorded in `RUN_METADATA.json`; the source model is `unsloth/Qwen3-0.6B-GGUF`, file `Qwen3-0.6B-Q4_K_M.gguf`, SHA-256 `ac2d97712095a558e31573f62f466a3f9d93990898b0ec79d7c974c1780d524a`. Weights are downloaded separately and are not bundled.
 
 No API key is needed for loopback HTTP. The same model, temperature zero, and solver completion cap are used in all arms; workflow planning has a separately recorded cap. Intermediate planners, solvers and verifiers give concrete reasoning or evidence. Final reviewer/aggregator outputs use an explicit `FINAL:` marker. Planning is genuine generated source, not selected from a fixed template; invalid programs fail visibly without hidden repair/retries. Full raw outputs and provider finish reasons distinguish truncation from completed outputs. `partial.json` checkpoints completed tasks during longer CPU runs.
 
