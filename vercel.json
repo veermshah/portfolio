@@ -75,5 +75,11 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/demos/moneyplant/:path*",
+      "destination": "/demos/moneyplant/index.html"
+    }
   ]
 }

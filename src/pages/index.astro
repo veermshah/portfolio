@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { experience } from '../data/experience';
+import { education, skills } from '../data/education';
 import LinkIcon from '../components/LinkIcon.astro';
 import ContactButton from '../components/ContactButton.astro';
 import { notes, formatDate } from '../data/notes';
@@ -56,6 +57,7 @@ const links = profile.links.filter((l) => l.href);
   <nav class="section-nav" aria-label="On this page">
     <a href="#featured">Featured</a>
     <a href="#experience">Experience</a>
+    <a href="#education">Education & skills</a>
     <a class="icon-link" href="#projects-heading"><LinkIcon name="Write-up" />Projects <span>{projects.length}</span></a>
     <a class="icon-link" href="/notes/"><LinkIcon name="Notes" />Notes</a>
   </nav>
@@ -96,6 +98,28 @@ const links = profile.links.filter((l) => l.href);
         </li>
       ))}
     </ol>
+  </section>
+
+  <section id="education" aria-labelledby="education-heading">
+    <h2 id="education-heading" class="section-title">Education & skills</h2>
+    <ol class="education">
+      {education.map((item) => (
+        <li>
+          <p class="experience-meta">{item.period}</p>
+          <h3>{item.degree}</h3>
+          <p class="experience-role">{item.school}</p>
+          <p class="education-detail">{item.detail}</p>
+        </li>
+      ))}
+    </ol>
+    <dl class="skills">
+      {skills.map((group) => (
+        <div>
+          <dt>{group.label}</dt>
+          <dd>{group.items}</dd>
+        </div>
+      ))}
+    </dl>
   </section>
 
   <section aria-labelledby="projects-heading">
@@ -236,6 +260,15 @@ const links = profile.links.filter((l) => l.href);
   .experience-role { margin-top: 0.25rem; }
   .experience ul { padding-left: 1.15rem; margin-top: 0.65rem; color: var(--muted); font-size: 0.9375rem; }
   .experience ul li + li { margin-top: 0.4rem; }
+  .education { list-style: none; padding: 0; }
+  .education > li { padding: 1.4rem 0; border-bottom: 1px solid var(--rule); }
+  .education h3 { font-size: 1.125rem; margin-top: 0.3rem; }
+  .education-detail { margin-top: 0.5rem; color: var(--muted); font-size: 0.9375rem; }
+  .skills { margin: 1.5rem 0 0; }
+  .skills > div { display: grid; grid-template-columns: 8.5rem 1fr; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--rule); font-size: 0.9375rem; }
+  .skills dt { color: var(--muted); }
+  .skills dd { margin: 0; }
+  @media (max-width: 30rem) { .skills > div { grid-template-columns: 1fr; gap: 0.2rem; } }
   .thumbnail { display: block; overflow: hidden; aspect-ratio: 16 / 10; border: 1px solid var(--rule); border-radius: 5px; background: var(--accent-soft); text-decoration: none; }
   .thumbnail :global(img) { width: 100%; height: 100%; object-fit: contain; }
   .thumbnail-type { display: flex; flex-direction: column; justify-content: center; gap: 0.5rem; height: 100%; padding: 1rem; color: var(--accent); font-family: var(--mono); font-size: 0.95rem; }
