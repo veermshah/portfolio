@@ -58,5 +58,17 @@ const year = new Date().getFullYear();
         <a href="https://github.com/veermshah/portfolio">Site source</a>
       </footer>
     </div>
+    <script is:inline>
+      // Links that leave the site (GitHub, LinkedIn, live demos, the resume PDF) open in a new tab.
+      for (const a of document.querySelectorAll('a[href]')) {
+        const url = new URL(a.href, location.href);
+        const offSite = /^https?:$/.test(url.protocol) && url.host !== location.host && !/(^|\.)veermickey\.com$/.test(url.hostname);
+        const file = url.host === location.host && /\.pdf$|^\/demos\//.test(url.pathname);
+        if (offSite || file) {
+          a.target = '_blank';
+          a.rel = (a.rel + ' noopener').trim();
+        }
+      }
+    </script>
   </body>
 </html>
