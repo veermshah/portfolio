@@ -13,7 +13,7 @@ export default defineConfig({
   trailingSlash: 'ignore',
   build: { format: 'directory' },
   adapter: vercel(),
-  integrations: [sitemap({ filter: (page) => !new URL(page).pathname.startsWith('/blog') }), blogHost({ host: BLOG_HOST })],
+  integrations: [sitemap({ filter: (page) => !new URL(page).pathname.startsWith('/blog') }), blogHost({ host: BLOG_HOST, mainHosts: ['veermickey.com', 'www.veermickey.com'] })],
   image: {
     responsiveStyles: false,
   },
