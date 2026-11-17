@@ -1,7 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ContactButton from '../../components/ContactButton.astro';
-import { publishedPost } from '../../lib/blog/posts';
+import { publishedPost, type Post } from '../../lib/blog/posts';
 import { formatPostDate, readingMinutes, renderMarkdown, tagSlug } from '../../lib/blog/text';
 import { BLOG_ORIGIN, blogBase } from '../../lib/blog/config';
 import { CDN_CACHE, canonicalFor } from '../../lib/blog/http';
@@ -10,12 +10,14 @@ import '../../styles/blog.css';
 export const prerender = false;
 
 const slug = Astro.params.slug ?? '';
-const post = await publishedPost(slug);
-if (!post) return Astro.rewrite('/404');
+const found = await publishedPost(slug);
 Astro.response.headers.set('Cache-Control', CDN_CACHE);
-
 const base = blogBase(Astro.url.hostname);
-const html = renderMarkdown(post.content);
+if (!found) {
+  Astro.response.status = 404;
+}
+const post = found ?? ({ title: '', slug, excerpt: '', content: '', tags: [], cover_image_url: null, published_at: null, updated_at: '' } as unknown as Post);
+const html = found ? renderMarkdown(post.content) : '';
 const description = post.excerpt || `${post.title}, by Veer Shah.`;
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -30,6 +32,13 @@ const jsonLd = {
   keywords: post.tags.join(', '),
 };
 ---
+{!found ? (
+<Base title="Post not found | Veer Shah" description="This post doesn’t exist." canonical={canonicalFor(`/${slug}`)} sitemap="/sitemap.xml" noindex>
+  <a class="blog-back" href={`${base}/`}>← All posts</a>
+  <h1 class="blog-title">Post not found</h1>
+  <p class="blog-lede">There’s no published post at this address.</p>
+</Base>
+) : (
 <Base
   title={`${post.title} | Veer Shah`}
   description={description}
@@ -63,6 +72,7 @@ const jsonLd = {
   </article>
   <aside class="post-aside"><p>Have a question or a related idea?</p><ContactButton /></aside>
 </Base>
+)}
 <style>
   .post-aside { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); }
   .post-aside p { margin-bottom: 1rem; }
