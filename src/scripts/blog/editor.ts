@@ -12,6 +12,7 @@ type Draft = Pick<Post, 'title' | 'slug' | 'excerpt' | 'content' | 'cover_image_
 let post: Post | null = null;
 let slugTouched = false;
 let dirty = false;
+let editVersion = 0;
 let saving: Promise<void> | null = null;
 let autosaveTimer: number | undefined;
 
@@ -78,6 +79,7 @@ function bind() {
     if (target.name === 'title' && !slugTouched) field('slug').value = slugify(target.value);
     if (target.type === 'file') return;
     dirty = true;
+    editVersion++;
     setStatus('Unsaved changes');
     renderPreviewSoon();
     scheduleAutosave();
@@ -191,6 +193,7 @@ async function save(doneText = 'Saved', extra: Partial<Post> = {}): Promise<bool
     return false;
   }
   setStatus('Saving…');
+  const savedVersion = editVersion;
   let ok = false;
   saving = (async () => {
     const values = { ...draft, ...extra };
@@ -205,9 +208,10 @@ async function save(doneText = 'Saved', extra: Partial<Post> = {}): Promise<bool
     const isNew = !post;
     post = data as Post;
     if (isNew) history.replaceState(null, '', adminUrl(`edit?id=${post.id}`));
-    dirty = false;
+    // Edits typed while the request was in flight are still unsaved.
+    dirty = editVersion !== savedVersion;
     ok = true;
-    setStatus(`${doneText} at ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`);
+    setStatus(`${dirty ? 'Unsaved changes; last saved' : doneText} at ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`);
     syncControls();
   })();
   await saving;
