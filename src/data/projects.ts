@@ -18,6 +18,12 @@ export interface ProjectImage {
   caption?: string;
 }
 
+export interface ProjectVideo {
+  /** Path under public/, e.g. /demos/<slug>/demo.mp4 */
+  src: string;
+  caption: string;
+}
+
 export interface Project {
   slug: string;
   title: string;
@@ -38,6 +44,8 @@ export interface Project {
   built: string[];
   results: string[];
   images: ProjectImage[];
+  /** Short muted demo clip shown under the lead image. */
+  video?: ProjectVideo;
 }
 
 export const projects: Project[] = [
@@ -66,7 +74,7 @@ export const projects: Project[] = [
     "kind": "Solo"
   },
   "code": "https://github.com/veermshah/fog-map",
-  "images": [],
+  "images": [{"file": "report.png", "alt": "Fog Map HTML report ranking ambiguous spec decisions, with backend, frontend and QA interpretations side by side", "caption": "The generated report from the live Qwen3 run"}],
   "extra": [
     {
       "label": "Measured ambiguity report",
@@ -100,7 +108,7 @@ export const projects: Project[] = [
     "kind": "Solo"
   },
   "code": "https://github.com/veermshah/dynaflow-orchestrator",
-  "images": [],
+  "images": [{"file": "tokens-per-solved.png", "alt": "Bar chart of actual tokens per solved task for solo, fixed and generated workflows on math and multi-hop calibration tasks", "caption": "Tokens per solved task on the easy calibration set, from RESULTS.md"}],
   "extra": [
     {
       "label": "Published-subset measurements",
@@ -136,7 +144,7 @@ export const projects: Project[] = [
     "kind": "Solo"
   },
   "code": "https://github.com/veermshah/popup-optimizer",
-  "images": [],
+  "images": [{"file": "map.png", "alt": "Pop-Up Optimizer page: Dallas map with five ranked health-van stops and their estimated reach", "caption": "Default saved placement: five health-van stops, synthetic data"}],
   "extra": [
     {
       "label": "Default placement snapshot",
@@ -289,7 +297,7 @@ export const projects: Project[] = [
     results: [
       'Tabular classification and regression are complete; image classification has a working GPU training adapter.',
     ],
-    images: [],
+    images: [{"file": "dashboard.png", "alt": "kaggle-agent Streamlit dashboard for the offline mock binary competition: best CV 0.940949 after 15 experiments, with a score progression chart", "caption": "Dashboard after an offline mock-competition run on CPU (simulated data)"}],
   },
   {
     slug: 'dishbrain-playground',
@@ -633,6 +641,7 @@ export const projects: Project[] = [
     context: 'TAMUhack X (2024)',
     role: { kind: 'Team', mine: 'the React app, the Django REST backend and login, and the risk questionnaire' },
     stack: ['React', 'Django REST Framework', 'Python', 'Keras', 'Black-Litterman', 'IBM watsonx'],
+    live: '/demos/moneyplant/',
     code: 'https://github.com/veermshah/TAMUhacks',
     extra: [
       { label: 'Devpost', href: 'https://devpost.com/software/moneyplant-vjar92' },
@@ -648,6 +657,7 @@ export const projects: Project[] = [
     results: [
       'Third place in the PIMCO Challenge at TAMUhack X.',
       'Built in 24 hours. In the submitted code the Advisor page’s call to the portfolio API is commented out, so the optimizer ran as its own script rather than end to end from the questionnaire.',
+      'The live link is the React frontend only, rebuilt from the repo with compressed media. Login and registration need the Django backend, which is not hosted.',
     ],
     images: [
       { file: 'home.webp', alt: 'Moneyplant home page with a jungle illustration and the watsonx chat assistant open', caption: 'Home, with the chat assistant' },
@@ -684,7 +694,8 @@ export const projects: Project[] = [
       "On 36 synthetic labeled tickets, Jev routed 33 correctly (92%), versus 27 (75%) for keyword rules. At a 0.8 confidence threshold, 81% were auto-routed with no routing errors in that sample.",
       "This is a small synthetic evaluation, not a production accuracy estimate."
     ],
-    "images": []
+    "images": [{"file": "doctor.png", "alt": "Terminal running jev-desk doctor on a failing API request: errors for the Authorization header and criteria, then a key-free curl reproduction", "caption": "The offline request doctor"}],
+    "video": {"src": "/demos/jev-support-desk/demo.mp4", "caption": "Terminal demo: the request doctor, the committed evaluation report and the shift handoff"}
   },
   {
     "slug": "utdlang",
@@ -709,7 +720,8 @@ export const projects: Project[] = [
     "results": [
       "The repository includes lexer, scanner and type-checking drivers, plus test inputs and expected semantic-analysis outputs."
     ],
-    "images": []
+    "images": [{"file": "type-check.png", "alt": "Terminal showing a UTDLang program with a float and bool ternary, and the type checker reporting incompatible branches", "caption": "The type checker rejecting incompatible ternary branches"}],
+    "video": {"src": "/demos/utdlang/demo.mp4", "caption": "Terminal demo: the compiler rejecting two invalid programs and accepting a 70-line valid one"}
   },
   {
     "slug": "midpoint",
