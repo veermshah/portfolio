@@ -62,6 +62,10 @@ insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 values ('post-images', 'post-images', true, 10485760,
         array['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/avif']);
 
+-- Storage needs select alongside update/delete; listing stays admin-only.
+create policy "Admin lists post images" on storage.objects
+  for select to authenticated
+  using (bucket_id = 'post-images' and (select public.is_blog_admin()));
 create policy "Admin uploads post images" on storage.objects
   for insert to authenticated
   with check (bucket_id = 'post-images' and (select public.is_blog_admin()));
