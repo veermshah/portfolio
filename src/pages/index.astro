@@ -7,11 +7,12 @@ import LinkIcon from '../components/LinkIcon.astro';
 import ContactButton from '../components/ContactButton.astro';
 import { notes, formatDate } from '../data/notes';
 import Base from '../layouts/Base.astro';
+import dayPhoto from '../assets/photos/marina-bay.jpg';
+import nightPhoto from '../assets/photos/skyline-night.jpg';
 import ProjectLinks from '../components/ProjectLinks.astro';
 import { profile } from '../data/profile';
 import { projects } from '../data/projects';
 import { projectCategories, categoriesByProject } from '../data/project-categories';
-import { roleSummary, myPart } from '../lib/format';
 
 const assets = import.meta.glob<{ default: ImageMetadata }>('../assets/projects/*/*.{png,jpg,jpeg,webp}', { eager: true });
 const thumbnail = (p: (typeof projects)[number]) => {
@@ -36,95 +37,119 @@ const featured = [
   { slug: 'veer', label: 'Compiler engineering', detail: 'Static contracts for KV-cache memory, token budgets and numeric error.' },
   { slug: 'dishbrain-playground', label: 'Experimental work', detail: 'Controlled experiments with paired seeds, ablations and held-out evaluation.' },
   { slug: 'wander', label: 'Accessibility', detail: 'Indoor navigation with a voice guide, 3D mapping and deterministic routing.' },
-].map((feature) => {
+  { slug: 'destina' },
+  { slug: 'quantumloans' },
+].map((feature: { slug: string; label?: string; detail?: string }) => {
   const project = projects.find((project) => project.slug === feature.slug);
   if (!project) throw new Error(`Missing featured project: ${feature.slug}`);
-  return { ...feature, project };
+  return { project, label: feature.label ?? project.award ?? '', detail: feature.detail ?? project.pitch };
 });
-const links = profile.links.filter((l) => l.href);
+const links = profile.links.filter((l) => l.href && l.label !== 'Email');
 ---
 
-<Base title={`${profile.name}, software engineer`} description={profile.description}>
-  <header class="intro">
-    <h1>{profile.name}</h1>
-    <p class="bio">{profile.bio}</p>
-    <div class="intro-contact"><ContactButton /></div>
-    <ul class="contact">
-      {links.map((l) => <li><a class="icon-link" href={l.href}><LinkIcon name={l.label} />{l.label}</a></li>)}
-    </ul>
-  </header>
-
-  <nav class="section-nav" aria-label="On this page">
-    <a href="#featured">Featured</a>
-    <a href="#experience">Experience</a>
-    <a href="#education">Education & skills</a>
-    <a class="icon-link" href="#projects-heading"><LinkIcon name="Write-up" />Projects <span>{projects.length}</span></a>
-    <a class="icon-link" href="/notes/"><LinkIcon name="Notes" />Notes</a>
-    <a href="https://blog.veermickey.com">Blog</a>
-  </nav>
-
-  <section id="featured" aria-labelledby="featured-heading">
-    <h2 id="featured-heading" class="section-title">Featured projects</h2>
-    <div class="featured-grid">
-      {featured.map(({ project, label, detail }) => (
-        <article class="featured-card">
-          {thumbnail(project) && <Image src={thumbnail(project)!} alt={project.images[0].alt} widths={[320, 640]} sizes="(max-width: 640px) 100vw, 215px" format="webp" loading="lazy" />}
-          <div class="featured-copy">
-            <p class="eyebrow">{label}</p>
-            <h3><a href={`/projects/${project.slug}/`}>{project.title}</a></h3>
-            <p>{detail}</p>
-            <a class="featured-link" href={`/projects/${project.slug}/`}>Explore project <span class="visually-hidden">{project.title}</span></a>
-          </div>
-        </article>
-      ))}
+<Base title={`${profile.name}, software engineer`} description={profile.description} wide>
+  <section class="hero" aria-labelledby="hero-name">
+    <p class="kicker" data-reveal>Software engineer · M.S. CS, UT Dallas</p>
+    <h1 id="hero-name" class="display" data-reveal style="--reveal-i: 1">{profile.name}</h1>
+    <p class="bio" data-reveal style="--reveal-i: 2">{profile.bio}</p>
+    <div class="hero-actions" data-reveal style="--reveal-i: 3">
+      <ContactButton />
+      <ul class="contact" aria-label="Elsewhere">
+        {links.map((l) => <li><a class="icon-link" href={l.href}><LinkIcon name={l.label} />{l.label}</a></li>)}
+      </ul>
     </div>
   </section>
 
-  <section id="experience" aria-labelledby="experience-heading">
-    <h2 id="experience-heading" class="section-title">Experience</h2>
+  <section id="work" class="section" aria-labelledby="featured-heading">
+    <header class="section-head carousel-head" data-reveal>
+      <h2 id="featured-heading" class="section-title">Featured work</h2>
+      <div class="carousel-controls">
+        <span class="carousel-count" aria-hidden="true"><span data-current>1</span> / {featured.length}</span>
+        <button class="carousel-btn" type="button" data-dir="-1" aria-label="Previous project" disabled>←</button>
+        <button class="carousel-btn" type="button" data-dir="1" aria-label="Next project">→</button>
+      </div>
+    </header>
+    <ol class="carousel" aria-label="Featured projects" data-reveal style="--reveal-i: 1">
+      {featured.map(({ project, label, detail }, i) => (
+        <li class="featured-card">
+          <a class="featured-media" href={`/projects/${project.slug}/`} tabindex="-1" aria-hidden="true">
+            {thumbnail(project) && <Image src={thumbnail(project)!} alt="" widths={[480, 800, 1200, 1600]} sizes="(max-width: 48rem) 86vw, 46rem" format="webp" loading={i < 2 ? 'eager' : 'lazy'} />}
+          </a>
+          <div class="featured-copy">
+            {label && <p class="eyebrow">{label}</p>}
+            <h3><a class="stretched" href={`/projects/${project.slug}/`}>{project.title}</a></h3>
+            <p>{detail}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <figure class="photo" data-reveal>
+    <Image class="photo-day" src={dayPhoto} alt="Marina Bay Sands and the ArtScience Museum under a cloudy sky" widths={[640, 1024, 1600, 2400]} sizes="100vw" format="webp" loading="lazy" />
+    <Image class="photo-night" src={nightPhoto} alt="City skyline at night with illuminated buildings and a park" widths={[640, 1024, 1600, 2400]} sizes="100vw" format="webp" loading="lazy" />
+    <figcaption>Photo by me · <a href="https://unsplash.com/@veermickey">more on Unsplash</a></figcaption>
+  </figure>
+
+  <section id="experience" class="section" aria-labelledby="experience-heading">
+    <header class="section-head" data-reveal>
+      <h2 id="experience-heading" class="section-title">Experience</h2>
+    </header>
     <ol class="experience">
       {experience.map((item) => (
-        <li>
-          <div class="experience-heading">
+        <li data-reveal>
+          <div class="experience-side">
             <div class="experience-logo">
               <Image src={logos[`../assets/experience/${item.logo}`].default} alt="" width={52} height={52} format="webp" loading="lazy" />
             </div>
-            <div>
-              <p class="experience-meta">{item.period} · {item.location}</p>
-              <h3>{item.company}</h3>
-              <p class="experience-role">{item.role}</p>
-            </div>
+            <p class="experience-meta">{item.period}<br />{item.location}</p>
           </div>
-          <ul>{item.highlights.map((line) => <li>{line}</li>)}</ul>
+          <div class="experience-main">
+            <h3>{item.company}</h3>
+            <p class="experience-role">{item.role}</p>
+            <p class="experience-lead">{item.highlights[0]}</p>
+            {item.highlights.length > 1 && (
+              <details class="more">
+                <summary>More</summary>
+                <ul>{item.highlights.slice(1).map((line) => <li>{line}</li>)}</ul>
+              </details>
+            )}
+          </div>
         </li>
       ))}
     </ol>
   </section>
 
-  <section id="education" aria-labelledby="education-heading">
-    <h2 id="education-heading" class="section-title">Education & skills</h2>
-    <ol class="education">
-      {education.map((item) => (
-        <li>
-          <p class="experience-meta">{item.period}</p>
-          <h3>{item.degree}</h3>
-          <p class="experience-role">{item.school}</p>
-          <p class="education-detail">{item.detail}</p>
-        </li>
-      ))}
-    </ol>
-    <dl class="skills">
-      {skills.map((group) => (
-        <div>
-          <dt>{group.label}</dt>
-          <dd>{group.items}</dd>
-        </div>
-      ))}
-    </dl>
+  <section id="education" class="section" aria-labelledby="education-heading">
+    <header class="section-head" data-reveal>
+      <h2 id="education-heading" class="section-title">Education & skills</h2>
+    </header>
+    <div class="education-grid">
+      <ol class="education">
+        {education.map((item) => (
+          <li data-reveal>
+            <p class="experience-meta">{item.period}</p>
+            <h3>{item.degree}</h3>
+            <p class="experience-role">{item.school}</p>
+            <p class="education-detail">{item.detail}</p>
+          </li>
+        ))}
+      </ol>
+      <dl class="skills" data-reveal>
+        {skills.map((group) => (
+          <div>
+            <dt>{group.label}</dt>
+            <dd>{group.items}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   </section>
 
-  <section aria-labelledby="projects-heading">
-    <h2 id="projects-heading" class="section-title">Projects</h2>
+  <section id="projects" class="section" aria-labelledby="projects-heading">
+    <header class="section-head" data-reveal>
+      <h2 id="projects-heading" class="section-title">All projects <span class="count">{projects.length}</span></h2>
+    </header>
     <div class="project-filter-controls" hidden>
       <div class="project-filters" role="group" aria-label="Filter projects by type">
         {filters.map((filter) => (
@@ -138,10 +163,10 @@ const links = profile.links.filter((l) => l.href);
     <ol class="projects" id="project-list">
       {
         projects.map((p) => (
-          <li class="project" data-categories={categoriesByProject[p.slug].join(' ')}>
+          <li class="project" data-categories={categoriesByProject[p.slug].join(' ')} data-reveal>
             <a class="thumbnail" href={`/projects/${p.slug}/`} tabindex="-1" aria-hidden="true">
               {thumbnail(p) ? (
-                <Image src={thumbnail(p)!} alt="" widths={[240, 480]} sizes="(max-width: 480px) 100vw, 160px" format="webp" loading="lazy" />
+                <Image src={thumbnail(p)!} alt="" widths={[360, 720]} sizes="(max-width: 40rem) 100vw, (max-width: 64rem) 50vw, 360px" format="webp" loading="lazy" />
               ) : (
                 <span class="thumbnail-type"><span>{p.title}</span><small>{p.stack[0]}</small></span>
               )}
@@ -152,10 +177,6 @@ const links = profile.links.filter((l) => l.href);
                 {p.award && <span class="award">{p.award}</span>}
               </h3>
               <p class="pitch">{p.pitch}</p>
-              <p class="role">{roleSummary(p) + (myPart(p) ? `. My part: ${myPart(p)}.` : '')}</p>
-              <ul class="tags" aria-label="Stack">
-                {p.stack.map((t) => <li>{t}</li>)}
-              </ul>
               <ProjectLinks project={p} />
             </div>
           </li>
@@ -164,19 +185,23 @@ const links = profile.links.filter((l) => l.href);
     </ol>
   </section>
 
-  <section aria-labelledby="notes-heading" class="recent-notes">
-    <h2 id="notes-heading" class="section-title">Notes</h2>
-    {notes.slice(0, 2).map((note) => (
-      <article>
-        <time datetime={note.frontmatter.date}>{formatDate(note.frontmatter.date)}</time>
-        <h3><a href={`/notes/${note.slug}/`}>{note.frontmatter.title}</a></h3>
-        <p>{note.frontmatter.description}</p>
-      </article>
-    ))}
-    <a class="all-notes" href="/notes/">All notes →</a>
+  <section class="section recent-notes" aria-labelledby="notes-heading">
+    <header class="section-head" data-reveal>
+      <h2 id="notes-heading" class="section-title">Notes</h2>
+    </header>
+    <div class="notes-grid">
+      {notes.slice(0, 2).map((note, i) => (
+        <article data-reveal style={`--reveal-i: ${i}`}>
+          <time datetime={note.frontmatter.date}>{formatDate(note.frontmatter.date)}</time>
+          <h3><a class="stretched" href={`/notes/${note.slug}/`}>{note.frontmatter.title}</a></h3>
+          <p>{note.frontmatter.description}</p>
+        </article>
+      ))}
+    </div>
+    <a class="all-notes" href="/notes/">All notes <span aria-hidden="true">→</span></a>
   </section>
 
-  <section class="contact-section" aria-labelledby="contact-heading">
+  <section class="contact-section" aria-labelledby="contact-heading" data-reveal>
     <h2 id="contact-heading">Let’s talk.</h2>
     <p>Questions about a project, an opportunity, or an idea to build together? Send me an email.</p>
     <ContactButton />
@@ -184,6 +209,50 @@ const links = profile.links.filter((l) => l.href);
 </Base>
 
 <script>
+  for (const track of document.querySelectorAll<HTMLElement>('.carousel')) {
+    const section = track.closest('section')!;
+    const [prev, next] = section.querySelectorAll<HTMLButtonElement>('.carousel-btn');
+    const current = section.querySelector('[data-current]')!;
+    const items = [...track.children] as HTMLElement[];
+    const start = () => track.getBoundingClientRect().left + parseFloat(getComputedStyle(track).paddingLeft);
+    const index = () => {
+      const s = start();
+      let best = 0;
+      items.forEach((el, i) => { if (Math.abs(el.getBoundingClientRect().left - s) < Math.abs(items[best].getBoundingClientRect().left - s)) best = i; });
+      return best;
+    };
+    const pad = () => { track.style.scrollPaddingInline = getComputedStyle(track).paddingLeft; };
+    const atEnd = () => track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+    const shown = () => (atEnd() ? items.length - 1 : index());
+    const update = () => {
+      const i = shown();
+      current.textContent = String(i + 1);
+      prev.disabled = track.scrollLeft <= 4;
+      next.disabled = atEnd();
+    };
+    const go = (dir: number) => {
+      const i = Math.min(items.length - 1, Math.max(0, shown() + dir));
+      track.scrollTo({ left: track.scrollLeft + items[i].getBoundingClientRect().left - start(), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    };
+    prev.addEventListener('click', () => go(-1));
+    next.addEventListener('click', () => go(1));
+    track.addEventListener('scroll', () => requestAnimationFrame(update), { passive: true });
+    addEventListener('resize', () => { pad(); update(); });
+    pad();
+    update();
+  }
+
+  // Printed copies should include every experience highlight.
+  let openedForPrint: HTMLDetailsElement[] = [];
+  addEventListener('beforeprint', () => {
+    openedForPrint = [...document.querySelectorAll<HTMLDetailsElement>('details.more:not([open])')];
+    openedForPrint.forEach((d) => (d.open = true));
+  });
+  addEventListener('afterprint', () => {
+    openedForPrint.forEach((d) => (d.open = false));
+    openedForPrint = [];
+  });
+
   const controls = document.querySelector<HTMLElement>('.project-filter-controls');
   const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-project-filter]'));
   const cards = Array.from(document.querySelectorAll<HTMLElement>('#project-list > .project'));
@@ -219,146 +288,146 @@ const links = profile.links.filter((l) => l.href);
 </script>
 
 <style>
-  .intro-contact { margin-top: 1.25rem; }
-  .featured-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1.25rem; }
-  .featured-card { border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; }
-  .featured-card :global(img) { width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: contain; background: var(--accent-soft); }
-  .featured-copy { padding: 1rem; display: flex; flex-direction: column; flex: 1; gap: 0.65rem; }
-  .eyebrow { color: var(--accent); font-size: 0.75rem; }
-  .featured-card h3 { font-size: 1.1rem; }
-  .featured-copy > p:not(.eyebrow) { font-size: 0.875rem; color: var(--muted); }
-  .featured-link { margin-top: auto; padding-top: 0.5rem; font-size: 0.875rem; }
-  .recent-notes article { padding: 1.5rem 0; border-bottom: 1px solid var(--rule); }
-  .recent-notes time { color: var(--muted); font-size: 0.8125rem; }
-  .recent-notes h3 { margin: 0.4rem 0 0.6rem; font-size: 1.25rem; }
-  .recent-notes article p { color: var(--muted); }
-  .all-notes { display: inline-block; margin-top: 1rem; }
-  .contact-section { margin-top: 4.5rem; border-top: 1px solid var(--rule); padding-top: 2rem; }
-  .contact-section h2 { font-size: 1.75rem; }
-  .contact-section p { margin: 0.75rem 0 1.25rem; color: var(--muted); }
-  @media (max-width: 40rem) { .featured-grid { grid-template-columns: 1fr; } }
+  /* Hero */
+  .hero { position: relative; padding-bottom: clamp(1rem, 3vw, 2rem); }
+  .kicker { font-size: var(--step--1); color: var(--muted); }
+  .display {
+    margin-top: clamp(1.25rem, 3vw, 2rem);
+    font-size: var(--step-display);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+  }
+  .bio { margin-top: clamp(1.25rem, 2.5vw, 1.75rem); font-size: var(--step-1); line-height: 1.55; color: var(--muted); max-width: 38rem; text-wrap: pretty; }
+  .hero-actions { margin-top: clamp(1.75rem, 3vw, 2.25rem); display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.75rem; }
+  .contact { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.35rem 1.25rem; font-size: 0.9375rem; }
+  .contact a { color: var(--muted); text-decoration: none; }
+  .contact a:hover { color: var(--ink); }
 
-  .project-filter-controls { margin-top: 1.25rem; }
+  /* Sections */
+  .section { margin-top: var(--space-section); scroll-margin-top: 4.5rem; }
+  .section-head { display: flex; align-items: baseline; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--rule); margin-bottom: clamp(1.5rem, 3vw, 2.25rem); }
+  .section-title { font-size: var(--step-3); letter-spacing: -0.03em; }
+  .section-title .count { font-family: var(--mono); font-size: var(--step--1); font-weight: 400; color: var(--muted); letter-spacing: 0; vertical-align: 0.6em; margin-left: 0.25rem; }
+  .stretched::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+
+  /* Featured */
+  .carousel-head { display: flex; align-items: end; justify-content: space-between; gap: 1rem; }
+  .carousel-controls { display: flex; align-items: center; gap: 0.5rem; }
+  .carousel-count { white-space: nowrap; font-family: var(--mono); font-size: var(--step--1); color: var(--muted); margin-right: 0.5rem; font-variant-numeric: tabular-nums; }
+  .carousel-btn { width: 2.5rem; height: 2.5rem; border-radius: 999px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); font: inherit; cursor: pointer; transition: border-color 0.2s var(--ease), opacity 0.2s var(--ease); }
+  .carousel-btn:hover:not(:disabled) { border-color: var(--ink); }
+  .carousel-btn:disabled { opacity: 0.35; cursor: default; }
+  .carousel { list-style: none; margin: 0 calc(50% - 50vw); padding: 0.25rem max(var(--gutter), calc(50vw - 50%)) 1rem; display: grid; grid-auto-flow: column; grid-auto-columns: min(86vw, 46rem); gap: clamp(0.875rem, 2vw, 1.5rem); overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: max(var(--gutter), (100vw - var(--wide)) / 2); overscroll-behavior-x: contain; scrollbar-width: none; }
+  .carousel::-webkit-scrollbar { display: none; }
+  .carousel > li { scroll-snap-align: start; }
+  .featured-card { position: relative; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; background: var(--bg); transition: border-color 0.25s var(--ease); }
+  .featured-card:hover { border-color: color-mix(in srgb, var(--ink) 30%, var(--rule)); }
+  .featured-media { display: block; aspect-ratio: 16 / 10; overflow: hidden; background: var(--accent-soft); border-bottom: 1px solid var(--rule); }
+  .featured-media :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: top center; transition: transform 0.6s var(--ease); }
+  .featured-card:hover .featured-media :global(img) { transform: scale(1.03); }
+  .featured-copy { padding: clamp(1rem, 2vw, 1.4rem); display: flex; flex-direction: column; flex: 1; gap: 0.6rem; }
+  .eyebrow { color: var(--muted); font-size: var(--step--1); }
+  .featured-card h3 { font-size: var(--step-2); letter-spacing: -0.02em; }
+  .featured-card h3 a { text-decoration: none; }
+  .featured-copy > p:not(.eyebrow) { font-size: 0.9375rem; color: var(--muted); }
+  .featured-card:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .featured-card a:focus-visible { outline: none; }
+
+  /* Experience */
+  .experience { list-style: none; padding: 0; }
+  .experience > li { display: grid; grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr); gap: 1.5rem clamp(1.5rem, 4vw, 4rem); padding: clamp(1.5rem, 3vw, 2.25rem) 0; border-bottom: 1px solid var(--rule); }
+  .experience > li:first-child { padding-top: 0.5rem; }
+  .experience-side { display: flex; flex-direction: column; gap: 0.9rem; }
+  .experience-logo { width: 3.25rem; height: 3.25rem; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--rule); border-radius: 10px; background: #fff; }
+  .experience-logo :global(img) { width: 2.75rem; height: 2.75rem; object-fit: contain; }
+  .experience-meta { color: var(--muted); font-size: var(--step--1); font-family: var(--mono); line-height: 1.6; }
+  .experience h3 { font-size: var(--step-2); letter-spacing: -0.02em; }
+  .experience-role { margin-top: 0.3rem; color: var(--accent); font-size: 0.9375rem; }
+  .experience-lead { margin-top: 0.9rem; color: var(--muted); font-size: 0.9375rem; max-width: var(--measure); }
+  .more { margin-top: 0.6rem; }
+  .more summary { cursor: pointer; font-size: var(--step--1); color: var(--muted); list-style: none; display: inline-flex; gap: 0.35rem; }
+  .more summary::-webkit-details-marker { display: none; }
+  .more summary::after { content: '+'; }
+  .more[open] summary::after { content: '−'; }
+  .more summary:hover { color: var(--ink); }
+  .experience-main ul { padding-left: 1.1rem; margin-top: 1rem; color: var(--muted); font-size: 0.9375rem; max-width: var(--measure); }
+  .experience-main ul li + li { margin-top: 0.55rem; }
+  .experience-main ul li::marker { color: color-mix(in srgb, var(--muted) 60%, transparent); }
+  @media (max-width: 40rem) {
+    .experience > li { grid-template-columns: 1fr; gap: 1rem; }
+    .experience-side { flex-direction: row; align-items: center; gap: 0.9rem; }
+  }
+
+  /* Education */
+  .education-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: start; }
+  .education { list-style: none; padding: 0; }
+  .education > li { padding: 0 0 1.5rem; }
+  .education > li + li { padding-top: 1.5rem; border-top: 1px solid var(--rule); }
+  .education h3 { font-size: var(--step-1); margin-top: 0.4rem; letter-spacing: -0.01em; }
+  .education-detail { margin-top: 0.5rem; color: var(--muted); font-size: 0.9375rem; }
+  .skills { margin: 0; border-top: 1px solid var(--rule); }
+  .skills > div { display: grid; grid-template-columns: 8.5rem 1fr; gap: 1rem; padding: 0.8rem 0; border-bottom: 1px solid var(--rule); font-size: 0.9375rem; }
+  .skills dt { color: var(--muted); font-family: var(--mono); font-size: var(--step--1); padding-top: 0.1rem; }
+  .skills dd { margin: 0; }
+  @media (max-width: 52rem) { .education-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 30rem) { .skills > div { grid-template-columns: 1fr; gap: 0.2rem; } }
+
+  /* Projects */
+  .project-filter-controls { margin-bottom: clamp(1.5rem, 3vw, 2rem); }
   .project-filters { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .project-filters button { font: inherit; font-size: 0.875rem; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 5px; background: var(--bg); color: var(--muted); cursor: pointer; }
-  .project-filters button span { margin-left: 0.3rem; font-family: var(--mono); font-size: 0.75rem; }
-  .project-filters button[aria-pressed='true'] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
-  .project-filters button:hover { border-color: var(--accent); color: var(--accent); }
+  .project-filters button { font: inherit; font-size: 0.875rem; padding: 0.4rem 0.85rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--bg); color: var(--muted); cursor: pointer; transition: border-color 0.2s var(--ease), color 0.2s var(--ease), background 0.2s var(--ease); }
+  .project-filters button span { margin-left: 0.3rem; font-family: var(--mono); font-size: 0.75rem; opacity: 0.8; }
+  .project-filters button[aria-pressed='true'] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .project-filters button:hover:not([aria-pressed='true']) { border-color: color-mix(in srgb, var(--ink) 35%, var(--rule)); color: var(--ink); }
   .project-filters button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .filter-status { margin-top: 0.75rem; color: var(--muted); font-size: 0.8125rem; }
+  .projects { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); gap: clamp(2rem, 3vw, 2.75rem) clamp(1rem, 2vw, 1.5rem); }
+  .project { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
   .project[hidden] { display: none; }
-
-  .section-nav { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 2rem; font-size: 0.9375rem; }
-  .section-nav span { color: var(--muted); font-family: var(--mono); font-size: 0.8rem; }
-  .experience { list-style: none; padding: 0; }
-  .experience > li { padding: 1.6rem 0; border-bottom: 1px solid var(--rule); }
-  .experience-heading { display: flex; align-items: center; gap: 1rem; }
-  .experience-heading > div:last-child { min-width: 0; }
-  .experience-logo { flex: 0 0 3.75rem; width: 3.75rem; height: 3.75rem; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--rule); border-radius: 8px; background: #fff; }
-  .experience-logo :global(img) { width: 3.25rem; height: 3.25rem; object-fit: contain; }
-  .experience h3 { font-size: 1.125rem; margin-top: 0.3rem; }
-  .experience-meta { color: var(--muted); font-size: 0.8125rem; }
-  .experience-role { margin-top: 0.25rem; }
-  .experience ul { padding-left: 1.15rem; margin-top: 0.65rem; color: var(--muted); font-size: 0.9375rem; }
-  .experience ul li + li { margin-top: 0.4rem; }
-  .education { list-style: none; padding: 0; }
-  .education > li { padding: 1.4rem 0; border-bottom: 1px solid var(--rule); }
-  .education h3 { font-size: 1.125rem; margin-top: 0.3rem; }
-  .education-detail { margin-top: 0.5rem; color: var(--muted); font-size: 0.9375rem; }
-  .skills { margin: 1.5rem 0 0; }
-  .skills > div { display: grid; grid-template-columns: 8.5rem 1fr; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--rule); font-size: 0.9375rem; }
-  .skills dt { color: var(--muted); }
-  .skills dd { margin: 0; }
-  @media (max-width: 30rem) { .skills > div { grid-template-columns: 1fr; gap: 0.2rem; } }
-  .thumbnail { display: block; overflow: hidden; aspect-ratio: 16 / 10; border: 1px solid var(--rule); border-radius: 5px; background: var(--accent-soft); text-decoration: none; }
-  .thumbnail :global(img) { width: 100%; height: 100%; object-fit: contain; }
-  .thumbnail-type { display: flex; flex-direction: column; justify-content: center; gap: 0.5rem; height: 100%; padding: 1rem; color: var(--accent); font-family: var(--mono); font-size: 0.95rem; }
-  .thumbnail-type small { font-size: 0.7rem; color: var(--muted); }
+  .thumbnail { display: block; overflow: hidden; aspect-ratio: 16 / 10; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--accent-soft); text-decoration: none; transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease); }
+  .thumbnail :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: top center; transition: transform 0.6s var(--ease); }
+  .project:hover .thumbnail { border-color: color-mix(in srgb, var(--ink) 30%, var(--rule)); }
+  .project:hover .thumbnail :global(img) { transform: scale(1.03); }
+  .thumbnail-type { display: flex; flex-direction: column; justify-content: flex-end; gap: 0.4rem; height: 100%; padding: 1.25rem; color: var(--accent); font-family: var(--mono); font-size: 1.05rem; background: linear-gradient(135deg, var(--accent-soft), color-mix(in srgb, var(--accent-soft) 40%, var(--bg))); }
+  .thumbnail-type small { font-size: 0.75rem; color: var(--muted); }
   .project-copy { min-width: 0; }
+  .project h3 { font-size: var(--step-1); letter-spacing: -0.015em; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.6rem; }
+  .project h3 a { text-decoration: none; }
+  .project h3 a:hover { color: var(--accent); }
   .project .award { white-space: normal; }
+  .pitch { margin-top: 0.45rem; font-size: 0.9375rem; }
+  .project :global(.actions) { margin-top: 0.7rem; font-size: 0.875rem; }
 
+  /* Notes */
+  .notes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: clamp(1rem, 2vw, 1.5rem); }
+  .recent-notes article { position: relative; padding: clamp(1.25rem, 2.5vw, 1.75rem); border: 1px solid var(--rule); border-radius: var(--radius); transition: border-color 0.25s var(--ease); }
+  .recent-notes article:hover { border-color: color-mix(in srgb, var(--ink) 30%, var(--rule)); }
+  .recent-notes article:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .recent-notes article a:focus-visible { outline: none; }
+  .recent-notes time { color: var(--muted); font-family: var(--mono); font-size: var(--step--1); }
+  .recent-notes h3 { margin: 0.6rem 0 0.6rem; font-size: var(--step-1); letter-spacing: -0.015em; }
+  .recent-notes h3 a { text-decoration: none; }
+  .recent-notes article p { color: var(--muted); font-size: 0.9375rem; }
+  .all-notes { display: inline-block; margin-top: 1.25rem; font-size: 0.9375rem; }
 
-  .intro h1 {
-    font-size: clamp(2.25rem, 7vw, 3rem);
-    letter-spacing: -0.025em;
-    line-height: 1.05;
+  /* Contact */
+  .photo { margin: var(--space-section) calc(50% - 50vw) 0; position: relative; }
+  .photo :global(img) { display: block; width: 100%; height: clamp(16rem, 52vw, 40rem); object-fit: cover; }
+  .photo :global(.photo-night) { display: none; }
+  :global(:root[data-theme='dark']) .photo :global(.photo-day) { display: none; }
+  :global(:root[data-theme='dark']) .photo :global(.photo-night) { display: block; }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .photo :global(.photo-day) { display: none; }
+    :global(:root:not([data-theme='light'])) .photo :global(.photo-night) { display: block; }
   }
-
-  .bio {
-    margin-top: 1rem;
-    font-size: 1.125rem;
-    color: var(--muted);
-    max-width: 36rem;
-  }
-
-  .contact {
-    list-style: none;
-    padding: 0;
-    margin-top: 1.25rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem 1.25rem;
-  }
-
-  .section-title {
-    margin-top: 4.5rem;
-    padding-bottom: 0.6rem;
-    border-bottom: 1px solid var(--rule);
-    font-size: 0.9375rem;
-    font-weight: 400;
-    color: var(--muted);
-  }
-
-  .projects {
-    list-style: none;
-    padding: 0;
-  }
-
-  .project {
-    display: grid;
-    grid-template-columns: 10rem minmax(0, 1fr);
-    gap: 1.25rem;
-    padding: 2rem 0;
-    border-bottom: 1px solid var(--rule);
-  }
-
-  .project h3 {
-    font-size: 1.25rem;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.25rem 0.65rem;
-  }
-
-  .project h3 a {
-    text-decoration: none;
-  }
-
-  .project h3 a:hover {
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-  }
-
-  .pitch {
-    margin-top: 0.4rem;
-  }
-
-  .role {
-    margin-top: 0.4rem;
-    font-size: 0.9375rem;
-    color: var(--muted);
-  }
-
-  .tags {
-    margin-top: 0.6rem;
-  }
-
-  .project :global(.actions) {
-    margin-top: 0.6rem;
-    font-size: 0.9375rem;
-  }
-  @media (max-width: 30rem) {
-    .project { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
-    .thumbnail { max-width: 100%; }
+  .photo figcaption { max-width: calc(var(--wide) + 2 * var(--gutter)); margin: 0.75rem auto 0; padding-inline: var(--gutter); font-size: var(--step--1); color: var(--muted); }
+  .photo figcaption a { color: inherit; }
+  .contact-section { margin-top: var(--space-section); padding-top: clamp(2rem, 4vw, 3rem); border-top: 1px solid var(--rule); }
+  .contact-section h2 { font-size: var(--step-3); letter-spacing: -0.035em; }
+  .contact-section p { margin: 0.75rem 0 1.5rem; color: var(--muted); max-width: 32rem; font-size: var(--step-0); }
+  @media print {
+    .carousel-controls { display: none; }
+    .carousel { margin: 0; padding: 0; grid-auto-flow: row; grid-template-columns: 1fr 1fr; overflow: visible; }
+    .featured-card { break-inside: avoid; }
   }
 </style>
