@@ -92,6 +92,10 @@ const year = new Date().getFullYear();
       </footer>
     </div>
     <script is:inline>
+      // The blog subdomain serves only blog pages, so portfolio links in the header go to the main site.
+      if (location.hostname === 'blog.veermickey.com') {
+        for (const a of document.querySelectorAll('.site-header a[href^="/"]')) a.href = 'https://www.veermickey.com' + a.getAttribute('href');
+      }
       const header = document.querySelector('.site-header');
       const onScroll = () => header?.classList.toggle('is-scrolled', scrollY > 8);
       addEventListener('scroll', onScroll, { passive: true });
