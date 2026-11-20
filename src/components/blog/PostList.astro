@@ -1,0 +1,27 @@
+---
+import type { Post } from '../../lib/blog/posts';
+import { formatPostDate, readingMinutes, tagSlug } from '../../lib/blog/text';
+
+interface Props { posts: Post[]; base: string; }
+const { posts, base } = Astro.props;
+---
+{posts.length === 0 ? (
+  <p class="blog-empty">No posts yet.</p>
+) : (
+  <ol class="post-list">
+    {posts.map((post) => (
+      <li>
+        <p class="blog-meta">
+          <time datetime={post.published_at!}>{formatPostDate(post.published_at!)}</time> · {readingMinutes(post.content)} min read
+        </p>
+        <h2><a href={`${base}/${post.slug}`}>{post.title}</a></h2>
+        {post.excerpt && <p class="excerpt">{post.excerpt}</p>}
+        {post.tags.length > 0 && (
+          <ul class="tags" aria-label="Tags">
+            {post.tags.map((tag) => <li><a href={`${base}/tags/${tagSlug(tag)}`}>{tag}</a></li>)}
+          </ul>
+        )}
+      </li>
+    ))}
+  </ol>
+)}

@@ -1,0 +1,57 @@
+---
+import AdminShell from '../../../components/blog/AdminShell.astro';
+---
+<AdminShell title="Edit post">
+  <p data-gate class="admin-status">Checking sign-in…</p>
+  <section data-editor hidden>
+    <div class="admin-bar">
+      <a class="blog-back" data-back href="#">← All posts</a>
+      <p class="admin-status" data-save-status role="status"></p>
+    </div>
+
+    <form class="admin-form" data-form>
+      <label>Title <input name="title" required autocomplete="off" /></label>
+      <label>Slug
+        <span class="admin-slug"><span>blog.veermickey.com/</span><input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" autocomplete="off" /></span>
+      </label>
+      <label>Excerpt <textarea name="excerpt" rows="2"></textarea></label>
+      <label>Tags <input name="tags" placeholder="comma separated" autocomplete="off" /></label>
+      <div class="admin-cover">
+        <label>Cover image URL <input name="cover_image_url" type="url" autocomplete="off" /></label>
+        <label class="admin-button">Upload cover<input type="file" accept="image/*" data-upload-cover hidden /></label>
+      </div>
+
+      <div class="admin-toolbar">
+        <div class="admin-tabs" role="tablist">
+          <button type="button" role="tab" aria-selected="true" data-tab="split">Write + preview</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="preview">Full preview</button>
+        </div>
+        <label class="admin-button">Insert image<input type="file" accept="image/*" multiple data-upload-inline hidden /></label>
+      </div>
+      <div class="admin-editor" data-mode="split">
+        <textarea name="content" spellcheck="true" aria-label="Markdown"></textarea>
+        <div class="admin-preview">
+          <article>
+            <header class="post-header" data-preview-header></header>
+            <div class="prose" data-preview></div>
+          </article>
+        </div>
+      </div>
+
+      <div class="admin-bar admin-footer">
+        <div class="actions">
+          <button class="admin-button primary" type="submit" data-save>Save</button>
+          <button class="admin-button" type="button" data-publish>Publish</button>
+          <a class="admin-button" data-view-live target="_blank" rel="noopener" hidden>View live</a>
+        </div>
+        <button class="admin-button danger" type="button" data-delete hidden>Delete</button>
+      </div>
+      <p class="admin-meta" data-meta></p>
+    </form>
+  </section>
+</AdminShell>
+
+<script>
+  import { initEditor } from '../../../scripts/blog/editor';
+  initEditor();
+</script>

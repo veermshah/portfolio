@@ -1,0 +1,7 @@
+---
+import BlogIndex from '../../../components/blog/BlogIndex.astro';
+export const prerender = false;
+// Astro has already percent-decoded route params.
+const tag = Astro.params.tag ?? '';
+---
+<BlogIndex tag={tag} />

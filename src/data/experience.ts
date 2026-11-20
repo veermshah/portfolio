@@ -16,8 +16,8 @@ export const experience = [
   {
     company: 'HackUTD · ACM',
     logo: 'hackutd.png',
-    role: 'President',
-    period: 'January 2024 – present',
+    role: 'Director (previously Experience Organizer, January 2024 – January 2026)',
+    period: 'January 2026 – present',
     location: 'Richardson, TX',
     highlights: [
       'Led a 45-member team organizing HackUTD, the largest 24-hour collegiate hackathon in North America, with 1,200+ participants, 15+ sponsors and more than $50,000 in prizes.',
