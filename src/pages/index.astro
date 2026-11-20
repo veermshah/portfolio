@@ -11,7 +11,6 @@ import ProjectLinks from '../components/ProjectLinks.astro';
 import { profile } from '../data/profile';
 import { projects } from '../data/projects';
 import { projectCategories, categoriesByProject } from '../data/project-categories';
-import { roleSummary, myPart } from '../lib/format';
 
 const assets = import.meta.glob<{ default: ImageMetadata }>('../assets/projects/*/*.{png,jpg,jpeg,webp}', { eager: true });
 const thumbnail = (p: (typeof projects)[number]) => {
@@ -46,7 +45,7 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
 
 <Base title={`${profile.name}, software engineer`} description={profile.description} wide>
   <section class="hero" aria-labelledby="hero-name">
-    <p class="kicker" data-reveal><span class="kicker-dot" aria-hidden="true"></span>Software engineer · M.S. CS, UT Dallas</p>
+    <p class="kicker" data-reveal>Software engineer · M.S. CS, UT Dallas</p>
     <h1 id="hero-name" class="display" data-reveal style="--reveal-i: 1">{profile.name}</h1>
     <p class="bio" data-reveal style="--reveal-i: 2">{profile.bio}</p>
     <div class="hero-actions" data-reveal style="--reveal-i: 3">
@@ -55,19 +54,10 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
         {links.map((l) => <li><a class="icon-link" href={l.href}><LinkIcon name={l.label} />{l.label}</a></li>)}
       </ul>
     </div>
-    <ul class="proof" aria-label="Experience at a glance" data-reveal style="--reveal-i: 4">
-      {experience.map((item) => (
-        <li>
-          <span class="proof-logo"><Image src={logos[`../assets/experience/${item.logo}`].default} alt="" width={40} height={40} format="webp" /></span>
-          <span><strong>{item.company.split(' · ')[0]}</strong><small>{item.role.split(' (')[0]}</small></span>
-        </li>
-      ))}
-    </ul>
   </section>
 
   <section id="work" class="section" aria-labelledby="featured-heading">
     <header class="section-head" data-reveal>
-      <p class="section-index">01</p>
       <h2 id="featured-heading" class="section-title">Featured work</h2>
     </header>
     <div class="featured-grid">
@@ -80,7 +70,6 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
             <p class="eyebrow">{label}</p>
             <h3><a class="stretched" href={`/projects/${project.slug}/`}>{project.title}</a></h3>
             <p>{detail}</p>
-            <span class="featured-link" aria-hidden="true">Explore project <span class="arrow">→</span></span>
           </div>
         </article>
       ))}
@@ -89,7 +78,6 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
 
   <section id="experience" class="section" aria-labelledby="experience-heading">
     <header class="section-head" data-reveal>
-      <p class="section-index">02</p>
       <h2 id="experience-heading" class="section-title">Experience</h2>
     </header>
     <ol class="experience">
@@ -104,7 +92,13 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
           <div class="experience-main">
             <h3>{item.company}</h3>
             <p class="experience-role">{item.role}</p>
-            <ul>{item.highlights.map((line) => <li>{line}</li>)}</ul>
+            <p class="experience-lead">{item.highlights[0]}</p>
+            {item.highlights.length > 1 && (
+              <details class="more">
+                <summary>More</summary>
+                <ul>{item.highlights.slice(1).map((line) => <li>{line}</li>)}</ul>
+              </details>
+            )}
           </div>
         </li>
       ))}
@@ -113,7 +107,6 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
 
   <section id="education" class="section" aria-labelledby="education-heading">
     <header class="section-head" data-reveal>
-      <p class="section-index">03</p>
       <h2 id="education-heading" class="section-title">Education & skills</h2>
     </header>
     <div class="education-grid">
@@ -140,7 +133,6 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
 
   <section id="projects" class="section" aria-labelledby="projects-heading">
     <header class="section-head" data-reveal>
-      <p class="section-index">04</p>
       <h2 id="projects-heading" class="section-title">All projects <span class="count">{projects.length}</span></h2>
     </header>
     <div class="project-filter-controls" hidden>
@@ -170,10 +162,6 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
                 {p.award && <span class="award">{p.award}</span>}
               </h3>
               <p class="pitch">{p.pitch}</p>
-              <p class="role">{roleSummary(p) + (myPart(p) ? `. My part: ${myPart(p)}.` : '')}</p>
-              <ul class="tags" aria-label="Stack">
-                {p.stack.map((t) => <li>{t}</li>)}
-              </ul>
               <ProjectLinks project={p} />
             </div>
           </li>
@@ -184,7 +172,6 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
 
   <section class="section recent-notes" aria-labelledby="notes-heading">
     <header class="section-head" data-reveal>
-      <p class="section-index">05</p>
       <h2 id="notes-heading" class="section-title">Notes</h2>
     </header>
     <div class="notes-grid">
@@ -244,19 +231,7 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
 <style>
   /* Hero */
   .hero { position: relative; padding-bottom: clamp(1rem, 3vw, 2rem); }
-  .hero::before {
-    content: '';
-    position: absolute;
-    inset: -12rem calc(-1 * var(--gutter)) -2rem;
-    z-index: -1;
-    background-image: radial-gradient(color-mix(in srgb, var(--ink) 13%, transparent) 1px, transparent 1px);
-    background-size: 22px 22px;
-    mask-image: radial-gradient(ellipse 70% 60% at 30% 35%, #000 10%, transparent 75%);
-    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 30% 35%, #000 10%, transparent 75%);
-    pointer-events: none;
-  }
-  .kicker { display: inline-flex; align-items: center; gap: 0.6rem; font-size: var(--step--1); letter-spacing: 0.01em; color: var(--muted); padding: 0.3rem 0.8rem 0.3rem 0.6rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--bg); }
-  .kicker-dot { width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .kicker { font-size: var(--step--1); color: var(--muted); }
   .display {
     margin-top: clamp(1.25rem, 3vw, 2rem);
     font-size: var(--step-display);
@@ -268,39 +243,26 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
   .contact { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.35rem 1.25rem; font-size: 0.9375rem; }
   .contact a { color: var(--muted); text-decoration: none; }
   .contact a:hover { color: var(--ink); }
-  .proof { list-style: none; padding: 0; margin-top: clamp(2.5rem, 5vw, 4rem); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.25rem; border-top: 1px solid var(--rule); }
-  .proof li { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 0; border-bottom: 1px solid var(--rule); }
-  .proof-logo { flex: none; width: 2.5rem; height: 2.5rem; border-radius: 8px; overflow: hidden; border: 1px solid var(--rule); background: #fff; display: grid; place-items: center; }
-  .proof-logo :global(img) { width: 2.1rem; height: 2.1rem; object-fit: contain; }
-  .proof strong { display: block; font-size: 0.9375rem; line-height: 1.3; }
-  .proof small { display: block; color: var(--muted); font-size: var(--step--1); line-height: 1.35; }
-  @media (min-width: 64rem) { .proof { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-  @media (max-width: 30rem) { .proof li { align-items: flex-start; } .proof-logo { width: 2rem; height: 2rem; } .proof-logo :global(img) { width: 1.7rem; height: 1.7rem; } }
 
   /* Sections */
   .section { margin-top: var(--space-section); scroll-margin-top: 4.5rem; }
   .section-head { display: flex; align-items: baseline; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--rule); margin-bottom: clamp(1.5rem, 3vw, 2.25rem); }
-  .section-index { font-family: var(--mono); font-size: var(--step--1); color: var(--accent); }
   .section-title { font-size: var(--step-3); letter-spacing: -0.03em; }
   .section-title .count { font-family: var(--mono); font-size: var(--step--1); font-weight: 400; color: var(--muted); letter-spacing: 0; vertical-align: 0.6em; margin-left: 0.25rem; }
   .stretched::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
 
   /* Featured */
   .featured-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1rem, 2vw, 1.5rem); }
-  .featured-card { position: relative; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; background: var(--bg); transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease), border-color 0.35s var(--ease); }
-  .featured-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: color-mix(in srgb, var(--ink) 18%, var(--rule)); }
+  .featured-card { position: relative; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; background: var(--bg); transition: border-color 0.25s var(--ease); }
+  .featured-card:hover { border-color: color-mix(in srgb, var(--ink) 30%, var(--rule)); }
   .featured-media { display: block; aspect-ratio: 16 / 10; overflow: hidden; background: var(--accent-soft); border-bottom: 1px solid var(--rule); }
   .featured-media :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: top center; transition: transform 0.6s var(--ease); }
   .featured-card:hover .featured-media :global(img) { transform: scale(1.03); }
   .featured-copy { padding: clamp(1rem, 2vw, 1.4rem); display: flex; flex-direction: column; flex: 1; gap: 0.6rem; }
-  .eyebrow { color: var(--accent); font-family: var(--mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .eyebrow { color: var(--muted); font-size: var(--step--1); }
   .featured-card h3 { font-size: var(--step-2); letter-spacing: -0.02em; }
   .featured-card h3 a { text-decoration: none; }
   .featured-copy > p:not(.eyebrow) { font-size: 0.9375rem; color: var(--muted); }
-  .featured-link { margin-top: auto; padding-top: 0.75rem; font-size: 0.875rem; font-weight: 700; }
-  .featured-link .arrow { display: inline-block; transition: transform 0.3s var(--ease); }
-  .featured-card:hover .featured-link { color: var(--accent); }
-  .featured-card:hover .arrow { transform: translateX(4px); }
   .featured-card:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
   .featured-card a:focus-visible { outline: none; }
   @media (max-width: 52rem) { .featured-grid { grid-template-columns: 1fr; } .featured-media { aspect-ratio: 16 / 9; } }
@@ -316,6 +278,13 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
   .experience-meta { color: var(--muted); font-size: var(--step--1); font-family: var(--mono); line-height: 1.6; }
   .experience h3 { font-size: var(--step-2); letter-spacing: -0.02em; }
   .experience-role { margin-top: 0.3rem; color: var(--accent); font-size: 0.9375rem; }
+  .experience-lead { margin-top: 0.9rem; color: var(--muted); font-size: 0.9375rem; max-width: var(--measure); }
+  .more { margin-top: 0.6rem; }
+  .more summary { cursor: pointer; font-size: var(--step--1); color: var(--muted); list-style: none; display: inline-flex; gap: 0.35rem; }
+  .more summary::-webkit-details-marker { display: none; }
+  .more summary::after { content: '+'; }
+  .more[open] summary::after { content: '−'; }
+  .more summary:hover { color: var(--ink); }
   .experience-main ul { padding-left: 1.1rem; margin-top: 1rem; color: var(--muted); font-size: 0.9375rem; max-width: var(--measure); }
   .experience-main ul li + li { margin-top: 0.55rem; }
   .experience-main ul li::marker { color: color-mix(in srgb, var(--muted) 60%, transparent); }
@@ -352,7 +321,7 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
   .project[hidden] { display: none; }
   .thumbnail { display: block; overflow: hidden; aspect-ratio: 16 / 10; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--accent-soft); text-decoration: none; transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease); }
   .thumbnail :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: top center; transition: transform 0.6s var(--ease); }
-  .project:hover .thumbnail { box-shadow: var(--shadow); border-color: color-mix(in srgb, var(--ink) 18%, var(--rule)); }
+  .project:hover .thumbnail { border-color: color-mix(in srgb, var(--ink) 30%, var(--rule)); }
   .project:hover .thumbnail :global(img) { transform: scale(1.03); }
   .thumbnail-type { display: flex; flex-direction: column; justify-content: flex-end; gap: 0.4rem; height: 100%; padding: 1.25rem; color: var(--accent); font-family: var(--mono); font-size: 1.05rem; background: linear-gradient(135deg, var(--accent-soft), color-mix(in srgb, var(--accent-soft) 40%, var(--bg))); }
   .thumbnail-type small { font-size: 0.75rem; color: var(--muted); }
@@ -362,14 +331,12 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
   .project h3 a:hover { color: var(--accent); }
   .project .award { white-space: normal; }
   .pitch { margin-top: 0.45rem; font-size: 0.9375rem; }
-  .role { margin-top: 0.45rem; font-size: var(--step--1); color: var(--muted); }
-  .tags { margin-top: 0.7rem; }
   .project :global(.actions) { margin-top: 0.7rem; font-size: 0.875rem; }
 
   /* Notes */
   .notes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: clamp(1rem, 2vw, 1.5rem); }
-  .recent-notes article { position: relative; padding: clamp(1.25rem, 2.5vw, 1.75rem); border: 1px solid var(--rule); border-radius: var(--radius); transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease), border-color 0.35s var(--ease); }
-  .recent-notes article:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: color-mix(in srgb, var(--ink) 18%, var(--rule)); }
+  .recent-notes article { position: relative; padding: clamp(1.25rem, 2.5vw, 1.75rem); border: 1px solid var(--rule); border-radius: var(--radius); transition: border-color 0.25s var(--ease); }
+  .recent-notes article:hover { border-color: color-mix(in srgb, var(--ink) 30%, var(--rule)); }
   .recent-notes article:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
   .recent-notes article a:focus-visible { outline: none; }
   .recent-notes time { color: var(--muted); font-family: var(--mono); font-size: var(--step--1); }
@@ -379,7 +346,7 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
   .all-notes { display: inline-block; margin-top: 1.25rem; font-size: 0.9375rem; }
 
   /* Contact */
-  .contact-section { margin-top: var(--space-section); padding: clamp(2rem, 5vw, 3.5rem); border: 1px solid var(--rule); border-radius: calc(var(--radius) * 1.6); background: radial-gradient(120% 140% at 0% 0%, var(--accent-soft), transparent 60%); }
+  .contact-section { margin-top: var(--space-section); padding-top: clamp(2rem, 4vw, 3rem); border-top: 1px solid var(--rule); }
   .contact-section h2 { font-size: var(--step-3); letter-spacing: -0.035em; }
   .contact-section p { margin: 0.75rem 0 1.5rem; color: var(--muted); max-width: 32rem; font-size: var(--step-0); }
 </style>
