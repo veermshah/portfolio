@@ -7,7 +7,7 @@ export interface ProfileLink {
 export const profile = {
   name: 'Veer Shah',
   /** One line under the name on the home page. */
-  bio: 'Computer science master’s student at UT Dallas (Intelligent Systems, 4.00 GPA). I’ve built cloud and AI systems as an intern at Capital One and Fidelity, and I’m president of HackUTD.',
+  bio: 'Computer science master’s student at UT Dallas (Intelligent Systems, 4.00 GPA). I’ve built cloud and AI systems as an intern at Capital One and Fidelity, and I’m director of HackUTD.',
   /** Used for <meta name="description"> on the home page. */
   description:
     'Veer Shah: software engineer and UT Dallas computer science master’s student. Capital One and Fidelity internships in AWS distributed systems and retrieval, plus projects across compilers, AI agents, ML research tooling and hackathon wins.',
