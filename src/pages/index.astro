@@ -7,6 +7,8 @@ import LinkIcon from '../components/LinkIcon.astro';
 import ContactButton from '../components/ContactButton.astro';
 import { notes, formatDate } from '../data/notes';
 import Base from '../layouts/Base.astro';
+import dayPhoto from '../assets/photos/marina-bay.jpg';
+import nightPhoto from '../assets/photos/skyline-night.jpg';
 import ProjectLinks from '../components/ProjectLinks.astro';
 import { profile } from '../data/profile';
 import { projects } from '../data/projects';
@@ -35,10 +37,12 @@ const featured = [
   { slug: 'veer', label: 'Compiler engineering', detail: 'Static contracts for KV-cache memory, token budgets and numeric error.' },
   { slug: 'dishbrain-playground', label: 'Experimental work', detail: 'Controlled experiments with paired seeds, ablations and held-out evaluation.' },
   { slug: 'wander', label: 'Accessibility', detail: 'Indoor navigation with a voice guide, 3D mapping and deterministic routing.' },
-].map((feature) => {
+  { slug: 'destina' },
+  { slug: 'quantumloans' },
+].map((feature: { slug: string; label?: string; detail?: string }) => {
   const project = projects.find((project) => project.slug === feature.slug);
   if (!project) throw new Error(`Missing featured project: ${feature.slug}`);
-  return { ...feature, project };
+  return { project, label: feature.label ?? project.award ?? '', detail: feature.detail ?? project.pitch };
 });
 const links = profile.links.filter((l) => l.href && l.label !== 'Email');
 ---
@@ -57,24 +61,35 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
   </section>
 
   <section id="work" class="section" aria-labelledby="featured-heading">
-    <header class="section-head" data-reveal>
+    <header class="section-head carousel-head" data-reveal>
       <h2 id="featured-heading" class="section-title">Featured work</h2>
+      <div class="carousel-controls">
+        <span class="carousel-count" aria-hidden="true"><span data-current>1</span> / {featured.length}</span>
+        <button class="carousel-btn" type="button" data-dir="-1" aria-label="Previous project" disabled>←</button>
+        <button class="carousel-btn" type="button" data-dir="1" aria-label="Next project">→</button>
+      </div>
     </header>
-    <div class="featured-grid">
+    <ol class="carousel" aria-label="Featured projects" data-reveal style="--reveal-i: 1">
       {featured.map(({ project, label, detail }, i) => (
-        <article class="featured-card" data-reveal style={`--reveal-i: ${i}`}>
+        <li class="featured-card">
           <a class="featured-media" href={`/projects/${project.slug}/`} tabindex="-1" aria-hidden="true">
-            {thumbnail(project) && <Image src={thumbnail(project)!} alt="" widths={[400, 800, 1200]} sizes="(max-width: 48rem) 100vw, 33vw" format="webp" loading="lazy" />}
+            {thumbnail(project) && <Image src={thumbnail(project)!} alt="" widths={[480, 800, 1200, 1600]} sizes="(max-width: 48rem) 86vw, 46rem" format="webp" loading={i < 2 ? 'eager' : 'lazy'} />}
           </a>
           <div class="featured-copy">
-            <p class="eyebrow">{label}</p>
+            {label && <p class="eyebrow">{label}</p>}
             <h3><a class="stretched" href={`/projects/${project.slug}/`}>{project.title}</a></h3>
             <p>{detail}</p>
           </div>
-        </article>
+        </li>
       ))}
-    </div>
+    </ol>
   </section>
+
+  <figure class="photo" data-reveal>
+    <Image class="photo-day" src={dayPhoto} alt="Marina Bay Sands and the ArtScience Museum under a cloudy sky" widths={[640, 1024, 1600, 2400]} sizes="100vw" format="webp" loading="lazy" />
+    <Image class="photo-night" src={nightPhoto} alt="City skyline at night with illuminated buildings and a park" widths={[640, 1024, 1600, 2400]} sizes="100vw" format="webp" loading="lazy" />
+    <figcaption>Photo by me · <a href="https://unsplash.com/@veermickey">more on Unsplash</a></figcaption>
+  </figure>
 
   <section id="experience" class="section" aria-labelledby="experience-heading">
     <header class="section-head" data-reveal>
@@ -194,6 +209,37 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
 </Base>
 
 <script>
+  for (const track of document.querySelectorAll<HTMLElement>('.carousel')) {
+    const section = track.closest('section')!;
+    const [prev, next] = section.querySelectorAll<HTMLButtonElement>('.carousel-btn');
+    const current = section.querySelector('[data-current]')!;
+    const items = [...track.children] as HTMLElement[];
+    const index = () => {
+      const start = track.getBoundingClientRect().left + parseFloat(getComputedStyle(track).paddingLeft);
+      let best = 0;
+      items.forEach((el, i) => { if (Math.abs(el.getBoundingClientRect().left - start) < Math.abs(items[best].getBoundingClientRect().left - start)) best = i; });
+      return best;
+    };
+    const pad = () => { track.style.scrollPaddingInline = getComputedStyle(track).paddingLeft; };
+    const update = () => {
+      const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+      const i = atEnd ? items.length - 1 : index();
+      current.textContent = String(i + 1);
+      prev.disabled = track.scrollLeft <= 4;
+      next.disabled = atEnd;
+    };
+    const go = (dir: number) => {
+      const i = Math.min(items.length - 1, Math.max(0, index() + dir));
+      track.scrollTo({ left: track.scrollLeft + items[i].getBoundingClientRect().left - items[index()].getBoundingClientRect().left, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    };
+    prev.addEventListener('click', () => go(-1));
+    next.addEventListener('click', () => go(1));
+    track.addEventListener('scroll', () => requestAnimationFrame(update), { passive: true });
+    addEventListener('resize', () => { pad(); update(); });
+    pad();
+    update();
+  }
+
   // Printed copies should include every experience highlight.
   let openedForPrint: HTMLDetailsElement[] = [];
   addEventListener('beforeprint', () => {
@@ -263,7 +309,15 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
   .stretched::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
 
   /* Featured */
-  .featured-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1rem, 2vw, 1.5rem); }
+  .carousel-head { display: flex; align-items: end; justify-content: space-between; gap: 1rem; }
+  .carousel-controls { display: flex; align-items: center; gap: 0.5rem; }
+  .carousel-count { white-space: nowrap; font-family: var(--mono); font-size: var(--step--1); color: var(--muted); margin-right: 0.5rem; font-variant-numeric: tabular-nums; }
+  .carousel-btn { width: 2.5rem; height: 2.5rem; border-radius: 999px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); font: inherit; cursor: pointer; transition: border-color 0.2s var(--ease), opacity 0.2s var(--ease); }
+  .carousel-btn:hover:not(:disabled) { border-color: var(--ink); }
+  .carousel-btn:disabled { opacity: 0.35; cursor: default; }
+  .carousel { list-style: none; margin: 0 calc(50% - 50vw); padding: 0.25rem max(var(--gutter), calc(50vw - 50%)) 1rem; display: grid; grid-auto-flow: column; grid-auto-columns: min(86vw, 46rem); gap: clamp(0.875rem, 2vw, 1.5rem); overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: max(var(--gutter), (100vw - var(--wide)) / 2); overscroll-behavior-x: contain; scrollbar-width: none; }
+  .carousel::-webkit-scrollbar { display: none; }
+  .carousel > li { scroll-snap-align: start; }
   .featured-card { position: relative; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; background: var(--bg); transition: border-color 0.25s var(--ease); }
   .featured-card:hover { border-color: color-mix(in srgb, var(--ink) 30%, var(--rule)); }
   .featured-media { display: block; aspect-ratio: 16 / 10; overflow: hidden; background: var(--accent-soft); border-bottom: 1px solid var(--rule); }
@@ -276,8 +330,6 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
   .featured-copy > p:not(.eyebrow) { font-size: 0.9375rem; color: var(--muted); }
   .featured-card:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
   .featured-card a:focus-visible { outline: none; }
-  @media (max-width: 52rem) { .featured-grid { grid-template-columns: 1fr; } .featured-media { aspect-ratio: 16 / 9; } }
-  @media (min-width: 34rem) and (max-width: 52rem) { .featured-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .featured-card:last-child { grid-column: 1 / -1; } }
 
   /* Experience */
   .experience { list-style: none; padding: 0; }
@@ -357,6 +409,17 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
   .all-notes { display: inline-block; margin-top: 1.25rem; font-size: 0.9375rem; }
 
   /* Contact */
+  .photo { margin: var(--space-section) calc(50% - 50vw) 0; position: relative; }
+  .photo :global(img) { display: block; width: 100%; height: clamp(16rem, 52vw, 40rem); object-fit: cover; }
+  .photo :global(.photo-night) { display: none; }
+  :global(:root[data-theme='dark']) .photo :global(.photo-day) { display: none; }
+  :global(:root[data-theme='dark']) .photo :global(.photo-night) { display: block; }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .photo :global(.photo-day) { display: none; }
+    :global(:root:not([data-theme='light'])) .photo :global(.photo-night) { display: block; }
+  }
+  .photo figcaption { max-width: calc(var(--wide) + 2 * var(--gutter)); margin: 0.75rem auto 0; padding-inline: var(--gutter); font-size: var(--step--1); color: var(--muted); }
+  .photo figcaption a { color: inherit; }
   .contact-section { margin-top: var(--space-section); padding-top: clamp(2rem, 4vw, 3rem); border-top: 1px solid var(--rule); }
   .contact-section h2 { font-size: var(--step-3); letter-spacing: -0.035em; }
   .contact-section p { margin: 0.75rem 0 1.5rem; color: var(--muted); max-width: 32rem; font-size: var(--step-0); }
