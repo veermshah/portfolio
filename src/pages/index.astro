@@ -195,7 +195,15 @@ const links = profile.links.filter((l) => l.href && l.label !== 'Email');
 
 <script>
   // Printed copies should include every experience highlight.
-  addEventListener('beforeprint', () => document.querySelectorAll<HTMLDetailsElement>('details.more').forEach((d) => (d.open = true)));
+  let openedForPrint: HTMLDetailsElement[] = [];
+  addEventListener('beforeprint', () => {
+    openedForPrint = [...document.querySelectorAll<HTMLDetailsElement>('details.more:not([open])')];
+    openedForPrint.forEach((d) => (d.open = true));
+  });
+  addEventListener('afterprint', () => {
+    openedForPrint.forEach((d) => (d.open = false));
+    openedForPrint = [];
+  });
 
   const controls = document.querySelector<HTMLElement>('.project-filter-controls');
   const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-project-filter]'));
