@@ -5,6 +5,12 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "portfolio-wheat-xi-reyo27zre0.vercel.app" }],
+      "destination": "https://www.veermickey.com/:path*",
+      "permanent": true
+    },
+    {
       "source": "/dishbrain-playground",
       "destination": "https://veermshah.github.io/dishbrain-playground/",
       "permanent": false

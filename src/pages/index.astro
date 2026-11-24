@@ -45,9 +45,48 @@ const featured = [
   return { project, label: feature.label ?? project.award ?? '', detail: feature.detail ?? project.pitch };
 });
 const links = profile.links.filter((l) => l.href && l.label !== 'Email');
+
+const siteUrl = new URL('/', Astro.site).href;
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${siteUrl}#website`,
+      url: siteUrl,
+      name: profile.name,
+      alternateName: [...profile.alternateNames, 'veermickey.com'],
+      publisher: { '@id': `${siteUrl}#person` },
+    },
+    {
+      '@type': 'ProfilePage',
+      '@id': `${siteUrl}#profile`,
+      url: siteUrl,
+      name: `${profile.name}, software engineer`,
+      isPartOf: { '@id': `${siteUrl}#website` },
+      mainEntity: { '@id': `${siteUrl}#person` },
+    },
+    {
+      '@type': 'Person',
+      '@id': `${siteUrl}#person`,
+      name: profile.name,
+      givenName: 'Veer',
+      familyName: 'Shah',
+      alternateName: profile.alternateNames,
+      url: siteUrl,
+      jobTitle: 'Software Engineer',
+      description: profile.description,
+      email: profile.links.find((l) => l.label === 'Email')?.href,
+      alumniOf: { '@type': 'CollegeOrUniversity', name: 'University of Texas at Dallas', url: 'https://www.utdallas.edu' },
+      memberOf: { '@type': 'Organization', name: 'HackUTD', url: 'https://hackutd.co' },
+      sameAs: [...profile.links.filter((l) => l.href?.startsWith('https://')).map((l) => l.href), 'https://blog.veermickey.com'],
+    },
+  ],
+};
 ---
 
-<Base title={`${profile.name}, software engineer`} description={profile.description} wide>
+<Base title={`${profile.name} (${profile.alternateNames[0]}), software engineer`} description={profile.description} wide>
+  <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   <section class="hero" aria-labelledby="hero-name">
     <p class="kicker" data-reveal>Software engineer · M.S. CS, UT Dallas</p>
     <h1 id="hero-name" class="display" data-reveal style="--reveal-i: 1">{profile.name}</h1>
