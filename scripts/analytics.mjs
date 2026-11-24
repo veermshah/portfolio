@@ -35,7 +35,7 @@ const visits = `select host, path, session_id,
     max(value) filter (where type='scroll') as scroll_pct
     from analytics_events where ${since} group by 1, 2, 3`;
 const reports = {
-  Overview: `select sum(views) as views, count(distinct session_id) as sessions,
+  Overview: `select coalesce(sum(views), 0) as views, count(distinct session_id) as sessions,
     round(percentile_cont(0.5) within group (order by engaged_ms)::numeric / 1000, 1) as median_engaged_s,
     percentile_cont(0.5) within group (order by scroll_pct) as median_scroll_pct
     from (${visits}) v`,
