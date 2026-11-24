@@ -31,13 +31,13 @@ if (!Number.isFinite(days) || days <= 0) throw new Error('Days must be a positiv
 const since = `created_at > now() - interval '${days} days'`;
 const reports = {
   Overview: `select count(*) filter (where type='pageview' and target is null) as views, count(distinct session_id) as sessions,
-    round(percentile_cont(0.5) within group (order by value) filter (where type='pageview' and target='engaged') / 1000.0, 1) as median_engaged_s,
+    round(percentile_cont(0.5) within group (order by value) filter (where type='pageview' and target='engaged')::numeric / 1000, 1) as median_engaged_s,
     percentile_cont(0.5) within group (order by value) filter (where type='scroll') as median_scroll_pct
     from analytics_events where ${since}`,
   Pages: `select host, path, count(*) filter (where type='pageview' and target is null) as views, count(distinct session_id) as sessions,
     percentile_cont(0.5) within group (order by value) filter (where type='scroll') as median_scroll_pct
     from analytics_events where ${since} group by 1, 2 order by views desc limit 25`,
-  Sections: `select path, target as section, count(distinct session_id) as sessions, round(percentile_cont(0.5) within group (order by value) / 1000.0, 1) as median_s
+  Sections: `select path, target as section, count(distinct session_id) as sessions, round(percentile_cont(0.5) within group (order by value)::numeric / 1000, 1) as median_s
     from analytics_events where type='section' and ${since} group by 1, 2 order by sessions desc limit 30`,
   Clicks: `select path, type, target, count(*) as clicks from analytics_events where type in ('click','outbound') and ${since}
     group by 1, 2, 3 order by clicks desc limit 30`,
