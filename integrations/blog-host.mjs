@@ -3,7 +3,7 @@
 // routes so they apply before Vercel's filesystem lookup (vercel.json rewrites run after it).
 import { readFile, writeFile } from 'node:fs/promises';
 
-export default function blogHost({ host, mainHosts = [] }) {
+export default function blogHost({ host, mainHosts = [], aliasHosts = [], canonicalOrigin }) {
   let root;
   return {
     name: 'blog-host',
@@ -16,6 +16,13 @@ export default function blogHost({ host, mainHosts = [] }) {
         const config = JSON.parse(await readFile(file, 'utf8'));
         const onBlog = [{ type: 'host', value: host }];
         config.routes.unshift(
+          // Old hostnames for the main site 308 to the canonical origin so search engines index one copy.
+          ...aliasHosts.map((alias) => ({
+            src: '^/(.*)$',
+            has: [{ type: 'host', value: alias }],
+            status: 308,
+            headers: { Location: `${canonicalOrigin}/$1` },
+          })),
           // Already-prefixed paths and shared build assets pass through unchanged.
           { src: '^/(blog(?:/.*)?|_astro/.*|_vercel/.*|favicon\\.(?:svg|ico)|apple-touch-icon\\.png|og\\.png)$', has: onBlog, continue: true },
           { src: '^/(?!blog(?:/|$)|_astro/|_vercel/|favicon\\.(?:svg|ico)$|apple-touch-icon\\.png$|og\\.png$)(.*)$', has: onBlog, dest: '/blog/$1', continue: true },
