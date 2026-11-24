@@ -485,9 +485,10 @@ const structuredData = {
   .peek-results { padding-left: 1.1rem; display: grid; gap: 0.4rem; max-width: var(--measure); }
   .peek-results li::marker { color: var(--accent); }
   .peek-more { font-weight: 700; font-size: 0.9375rem; justify-self: start; }
-  .project.is-open { grid-column: 1 / -1; }
+  .peek[hidden] { display: none; }
+  .project.is-open:not([hidden]) { grid-column: 1 / -1; }
   @media (min-width: 48rem) {
-    .project.is-open { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(1.25rem, 3vw, 2.5rem); align-items: start; }
+    .project.is-open:not([hidden]) { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(1.25rem, 3vw, 2.5rem); align-items: start; }
   }
   @media (prefers-reduced-motion: no-preference) {
     .peek:not([hidden]) { animation: peek-in 0.35s var(--ease); }
