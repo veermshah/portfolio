@@ -30,7 +30,8 @@ async function load(): Promise<UnsplashPhoto[]> {
   if (!key) return [];
   try {
     const cached = JSON.parse(await readFile(CACHE, 'utf8'));
-    if (Date.now() - cached.at < CACHE_MS && cached.photos.length) return cached.photos;
+    // Dev only: production builds always refetch so new uploads ship on the next deploy.
+    if (import.meta.env.DEV && Date.now() - cached.at < CACHE_MS && cached.photos.length) return cached.photos;
   } catch {}
   try {
     const photos: UnsplashPhoto[] = [];
