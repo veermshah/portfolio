@@ -94,7 +94,7 @@ The `featured` list in `src/pages/index.astro` selects the three home-page highl
 
 ## Engagement tracking (private)
 
-`src/scripts/track.ts` runs on every public page of veermickey.com and blog.veermickey.com. It sends page views, engaged time, max scroll depth, time each `section[id]` (or `[data-track]` element) is on screen, and clicks with their position into the Supabase table `analytics_events` (`supabase/migrations/20261124000000_analytics.sql`). It sets no cookies, stores no IP or user agent, and skips visitors with Do Not Track or Global Privacy Control, admin pages, iframes, and hosts other than the production ones.
+`src/scripts/track.ts` runs on every public page of veermickey.com and blog.veermickey.com. It sends page views, engaged time, max scroll depth, time each `section[id]` (or `[data-track]` element) is on screen, and clicks with their position into the Supabase table `analytics_events` (`supabase/migrations/20261124000000_analytics.sql`). It sets no tracking cookies (only a `notrack` opt-out cookie), stores no IP or user agent, and skips visitors with Do Not Track or Global Privacy Control, admin pages, iframes, and hosts other than the production ones.
 
 Visitors can only insert. Only the blog admin can read:
 

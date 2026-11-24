@@ -1,6 +1,7 @@
 // First-party engagement tracker. Private: events are insert-only for visitors and
-// readable only by the site owner. No cookies, IPs or user agents; honors DNT/GPC.
-// Opt yourself out on a device by visiting any page with ?notrack=1 (?notrack=0 undoes it).
+// readable only by the site owner. No tracking cookies, IPs or user agents; honors DNT/GPC.
+// Opt yourself out on a device by visiting any page with ?notrack=1 (?notrack=0 undoes it);
+// the opt-out is a localStorage flag plus a .veermickey.com cookie so it covers the blog too.
 
 const url = import.meta.env.PUBLIC_SUPABASE_URL;
 const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
@@ -16,10 +17,17 @@ type Event = {
 
 function optedOut() {
   const flag = new URLSearchParams(location.search).get('notrack');
+  const domain = location.hostname.endsWith('veermickey.com') ? '; domain=.veermickey.com' : '';
   try {
-    if (flag === '1') localStorage.setItem('notrack', '1');
-    if (flag === '0') localStorage.removeItem('notrack');
-    if (localStorage.getItem('notrack') === '1') return true;
+    if (flag === '1') {
+      localStorage.setItem('notrack', '1');
+      document.cookie = `notrack=1${domain}; path=/; max-age=31536000; samesite=lax; secure`;
+    }
+    if (flag === '0') {
+      localStorage.removeItem('notrack');
+      document.cookie = `notrack=${domain}; path=/; max-age=0`;
+    }
+    if (localStorage.getItem('notrack') === '1' || /(?:^|;\s*)notrack=1/.test(document.cookie)) return true;
   } catch {}
   const nav = navigator as Navigator & { globalPrivacyControl?: boolean };
   return navigator.doNotTrack === '1' || nav.globalPrivacyControl === true;
@@ -69,6 +77,11 @@ if (url && key && HOSTS.includes(location.hostname) && window === window.top && 
       device,
       referrer,
       theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light',
+      // PostgREST bulk inserts require every row to have the same keys.
+      target: null,
+      x: null,
+      y: null,
+      value: null,
       ...e,
     });
 
@@ -86,7 +99,7 @@ if (url && key && HOSTS.includes(location.hostname) && window === window.top && 
   push({ type: 'pageview' });
   flush();
 
-  // Time each section (or the post body) spends at least 40% on screen.
+  // Time each section (or the post body) while 40% of it, or 40% of the viewport, shows it.
   const sections = [...document.querySelectorAll<HTMLElement>('main section[id], main [data-track]')];
   const visibleSince = new Map<HTMLElement, number>();
   const dwell = new Map<HTMLElement, number>();
@@ -95,14 +108,16 @@ if (url && key && HOSTS.includes(location.hostname) && window === window.top && 
       const now = performance.now();
       for (const entry of entries) {
         const el = entry.target as HTMLElement;
-        if (entry.isIntersecting) visibleSince.set(el, now);
-        else if (visibleSince.has(el)) {
+        const shown = entry.isIntersecting && (entry.intersectionRatio >= 0.4 || entry.intersectionRect.height >= innerHeight * 0.4);
+        if (shown) {
+          if (!visibleSince.has(el)) visibleSince.set(el, now);
+        } else if (visibleSince.has(el)) {
           dwell.set(el, (dwell.get(el) ?? 0) + now - visibleSince.get(el)!);
           visibleSince.delete(el);
         }
       }
     },
-    { threshold: 0.4 },
+    { threshold: Array.from({ length: 11 }, (_, i) => i / 10) },
   );
   sections.forEach((el) => io.observe(el));
 
