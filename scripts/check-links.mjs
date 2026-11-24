@@ -80,7 +80,7 @@ if (internalMisses.length) {
 let externalFailures = 0;
 if (external) {
   // Canonical/OG URLs point at the production origin, which may not be live yet; skip them.
-  const site = (process.env.SITE_URL ?? 'https://portfolio-wheat-xi-reyo27zre0.vercel.app').replace(/\/$/, '');
+  const site = (process.env.SITE_URL ?? 'https://www.veermickey.com').replace(/\/$/, '');
   const urls = [...externalLinks.keys()].filter((u) => !u.startsWith(site));
   console.log(`\nRequesting ${urls.length} external links...`);
   const results = await Promise.all(

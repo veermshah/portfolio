@@ -82,7 +82,7 @@ Checklist, only when switching:
 1. Add `veermickey.com` (and `www.veermickey.com`) to the Vercel project: `npx vercel domains add veermickey.com`, or Project Settings > Domains.
 2. Update DNS at the registrar to the records Vercel shows (an `A` record for the apex, a `CNAME` for `www`). Wait for Vercel to show the domain as valid.
 3. Remove the custom domain from the `veermshah.github.io` repo's Pages settings (Settings > Pages > Custom domain), so the project Pages sites serve from `veermshah.github.io` again and the redirects above land on real pages.
-4. Set `SITE` in `astro.config.mjs` to `https://veermickey.com`, update `SITE` default in `scripts/check-links.mjs`, and redeploy.
+4. Set `SITE` in `astro.config.mjs` to `https://www.veermickey.com` (the apex redirects to www), update `SITE` default in `scripts/check-links.mjs`, and redeploy. Done.
 5. Update the DishBrain, Wetware and Jev entries in `src/data/projects.ts` and their repo homepages if any still use `veermickey.com/<repo>`.
 6. Check: `curl -sIL https://veermickey.com/dishbrain-playground/` ends in a 200 on `veermshah.github.io`.
 

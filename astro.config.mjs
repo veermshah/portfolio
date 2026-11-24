@@ -4,8 +4,8 @@ import vercel from '@astrojs/vercel';
 import blogHost from './integrations/blog-host.mjs';
 
 // Canonical origin used for the sitemap, canonical links and the OG image URL.
-// Change this to https://veermickey.com when the domain moves (see README).
-export const SITE = process.env.SITE_URL ?? 'https://portfolio-wheat-xi-reyo27zre0.vercel.app';
+// Vercel redirects the apex veermickey.com to www, so www is canonical.
+export const SITE = process.env.SITE_URL ?? 'https://www.veermickey.com';
 export const BLOG_HOST = process.env.BLOG_HOST ?? 'blog.veermickey.com';
 
 export default defineConfig({
