@@ -28,11 +28,12 @@ export function getUnsplashPhotos() {
 async function load(): Promise<UnsplashPhoto[]> {
   const key = process.env.UNSPLASH_ACCESS_KEY ?? import.meta.env.UNSPLASH_ACCESS_KEY;
   if (!key) return [];
+  let cached: { at: number; photos: UnsplashPhoto[] } | undefined;
   try {
-    const cached = JSON.parse(await readFile(CACHE, 'utf8'));
-    // Dev only: production builds always refetch so new uploads ship on the next deploy.
-    if (import.meta.env.DEV && Date.now() - cached.at < CACHE_MS && cached.photos.length) return cached.photos;
+    cached = JSON.parse(await readFile(CACHE, 'utf8'));
   } catch {}
+  // Production builds always refetch so new uploads ship on the next deploy; dev reuses a fresh cache.
+  if (import.meta.env.DEV && cached && Date.now() - cached.at < CACHE_MS && cached.photos.length) return cached.photos;
   try {
     const photos: UnsplashPhoto[] = [];
     for (let page = 1; page <= 50; page++) {
@@ -58,6 +59,11 @@ async function load(): Promise<UnsplashPhoto[]> {
     await writeFile(CACHE, JSON.stringify({ at: Date.now(), photos })).catch(() => {});
     return photos;
   } catch (err) {
+    // Rate limited or down: reuse the last good fetch (Vercel keeps node_modules/.cache between builds).
+    if (cached?.photos.length) {
+      console.warn(`[unsplash] using cached photos: ${(err as Error).message}`);
+      return cached.photos;
+    }
     console.warn(`[unsplash] falling back to local photos: ${(err as Error).message}`);
     return [];
   }
