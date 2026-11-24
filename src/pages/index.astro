@@ -300,6 +300,7 @@ const structuredData = {
       const open = toggle.getAttribute('aria-expanded') !== 'true';
       toggle.setAttribute('aria-expanded', String(open));
       toggle.textContent = open ? 'Close' : 'Quick look';
+      toggle.setAttribute('aria-label', toggle.getAttribute('aria-label')!.replace(/^(Quick look|Close):/, open ? 'Close:' : 'Quick look:'));
       document.getElementById(toggle.getAttribute('aria-controls')!)!.hidden = !open;
       card.classList.toggle('is-open', open);
       const top = card.getBoundingClientRect().top;
