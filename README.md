@@ -101,3 +101,7 @@ Visitors can only insert. Only the blog admin can read:
 - **Dashboard:** https://blog.veermickey.com/admin/analytics (sign in on `/admin` first). Tables for pages, sections, clicks, outbound links, referrers and devices, plus a click heatmap and scroll-reach bar per page and device.
 - **Agents / CLI:** `SUPABASE_ACCESS_TOKEN=... npm run analytics -- 7` prints the same report for the last 7 days; `npm run analytics -- --sql "select ..."` runs any query. The views `analytics_daily`, `analytics_sections` and `analytics_clicks` hold common rollups.
 - **Exclude your own visits:** open any page once with `?notrack=1` on each device (`?notrack=0` undoes it).
+
+## Agent sessions (Entire)
+
+[Entire](https://entire.io) records Claude Code, Codex and Cursor sessions as checkpoints linked to commits. Install the CLI (`curl -fsSL https://entire.com/install.sh | bash`) and run `entire enable` once per clone; the hooks in `.claude/`, `.codex/`, `.cursor/` and `.entire/settings.json` are committed. Checkpoints (full transcripts) upload to the private repo `veermshah/portfolio-checkpoints` on `git push`, never to this public repo. Run `entire status` to confirm the destination before pushing, and `entire search` or `entire checkpoint explain` to read past sessions.
