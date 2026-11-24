@@ -123,6 +123,7 @@ if (url && key && HOSTS.includes(location.hostname) && window === window.top && 
   };
   addEventListener('scroll', scheduleSections, { passive: true });
   addEventListener('resize', scheduleSections, { passive: true });
+  addEventListener('click', () => setTimeout(scheduleSections, 400), { passive: true });
   updateSections();
 
   let maxDepth = 0;
@@ -153,6 +154,7 @@ if (url && key && HOSTS.includes(location.hostname) && window === window.top && 
   );
 
   const report = () => {
+    updateSections();
     const now = performance.now();
     engagedMs += now - visibleAt;
     visibleAt = now;
