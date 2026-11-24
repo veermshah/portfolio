@@ -7,8 +7,6 @@ import LinkIcon from '../components/LinkIcon.astro';
 import ContactButton from '../components/ContactButton.astro';
 import { notes, formatDate } from '../data/notes';
 import Base from '../layouts/Base.astro';
-import dayPhoto from '../assets/photos/marina-bay.jpg';
-import nightPhoto from '../assets/photos/skyline-night.jpg';
 import ProjectLinks from '../components/ProjectLinks.astro';
 import { profile } from '../data/profile';
 import { projects } from '../data/projects';
@@ -124,12 +122,6 @@ const structuredData = {
       ))}
     </ol>
   </section>
-
-  <figure class="photo" data-reveal>
-    <Image class="photo-day" src={dayPhoto} alt="Marina Bay Sands and the ArtScience Museum under a cloudy sky" widths={[640, 1024, 1600, 2400]} sizes="100vw" format="webp" loading="lazy" />
-    <Image class="photo-night" src={nightPhoto} alt="City skyline at night with illuminated buildings and a park" widths={[640, 1024, 1600, 2400]} sizes="100vw" format="webp" loading="lazy" />
-    <figcaption>Photo by me · <a href="https://unsplash.com/@veermickey">more on Unsplash</a></figcaption>
-  </figure>
 
   <section id="experience" class="section" aria-labelledby="experience-heading">
     <header class="section-head" data-reveal>
@@ -509,17 +501,6 @@ const structuredData = {
   .all-notes { display: inline-block; margin-top: 1.25rem; font-size: 0.9375rem; }
 
   /* Contact */
-  .photo { margin: var(--space-section) calc(50% - 50vw) 0; position: relative; }
-  .photo :global(img) { display: block; width: 100%; height: clamp(16rem, 52vw, 40rem); object-fit: cover; }
-  .photo :global(.photo-night) { display: none; }
-  :global(:root[data-theme='dark']) .photo :global(.photo-day) { display: none; }
-  :global(:root[data-theme='dark']) .photo :global(.photo-night) { display: block; }
-  @media (prefers-color-scheme: dark) {
-    :global(:root:not([data-theme='light'])) .photo :global(.photo-day) { display: none; }
-    :global(:root:not([data-theme='light'])) .photo :global(.photo-night) { display: block; }
-  }
-  .photo figcaption { max-width: calc(var(--wide) + 2 * var(--gutter)); margin: 0.75rem auto 0; padding-inline: var(--gutter); font-size: var(--step--1); color: var(--muted); }
-  .photo figcaption a { color: inherit; }
   .contact-section { margin-top: var(--space-section); padding-top: clamp(2rem, 4vw, 3rem); border-top: 1px solid var(--rule); }
   .contact-section h2 { font-size: var(--step-3); letter-spacing: -0.035em; }
   .contact-section p { margin: 0.75rem 0 1.5rem; color: var(--muted); max-width: 32rem; font-size: var(--step-0); }

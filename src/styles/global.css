@@ -255,7 +255,11 @@ img {
 }
 .site-nav::-webkit-scrollbar { display: none; }
 @media (min-width: 40rem) { .site-nav { mask-image: none; } }
-@media (max-width: 34rem) { .site-nav { mask-image: none; } .site-nav .nav-optional { display: none; } }
+@media (max-width: 34rem) {
+  .site-header-inner { gap: 0.75rem; }
+  .site-nav { mask-image: none; gap: 0.8rem; }
+  .site-nav .nav-optional { display: none; }
+}
 .site-nav a { color: var(--muted); text-decoration: none; white-space: nowrap; padding: 0.35rem 0; }
 .site-nav a:hover, .site-nav a[aria-current='page'] { color: var(--ink); }
 

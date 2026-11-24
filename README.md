@@ -92,6 +92,10 @@ Add Markdown files in `src/content/notes/` with quoted `title`, `description`, a
 
 The `featured` list in `src/pages/index.astro` selects the three home-page highlights. The contact button uses the Email link in `src/data/profile.ts`.
 
+## Photography page
+
+`/photography/` lists every photo on [Unsplash @veermickey](https://unsplash.com/@veermickey), most popular first, fetched at build time by `src/lib/unsplash.ts`. Set `UNSPLASH_ACCESS_KEY` (an Unsplash app Access Key) in Vercel (Production and Preview). Without it, or if the API fails, the page falls back to the five photos in `src/assets/photos/`. New Unsplash uploads appear on the next deploy. Unsplash's API rules apply: images load from Unsplash's CDN, and links back carry the `UTM` params.
+
 ## Engagement tracking (private)
 
 `src/scripts/track.ts` runs on every public page of veermickey.com and blog.veermickey.com. It sends page views, engaged time, max scroll depth, time each `section[id]` (or `[data-track]` element) is on screen, and clicks with their position into the Supabase table `analytics_events` (`supabase/migrations/20261124000000_analytics.sql`). It sets no tracking cookies (only a `notrack` opt-out cookie), stores no IP or user agent, and skips visitors with Do Not Track or Global Privacy Control, admin pages, iframes, and hosts other than the production ones.

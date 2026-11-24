@@ -1,0 +1,179 @@
+---
+import { Image, getImage } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import { profile } from '../data/profile';
+import marinaBay from '../assets/photos/marina-bay.jpg';
+import skylineNight from '../assets/photos/skyline-night.jpg';
+import bridge from '../assets/photos/bridge.jpg';
+import bokeh from '../assets/photos/bokeh.jpg';
+import netSculpture from '../assets/photos/net-sculpture.jpg';
+import { getUnsplashPhotos, sized, UTM } from '../lib/unsplash';
+
+const unsplash = profile.links.find((l) => l.label === 'Unsplash')?.href ?? 'https://unsplash.com/@veermickey';
+
+const photos = await Promise.all(
+  [
+    { src: marinaBay, alt: 'Marina Bay Sands and the ArtScience Museum under a cloudy sky', layout: 'wide' },
+    { src: bokeh, alt: 'Trees in front of a glass tower, with sunlight breaking through the leaves', layout: 'tall' },
+    { src: bridge, alt: 'People on a curved steel footbridge above a river, with a red tour boat passing below', layout: '' },
+    { src: netSculpture, alt: 'A suspended net sculpture lit magenta above a park at night', layout: '' },
+    { src: skylineNight, alt: 'City skyline at night with illuminated buildings and a park', layout: 'wide' },
+  ].map(async (photo) => ({ ...photo, full: (await getImage({ src: photo.src, width: 2400, format: 'webp' })).src })),
+);
+
+// All photos come from Unsplash when UNSPLASH_ACCESS_KEY is set; the local five are the fallback.
+const shots = await getUnsplashPhotos();
+const profileUrl = `${unsplash}?${UTM}`;
+const unsplashHome = `https://unsplash.com/?${UTM}`;
+---
+
+<Base title={`Photography | ${profile.name}`} description={`Photos by ${profile.name}: cities, architecture, museums and night scenes.`} wide>
+  <section id="photography" class="intro" aria-labelledby="photography-heading">
+    <h1 id="photography-heading" class="display">Photography</h1>
+    <p class="lede">Cities, architecture and light.{shots.length > 0 && ` ${shots.length} photos.`}</p>
+    <a class="button unsplash" href={profileUrl}>Follow on Unsplash →</a>
+  </section>
+
+  {shots.length > 0 ? (
+    <section id="gallery" aria-label="Photos">
+      <ul class="masonry" data-gallery>
+        {shots.map((photo, i) => (
+          <li style={`aspect-ratio: ${photo.width} / ${photo.height}; background: ${photo.color};`}>
+            <a href={`${photo.page}?${UTM}`} data-full={sized(photo, 2000)} data-page={`${photo.page}?${UTM}`} aria-label={`View larger: ${photo.alt}`}>
+              <img
+                src={sized(photo, 600)}
+                srcset={[400, 600, 900, 1200].map((w) => `${sized(photo, w)} ${w}w`).join(', ')}
+                sizes="(max-width: 48rem) 50vw, (max-width: 80rem) 33vw, 25rem"
+                width={photo.width}
+                height={photo.height}
+                alt={photo.alt}
+                loading={i < 6 ? 'eager' : 'lazy'}
+                decoding="async"
+              />
+            </a>
+          </li>
+        ))}
+      </ul>
+      <p class="credit">Photos by <a href={profileUrl}>Veer Mickey Shah</a> on <a href={unsplashHome}>Unsplash</a>.</p>
+    </section>
+  ) : (
+    <section id="gallery" aria-label="Photos">
+      <ul class="gallery">
+        {photos.map((photo, i) => (
+          <li class:list={['shot', photo.layout]}>
+            <a href={photo.full} aria-label={`Open full size: ${photo.alt}`}>
+              <Image
+                src={photo.src}
+                alt={photo.alt}
+                widths={[480, 800, 1200, 1600, 2400]}
+                sizes={photo.layout === 'wide' ? '(max-width: 48rem) 100vw, 74rem' : '(max-width: 48rem) 100vw, 37rem'}
+                format="webp"
+                loading={i < 2 ? 'eager' : 'lazy'}
+              />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  <dialog class="viewer" data-viewer aria-label="Photo viewer">
+    <img data-viewer-img alt="" />
+    <p class="viewer-bar" aria-live="polite">
+      <span data-viewer-alt></span>
+      <a data-viewer-page href="#">View on Unsplash</a>
+    </p>
+    <button type="button" class="viewer-btn viewer-close" data-viewer-close aria-label="Close">×</button>
+    <button type="button" class="viewer-btn viewer-prev" data-viewer-step="-1" aria-label="Previous photo">‹</button>
+    <button type="button" class="viewer-btn viewer-next" data-viewer-step="1" aria-label="Next photo">›</button>
+  </dialog>
+</Base>
+
+<script>
+  const gallery = document.querySelector<HTMLElement>('[data-gallery]');
+  const viewer = document.querySelector<HTMLDialogElement>('[data-viewer]');
+  if (gallery && viewer && typeof viewer.showModal === 'function') {
+    const links = [...gallery.querySelectorAll<HTMLAnchorElement>('a[data-full]')];
+    const img = viewer.querySelector<HTMLImageElement>('[data-viewer-img]')!;
+    const alt = viewer.querySelector<HTMLElement>('[data-viewer-alt]')!;
+    const page = viewer.querySelector<HTMLAnchorElement>('[data-viewer-page]')!;
+    let index = 0;
+    const show = (i: number) => {
+      index = (i + links.length) % links.length;
+      const link = links[index];
+      const thumb = link.querySelector('img')!;
+      img.src = link.dataset.full!;
+      img.alt = thumb.alt;
+      alt.textContent = thumb.alt;
+      page.href = link.dataset.page!;
+    };
+    gallery.addEventListener('click', (e) => {
+      const link = (e.target as Element).closest<HTMLAnchorElement>('a[data-full]');
+      if (!link || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      e.preventDefault();
+      show(links.indexOf(link));
+      viewer.showModal();
+    });
+    viewer.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (t.closest('[data-viewer-close]') || t === viewer) viewer.close();
+      const step = t.closest<HTMLElement>('[data-viewer-step]');
+      if (step) show(index + Number(step.dataset.viewerStep));
+    });
+    viewer.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') show(index - 1);
+      if (e.key === 'ArrowRight') show(index + 1);
+    });
+    viewer.addEventListener('close', () => links[index]?.focus());
+    let startX = 0;
+    viewer.addEventListener('touchstart', (e) => (startX = e.touches[0].clientX), { passive: true });
+    viewer.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) > 50) show(index + (dx < 0 ? 1 : -1));
+    });
+  }
+</script>
+
+<style>
+  .intro { padding-block: clamp(2.5rem, 6vw, 5rem) clamp(2rem, 4vw, 3rem); }
+  .display { font-size: clamp(3rem, 1rem + 8vw, 7.5rem); }
+  .lede { margin-top: 1rem; max-width: 36rem; color: var(--muted); font-size: var(--step-1); }
+  .unsplash { display: inline-block; margin-top: 1.5rem; }
+
+  .masonry { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: clamp(0.5rem, 1.5vw, 1rem); }
+  .masonry li { break-inside: avoid; margin-bottom: clamp(0.5rem, 1.5vw, 1rem); border-radius: 0.4rem; overflow: hidden; }
+  .masonry a { display: block; height: 100%; }
+  .masonry img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease, opacity 0.3s ease; }
+  .masonry a:hover img, .masonry a:focus-visible img { transform: scale(1.03); }
+  .masonry a:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+  @media (min-width: 48rem) { .masonry { columns: 3; } }
+  @media (min-width: 80rem) { .masonry { columns: 4; } }
+  .credit { margin-top: 1.5rem; color: var(--muted); font-size: 0.875rem; }
+
+  .gallery { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(0.75rem, 1.5vw, 1.25rem); grid-template-columns: 1fr; }
+  .shot a { display: block; height: 100%; border-radius: 0.5rem; overflow: hidden; }
+  .shot :global(img) { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+  .shot a:hover :global(img), .shot a:focus-visible :global(img) { transform: scale(1.02); }
+  @media (min-width: 48rem) {
+    .gallery { grid-template-columns: 1fr 1fr; grid-auto-rows: clamp(14rem, 24vw, 22rem); }
+    .wide { grid-column: 1 / -1; grid-row: span 2; }
+    .tall { grid-row: span 2; }
+  }
+
+  .viewer { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: rgb(0 0 0 / 0.94); color: #fff; }
+  .viewer[open] { display: grid; grid-template-rows: 1fr auto; place-items: center; }
+  .viewer::backdrop { background: rgb(0 0 0 / 0.6); }
+  .viewer img { max-width: 100%; max-height: calc(100dvh - 5rem); object-fit: contain; padding: 3.5rem 0.75rem 0; }
+  .viewer-bar { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; justify-content: center; align-items: baseline; padding: 0.75rem 1rem 1.25rem; margin: 0; font-size: 0.875rem; text-align: center; }
+  .viewer-bar span { color: rgb(255 255 255 / 0.75); }
+  .viewer-bar span::first-letter { text-transform: uppercase; }
+  .viewer-bar a { color: #fff; }
+  .viewer-btn { position: absolute; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border: 0; border-radius: 50%; background: rgb(255 255 255 / 0.12); color: #fff; font: inherit; font-size: 1.75rem; line-height: 1; cursor: pointer; }
+  .viewer-btn:hover, .viewer-btn:focus-visible { background: rgb(255 255 255 / 0.25); }
+  .viewer-close { top: 0.75rem; right: 0.75rem; }
+  .viewer-prev, .viewer-next { top: 50%; transform: translateY(-50%); }
+  .viewer-prev { left: 0.75rem; }
+  .viewer-next { right: 0.75rem; }
+
+  @media (prefers-reduced-motion: reduce) { .shot :global(img), .masonry img { transition: none; } }
+</style>
