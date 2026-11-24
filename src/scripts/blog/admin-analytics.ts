@@ -52,7 +52,8 @@ export async function initAnalytics() {
   const form = $<HTMLFormElement>('[data-filters]');
   const params = new URLSearchParams(location.search);
   for (const name of ['days', 'device']) if (params.get(name)) (form.elements.namedItem(name) as HTMLSelectElement).value = params.get(name)!;
-  if (!params.get('device') && matchMedia('(max-width: 48rem)').matches) (form.elements.namedItem('device') as HTMLSelectElement).value = 'mobile';
+  // Default to this screen's device class, using the same breakpoints as the tracker.
+  if (!params.get('device')) (form.elements.namedItem('device') as HTMLSelectElement).value = innerWidth < 640 ? 'mobile' : innerWidth < 1024 ? 'tablet' : 'desktop';
   form.addEventListener('change', (e) => ((e.target as HTMLSelectElement).name === 'days' ? load() : render()));
   addEventListener('resize', () => drawHeatmap());
   await load(params.get('page') ?? '');
