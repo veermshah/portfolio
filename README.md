@@ -101,3 +101,14 @@ Visitors can only insert. Only the blog admin can read:
 - **Dashboard:** https://blog.veermickey.com/admin/analytics (sign in on `/admin` first). Tables for pages, sections, clicks, outbound links, referrers and devices, plus a click heatmap and scroll-reach bar per page and device.
 - **Agents / CLI:** `SUPABASE_ACCESS_TOKEN=... npm run analytics -- 7` prints the same report for the last 7 days; `npm run analytics -- --sql "select ..."` runs any query. The views `analytics_daily`, `analytics_sections` and `analytics_clicks` hold common rollups.
 - **Exclude your own visits:** open any page once with `?notrack=1` on each device (`?notrack=0` undoes it).
+
+## Agent sessions (Entire)
+
+[Entire](https://entire.io) records Claude Code, Codex and Cursor sessions as checkpoints linked to commits. Install the CLI (`curl -fsSL https://entire.com/install.sh | bash`) and run `entire enable` once per clone; the hooks in `.claude/`, `.codex/`, `.cursor/` and `.entire/settings.json` are committed.
+
+Checkpoints hold full agent transcripts, so they belong only in the private repo `veermshah/portfolio-checkpoints`. Automatic upload is off in the committed settings, because Entire falls back to `origin` (this public repo) when origin's owner isn't `veermshah`. To turn it on for a clone:
+
+1. Run `entire status` and confirm it says checkpoints sync to `veermshah/portfolio-checkpoints`. If origin is a fork or proxy, first run `git remote add checkpoints <url of portfolio-checkpoints>` and `entire enable --local --checkpoint-push-remote checkpoints`.
+2. Add `"push_sessions": true` under `strategy_options` in `.entire/settings.local.json` (gitignored).
+
+With uploads off, checkpoints stay on that machine. Read past sessions with `entire search` or `entire checkpoint explain`.
