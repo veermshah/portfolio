@@ -111,4 +111,4 @@ Checkpoints hold full agent transcripts, so they belong only in the private repo
 1. Run `entire status` and confirm it says checkpoints sync to `veermshah/portfolio-checkpoints`. If origin is a fork or proxy, first run `git remote add checkpoints <url of portfolio-checkpoints>` and `entire enable --local --checkpoint-push-remote checkpoints`.
 2. Add `"push_sessions": true` under `strategy_options` in `.entire/settings.local.json` (gitignored).
 
-Or keep it off and upload by hand with `entire checkpoint push`. Read past sessions with `entire search` or `entire checkpoint explain`.
+With uploads off, checkpoints stay on that machine. Read past sessions with `entire search` or `entire checkpoint explain`.
