@@ -8,7 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "check:links": "node scripts/check-links.mjs",
-    "check:external": "node scripts/check-links.mjs --external"
+    "check:external": "node scripts/check-links.mjs --external",
+    "analytics": "node scripts/analytics.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",

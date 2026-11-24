@@ -1,0 +1,25 @@
+/* Private engagement dashboard, only loaded on /admin/analytics. */
+.page:has(.ana-heat) { max-width: calc(84rem + 2 * var(--gutter)); }
+.ana-filters { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; margin: 1.25rem 0 0.5rem; }
+.ana-filters label { display: grid; gap: 0.25rem; font-size: 0.8125rem; color: var(--muted); }
+.ana-filters select { font: inherit; font-size: 0.9375rem; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 0.35rem 0.5rem; max-width: 22rem; }
+.ana-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 0.75rem; margin: 1.25rem 0; }
+.ana-stats div { border: 1px solid var(--rule); border-radius: var(--radius); padding: 0.75rem 1rem; }
+.ana-stats dt { font-size: 0.8125rem; color: var(--muted); }
+.ana-stats dd { margin: 0.15rem 0 0; font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ana-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: 1.5rem; }
+.ana-grid h2, .ana-heat h2 { font-size: 1rem; margin: 0 0 0.5rem; }
+.ana-grid table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+.ana-grid th, .ana-grid td { text-align: left; padding: 0.3rem 0.5rem 0.3rem 0; border-bottom: 1px solid var(--rule); overflow-wrap: anywhere; }
+.ana-grid th { color: var(--muted); font-weight: 400; }
+.ana-grid td:not(:first-child), .ana-grid th:not(:first-child) { text-align: right; white-space: nowrap; }
+.ana-heat { margin-top: 2.5rem; }
+.ana-frame { position: relative; overflow: hidden; margin-top: 1rem; border: 1px solid var(--rule); border-radius: 4px; background: #fff; }
+.ana-frame iframe { position: absolute; inset: 0 auto auto 0; border: 0; transform-origin: 0 0; pointer-events: none; }
+.ana-frame canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.ana-reach { position: absolute; inset: 0 auto 0 0; width: 2.6rem; display: grid; grid-template-rows: repeat(10, 1fr); }
+.ana-reach span {
+  display: flex; align-items: flex-start; justify-content: center; padding-top: 0.2rem;
+  font-size: 0.6875rem; font-weight: 700; color: #fff; text-shadow: 0 1px 2px #0008;
+  background: rgb(28 107 88 / calc(0.15 + var(--reach) * 0.75));
+}

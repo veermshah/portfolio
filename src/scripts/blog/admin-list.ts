@@ -13,6 +13,7 @@ export async function initAdminList() {
     return;
   }
   $<HTMLAnchorElement>('[data-new]').href = adminUrl('edit');
+  $<HTMLAnchorElement>('[data-analytics]').href = adminUrl('analytics');
   $('[data-signout]').addEventListener('click', async () => {
     await supabase().auth.signOut();
     location.reload();

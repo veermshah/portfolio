@@ -8,7 +8,7 @@ const { Content, frontmatter } = note;
 ---
 <Base title={`${frontmatter.title} | Veer Shah`} description={frontmatter.description}>
   <a href="/notes/">← All notes</a>
-  <article>
+  <article data-track="article">
     <header>
       <time datetime={frontmatter.date}>{formatDate(frontmatter.date)}</time>
       <h1>{frontmatter.title}</h1>
