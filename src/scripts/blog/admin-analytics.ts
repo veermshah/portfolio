@@ -18,6 +18,7 @@ type Row = {
 };
 
 const $ = <T extends Element>(sel: string) => document.querySelector<T>(sel)!;
+const SITE_HOSTS = ['www.veermickey.com', 'blog.veermickey.com'];
 const page = (r: Row) => `${r.host.replace(/^veermickey\.com$/, 'www.veermickey.com')}${r.path}`;
 const secs = (ms: number) => (ms >= 60000 ? `${(ms / 60000).toFixed(1)} min` : `${(ms / 1000).toFixed(1)} s`);
 const median = (a: number[]) => (a.length ? [...a].sort((p, q) => p - q)[Math.floor(a.length / 2)] : 0);
@@ -161,7 +162,13 @@ function drawHeatmap() {
   const scale = Math.min(1, frame.parentElement!.clientWidth / width);
   meta.textContent = `· ${clicks.length} clicks on ${device}`;
 
-  const src = `https://${selected}${selected.includes('?') ? '&' : '?'}notrack=1`;
+  const pageUrl = new URL(`https://${selected}`);
+  if (!SITE_HOSTS.includes(pageUrl.hostname)) {
+    meta.textContent = '· not a veermickey.com page';
+    return;
+  }
+  pageUrl.searchParams.set('notrack', '1');
+  const src = pageUrl.href;
   if (iframe.dataset.src !== src) iframe.src = iframe.dataset.src = src;
   Object.assign(iframe.style, { width: `${width}px`, height: `${docH}px`, transform: `scale(${scale})` });
   frame.style.width = `${width * scale}px`;

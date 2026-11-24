@@ -7,7 +7,7 @@ create table public.analytics_events (
   created_at timestamptz not null default now(),
   session_id text not null check (session_id ~ '^[a-z0-9]{8,32}$'),
   host text not null check (host in ('www.veermickey.com', 'veermickey.com', 'blog.veermickey.com')),
-  path text not null check (char_length(path) between 1 and 300),
+  path text not null check (char_length(path) between 1 and 300 and path ~ '^/[A-Za-z0-9/._~%-]*$'),
   type text not null check (type in ('pageview', 'section', 'scroll', 'click', 'outbound')),
   -- section id, link/button label or outbound URL
   target text check (char_length(target) <= 300),
@@ -29,7 +29,7 @@ create index analytics_events_path_type_idx on public.analytics_events (path, ty
 alter table public.analytics_events enable row level security;
 
 create policy "Anyone can record events" on public.analytics_events
-  for insert to anon, authenticated with check (created_at > now() - interval '1 minute');
+  for insert to anon, authenticated with check (created_at between now() - interval '1 minute' and now() + interval '1 minute');
 
 create policy "Admin reads events" on public.analytics_events
   for select to authenticated using ((select public.is_blog_admin()));
