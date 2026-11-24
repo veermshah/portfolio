@@ -103,23 +103,27 @@ if (url && key && HOSTS.includes(location.hostname) && window === window.top && 
   const sections = [...document.querySelectorAll<HTMLElement>('main section[id], main [data-track]')];
   const visibleSince = new Map<HTMLElement, number>();
   const dwell = new Map<HTMLElement, number>();
-  const io = new IntersectionObserver(
-    (entries) => {
-      const now = performance.now();
-      for (const entry of entries) {
-        const el = entry.target as HTMLElement;
-        const shown = entry.isIntersecting && (entry.intersectionRatio >= 0.4 || entry.intersectionRect.height >= innerHeight * 0.4);
-        if (shown) {
-          if (!visibleSince.has(el)) visibleSince.set(el, now);
-        } else if (visibleSince.has(el)) {
-          dwell.set(el, (dwell.get(el) ?? 0) + now - visibleSince.get(el)!);
-          visibleSince.delete(el);
-        }
+  const updateSections = () => {
+    const now = performance.now();
+    for (const el of sections) {
+      const rect = el.getBoundingClientRect();
+      const visible = Math.max(0, Math.min(rect.bottom, innerHeight) - Math.max(rect.top, 0));
+      const shown = rect.height > 0 && (visible >= rect.height * 0.4 || visible >= innerHeight * 0.4);
+      if (shown) {
+        if (!visibleSince.has(el)) visibleSince.set(el, now);
+      } else if (visibleSince.has(el)) {
+        dwell.set(el, (dwell.get(el) ?? 0) + now - visibleSince.get(el)!);
+        visibleSince.delete(el);
       }
-    },
-    { threshold: Array.from({ length: 11 }, (_, i) => i / 10) },
-  );
-  sections.forEach((el) => io.observe(el));
+    }
+  };
+  let sectionFrame = 0;
+  const scheduleSections = () => {
+    if (!sectionFrame) sectionFrame = requestAnimationFrame(() => { sectionFrame = 0; updateSections(); });
+  };
+  addEventListener('scroll', scheduleSections, { passive: true });
+  addEventListener('resize', scheduleSections, { passive: true });
+  updateSections();
 
   let maxDepth = 0;
   const onScroll = () => {
