@@ -19,6 +19,15 @@ type Row = {
 
 const $ = <T extends Element>(sel: string) => document.querySelector<T>(sel)!;
 const SITE_HOSTS = ['www.veermickey.com', 'blog.veermickey.com'];
+// A page visit can report scroll/engaged more than once; scroll keeps the max, engaged is summed.
+const perVisit = (rs: Row[], combine: (a: number, b: number) => number) => {
+  const by = new Map<string, number>();
+  for (const r of rs) {
+    const k = `${r.session_id} ${page(r)}`;
+    by.set(k, by.has(k) ? combine(by.get(k)!, r.value ?? 0) : (r.value ?? 0));
+  }
+  return [...by.values()];
+};
 const page = (r: Row) => `${r.host.replace(/^veermickey\.com$/, 'www.veermickey.com')}${r.path}`;
 const secs = (ms: number) => (ms >= 60000 ? `${(ms / 60000).toFixed(1)} min` : `${(ms / 1000).toFixed(1)} s`);
 const median = (a: number[]) => (a.length ? [...a].sort((p, q) => p - q)[Math.floor(a.length / 2)] : 0);
@@ -43,6 +52,7 @@ export async function initAnalytics() {
   const form = $<HTMLFormElement>('[data-filters]');
   const params = new URLSearchParams(location.search);
   for (const name of ['days', 'device']) if (params.get(name)) (form.elements.namedItem(name) as HTMLSelectElement).value = params.get(name)!;
+  if (!params.get('device') && matchMedia('(max-width: 48rem)').matches) (form.elements.namedItem('device') as HTMLSelectElement).value = 'mobile';
   form.addEventListener('change', (e) => ((e.target as HTMLSelectElement).name === 'days' ? load() : render()));
   addEventListener('resize', () => drawHeatmap());
   await load(params.get('page') ?? '');
@@ -103,8 +113,8 @@ function render() {
   const selected = $<HTMLSelectElement>('[data-pages]').value;
   const scoped = selected ? rows.filter((r) => page(r) === selected) : rows;
   const views = scoped.filter((r) => r.type === 'pageview' && !r.target);
-  const engaged = scoped.filter((r) => r.type === 'pageview' && r.target === 'engaged').map((r) => r.value ?? 0);
-  const depth = scoped.filter((r) => r.type === 'scroll').map((r) => r.value ?? 0);
+  const engaged = perVisit(scoped.filter((r) => r.type === 'pageview' && r.target === 'engaged'), (a, b) => a + b);
+  const depth = perVisit(scoped.filter((r) => r.type === 'scroll'), Math.max);
   const sessions = new Set(scoped.map((r) => r.session_id));
 
   $('[data-stats]').replaceChildren(
@@ -144,7 +154,8 @@ function render() {
 }
 
 function drawHeatmap() {
-  const selected = $<HTMLSelectElement>('[data-pages]').value;
+  // With "All pages" picked, show the most-viewed page so the heatmap is never empty by default.
+  const selected = $<HTMLSelectElement>('[data-pages]').value || countBy(rows.filter((r) => r.type === 'pageview' && !r.target), page)[0]?.[0] || '';
   const device = ($<HTMLFormElement>('[data-filters]').elements.namedItem('device') as HTMLSelectElement).value;
   const frame = $<HTMLElement>('[data-frame]');
   const iframe = $<HTMLIFrameElement>('[data-iframe]');
@@ -152,7 +163,7 @@ function drawHeatmap() {
   const meta = $<HTMLElement>('[data-heat-meta]');
   frame.hidden = !selected;
   if (!selected) {
-    meta.textContent = '';
+    meta.textContent = '· no page views in this range';
     return;
   }
   const scoped = rows.filter((r) => page(r) === selected && r.device === device);
@@ -160,7 +171,7 @@ function drawHeatmap() {
   const docH = median(scoped.map((r) => r.doc_h ?? 0).filter(Boolean)) || 3000;
   const width = WIDTH[device];
   const scale = Math.min(1, frame.parentElement!.clientWidth / width);
-  meta.textContent = `· ${clicks.length} clicks on ${device}`;
+  meta.textContent = `· ${selected} · ${clicks.length} clicks on ${device}${clicks.length ? '' : ' (try another device)'}`;
 
   const pageUrl = new URL(`https://${selected}`);
   if (!SITE_HOSTS.includes(pageUrl.hostname)) {
@@ -170,6 +181,8 @@ function drawHeatmap() {
   pageUrl.searchParams.set('notrack', '1');
   const src = pageUrl.href;
   if (iframe.dataset.src !== src) iframe.src = iframe.dataset.src = src;
+  iframe.width = String(width);
+  iframe.height = String(docH);
   Object.assign(iframe.style, { width: `${width}px`, height: `${docH}px`, transform: `scale(${scale})` });
   frame.style.width = `${width * scale}px`;
   frame.style.height = `${docH * scale}px`;
@@ -190,7 +203,7 @@ function drawHeatmap() {
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
   }
 
-  const depths = scoped.filter((r) => r.type === 'scroll').map((r) => r.value ?? 0);
+  const depths = perVisit(scoped.filter((r) => r.type === 'scroll'), Math.max);
   const reach = $<HTMLElement>('[data-reach]');
   reach.replaceChildren(
     ...Array.from({ length: 10 }, (_, i) => {
