@@ -26,7 +26,7 @@ const jsonLd = {
   description,
   datePublished: post.published_at,
   dateModified: post.updated_at,
-  author: { '@type': 'Person', '@id': 'https://www.veermickey.com/#person', name: 'Veer Shah', url: 'https://www.veermickey.com/' },
+  author: { '@type': 'Person', '@id': new URL('/#person', Astro.site).href, name: 'Veer Shah', url: new URL('/', Astro.site).href },
   mainEntityOfPage: canonicalFor(`/${post.slug}`),
   ...(post.cover_image_url ? { image: post.cover_image_url } : {}),
   keywords: post.tags.join(', '),
