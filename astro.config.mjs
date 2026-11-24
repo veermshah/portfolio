@@ -13,7 +13,7 @@ export default defineConfig({
   trailingSlash: 'ignore',
   build: { format: 'directory' },
   adapter: vercel({ isr: { expiration: 60 } }),
-  integrations: [sitemap({ filter: (page) => !new URL(page).pathname.startsWith('/blog') }), blogHost({ host: BLOG_HOST, mainHosts: ['veermickey.com', 'www.veermickey.com'] })],
+  integrations: [sitemap({ filter: (page) => !new URL(page).pathname.startsWith('/blog') }), blogHost({ host: BLOG_HOST, mainHosts: ['veermickey.com', 'www.veermickey.com'], aliasHosts: ['portfolio-wheat-xi-reyo27zre0.vercel.app'], canonicalOrigin: SITE.replace(/\/$/, '') })],
   image: {
     responsiveStyles: false,
   },
