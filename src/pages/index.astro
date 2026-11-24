@@ -88,7 +88,8 @@ const structuredData = {
 <Base title={`${profile.name} (${profile.alternateNames[0]}), software engineer`} description={profile.description} wide>
   <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   <section class="hero" aria-labelledby="hero-name">
-    <p class="kicker" data-reveal>Software engineer · M.S. CS, UT Dallas</p>
+    <canvas class="hero-field" aria-hidden="true"></canvas>
+    <p class="kicker" data-reveal><span class="pulse" aria-hidden="true"></span>Software engineer · M.S. CS, UT Dallas</p>
     <h1 id="hero-name" class="display" data-reveal style="--reveal-i: 1">{profile.name}</h1>
     <p class="bio" data-reveal style="--reveal-i: 2">{profile.bio}</p>
     <div class="hero-actions" data-reveal style="--reveal-i: 3">
@@ -216,7 +217,16 @@ const structuredData = {
                 {p.award && <span class="award">{p.award}</span>}
               </h3>
               <p class="pitch">{p.pitch}</p>
-              <ProjectLinks project={p} />
+              <div class="project-foot">
+                <ProjectLinks project={p} />
+                <button class="peek-toggle" type="button" aria-expanded="false" aria-controls={`peek-${p.slug}`} aria-label={`Quick look: ${p.title}`}>Quick look</button>
+              </div>
+              <div class="peek" id={`peek-${p.slug}`} hidden>
+                <p class="peek-problem">{p.problem}</p>
+                {p.results.length > 0 && <ul class="peek-results">{p.results.slice(0, 3).map((r) => <li>{r}</li>)}</ul>}
+                <ul class="tags">{p.stack.map((t) => <li>{t}</li>)}</ul>
+                <a class="peek-more" href={`/projects/${p.slug}/`}>Full write-up <span aria-hidden="true">→</span></a>
+              </div>
             </div>
           </li>
         ))
@@ -248,6 +258,8 @@ const structuredData = {
 </Base>
 
 <script>
+  import { initHeroField } from '../scripts/hero-field';
+
   for (const track of document.querySelectorAll<HTMLElement>('.carousel')) {
     const section = track.closest('section')!;
     const [prev, next] = section.querySelectorAll<HTMLButtonElement>('.carousel-btn');
@@ -280,6 +292,22 @@ const structuredData = {
     pad();
     update();
   }
+
+  // Project cards expand in place to show the problem, results and stack.
+  for (const toggle of document.querySelectorAll<HTMLButtonElement>('.peek-toggle')) {
+    toggle.addEventListener('click', () => {
+      const card = toggle.closest<HTMLElement>('.project')!;
+      const open = toggle.getAttribute('aria-expanded') !== 'true';
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.textContent = open ? 'Close' : 'Quick look';
+      document.getElementById(toggle.getAttribute('aria-controls')!)!.hidden = !open;
+      card.classList.toggle('is-open', open);
+      const top = card.getBoundingClientRect().top;
+      if (open && (top < 64 || top > innerHeight * 0.6)) card.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    });
+  }
+
+  initHeroField();
 
   // Printed copies should include every experience highlight.
   let openedForPrint: HTMLDetailsElement[] = [];
@@ -328,14 +356,21 @@ const structuredData = {
 
 <style>
   /* Hero */
-  .hero { position: relative; padding-bottom: clamp(1rem, 3vw, 2rem); }
-  .kicker { font-size: var(--step--1); color: var(--muted); }
+  .hero { position: relative; isolation: isolate; padding-bottom: clamp(1rem, 3vw, 2rem); }
+  .hero-field { position: absolute; z-index: -1; top: calc(-1 * clamp(3rem, 1.5rem + 6vw, 7rem)); left: calc(50% - 50vw); width: 100vw; height: calc(100% + clamp(3rem, 1.5rem + 6vw, 7rem) + 2rem); touch-action: pan-y; mask-image: linear-gradient(to bottom, #000 70%, transparent); -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent); }
+  .kicker { display: inline-flex; align-items: center; gap: 0.6rem; font-family: var(--mono); font-size: var(--step--1); color: var(--muted); padding: 0.3rem 0.75rem 0.3rem 0.6rem; border: 1px solid var(--rule); border-radius: 999px; background: color-mix(in srgb, var(--bg) 80%, transparent); }
+  @media (max-width: 30rem) { .kicker { font-size: 0.75rem; letter-spacing: -0.02em; white-space: nowrap; } }
+  .pulse { flex: none; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); }
+  @media (prefers-reduced-motion: no-preference) { .pulse { animation: pulse 2.4s var(--ease) infinite; } }
+  @keyframes pulse { 70% { box-shadow: 0 0 0 0.55rem transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
   .display {
     margin-top: clamp(1.25rem, 3vw, 2rem);
     font-size: var(--step-display);
-    line-height: 0.95;
-    letter-spacing: -0.045em;
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -0.055em;
   }
+  .display::after { content: '.'; color: var(--accent); }
   .bio { margin-top: clamp(1.25rem, 2.5vw, 1.75rem); font-size: var(--step-1); line-height: 1.55; color: var(--muted); max-width: 38rem; text-wrap: pretty; }
   .hero-actions { margin-top: clamp(1.75rem, 3vw, 2.25rem); display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.75rem; }
   .contact { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.35rem 1.25rem; font-size: 0.9375rem; }
@@ -345,7 +380,10 @@ const structuredData = {
   /* Sections */
   .section { margin-top: var(--space-section); scroll-margin-top: 4.5rem; }
   .section-head { display: flex; align-items: baseline; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--rule); margin-bottom: clamp(1.5rem, 3vw, 2.25rem); }
-  .section-title { font-size: var(--step-3); letter-spacing: -0.03em; }
+  .section-title { font-size: var(--step-3); font-weight: 800; letter-spacing: -0.04em; }
+  :global(main) { counter-reset: section; }
+  .section-head { counter-increment: section; }
+  .section-head .section-title::before { content: counter(section, decimal-leading-zero); display: block; margin-bottom: 0.4rem; font-family: var(--mono); font-size: var(--step--1); font-weight: 400; letter-spacing: 0; color: var(--accent); }
   .section-title .count { font-family: var(--mono); font-size: var(--step--1); font-weight: 400; color: var(--muted); letter-spacing: 0; vertical-align: 0.6em; margin-left: 0.25rem; }
   .stretched::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
 
@@ -435,7 +473,26 @@ const structuredData = {
   .project h3 a:hover { color: var(--accent); }
   .project .award { white-space: normal; }
   .pitch { margin-top: 0.45rem; font-size: 0.9375rem; }
-  .project :global(.actions) { margin-top: 0.7rem; font-size: 0.875rem; }
+  .project-foot { margin-top: 0.7rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; }
+  .project :global(.actions) { font-size: 0.875rem; }
+  .peek-toggle { font: inherit; font-size: 0.8125rem; font-family: var(--mono); color: var(--accent); background: var(--accent-soft); border: 1px solid transparent; border-radius: 999px; padding: 0.3rem 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; transition: border-color 0.2s var(--ease); }
+  .peek-toggle::after { content: '+'; font-weight: 700; transition: transform 0.25s var(--ease); }
+  .peek-toggle[aria-expanded='true']::after { transform: rotate(45deg); }
+  .peek-toggle:hover { border-color: var(--accent); }
+  .peek-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .peek { margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--rule); display: grid; gap: 0.85rem; font-size: 0.9375rem; }
+  .peek-problem { color: var(--muted); max-width: var(--measure); }
+  .peek-results { padding-left: 1.1rem; display: grid; gap: 0.4rem; max-width: var(--measure); }
+  .peek-results li::marker { color: var(--accent); }
+  .peek-more { font-weight: 700; font-size: 0.9375rem; justify-self: start; }
+  .project.is-open { grid-column: 1 / -1; }
+  @media (min-width: 48rem) {
+    .project.is-open { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(1.25rem, 3vw, 2.5rem); align-items: start; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .peek:not([hidden]) { animation: peek-in 0.35s var(--ease); }
+  }
+  @keyframes peek-in { from { opacity: 0; transform: translateY(-6px); } }
 
   /* Notes */
   .notes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: clamp(1rem, 2vw, 1.5rem); }

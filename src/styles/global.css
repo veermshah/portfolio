@@ -3,8 +3,8 @@
   --ink: #17191c;
   --muted: #565b62;
   --rule: #e2e4e7;
-  --accent: #1c6b58;
-  --accent-soft: #e6f0ed;
+  --accent: #c2410c;
+  --accent-soft: #fdeee5;
 
   --sans: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: 'Atkinson Hyperlegible Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
@@ -19,7 +19,7 @@
   --step-1: clamp(1.125rem, 1.06rem + 0.3vw, 1.3125rem);
   --step-2: clamp(1.3rem, 1.15rem + 0.65vw, 1.75rem);
   --step-3: clamp(1.75rem, 1.4rem + 1.5vw, 2.75rem);
-  --step-display: clamp(3.1rem, 1.5rem + 7.2vw, 7.25rem);
+  --step-display: clamp(3.4rem, 1.2rem + 9.4vw, 9.5rem);
 
   --space-section: clamp(4.5rem, 3rem + 6vw, 8.5rem);
   --radius: 10px;
@@ -35,8 +35,8 @@
     --ink: #e8e9ea;
     --muted: #a3a8ae;
     --rule: #2b2e32;
-    --accent: #7cc7b0;
-    --accent-soft: #1b2b27;
+    --accent: #ff8a4c;
+    --accent-soft: #2b1c14;
   }
 }
 
@@ -45,8 +45,8 @@
   --ink: #e8e9ea;
   --muted: #a3a8ae;
   --rule: #2b2e32;
-  --accent: #7cc7b0;
-  --accent-soft: #1b2b27;
+  --accent: #ff8a4c;
+  --accent-soft: #2b1c14;
 }
 
 *,

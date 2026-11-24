@@ -56,7 +56,7 @@ const jsonLd = {
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </Fragment>
   <a class="blog-back" href={`${base}/`}>← All posts</a>
-  <article>
+  <article data-track="article">
     <header class="post-header">
       <p class="blog-meta"><time datetime={post.published_at}>{formatPostDate(post.published_at!)}</time> · {readingMinutes(post.content)} min read</p>
       <h1>{post.title}</h1>

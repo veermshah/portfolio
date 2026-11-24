@@ -44,7 +44,7 @@ const stripped = (s: string) => s.replace(/`/g, '');
 <Base title={`${p.title} | Veer Shah`} description={stripped(p.pitch)}>
   <nav class="crumb"><a href="/#projects">← All projects</a></nav>
 
-  <article>
+  <article data-track="article">
     <header class="head">
       <h1>{p.title}</h1>
       {p.award && <p class="award-line"><span class="award">{p.award}</span></p>}
