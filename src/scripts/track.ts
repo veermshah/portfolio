@@ -134,6 +134,7 @@ if (url && key && HOSTS.includes(location.hostname) && window === window.top && 
   onScroll();
 
   let engagedMs = 0;
+  let reportedDepth = 0;
   let visibleAt = performance.now();
 
   addEventListener(
@@ -164,8 +165,9 @@ if (url && key && HOSTS.includes(location.hostname) && window === window.top && 
     }
     for (const [el, ms] of dwell) if (ms >= 500) push({ type: 'section', target: el.id || el.dataset.track, value: Math.round(ms) });
     dwell.clear();
-    push({ type: 'scroll', value: Math.min(100, maxDepth) });
-    push({ type: 'pageview', target: 'engaged', value: Math.round(engagedMs) });
+    const depth = Math.min(100, maxDepth);
+    if (depth > reportedDepth) push({ type: 'scroll', value: (reportedDepth = depth) });
+    if (engagedMs >= 250) push({ type: 'pageview', target: 'engaged', value: Math.round(engagedMs) });
     engagedMs = 0;
     flush();
   };

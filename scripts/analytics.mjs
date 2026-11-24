@@ -29,14 +29,19 @@ if (args[0] === '--sql') {
 const days = Number(args[0] ?? 7);
 if (!Number.isFinite(days) || days <= 0) throw new Error('Days must be a positive number.');
 const since = `created_at > now() - interval '${days} days'`;
+const visits = `select host, path, session_id,
+    count(*) filter (where type='pageview' and target is null) as views,
+    sum(value) filter (where type='pageview' and target='engaged') as engaged_ms,
+    max(value) filter (where type='scroll') as scroll_pct
+    from analytics_events where ${since} group by 1, 2, 3`;
 const reports = {
-  Overview: `select count(*) filter (where type='pageview' and target is null) as views, count(distinct session_id) as sessions,
-    round(percentile_cont(0.5) within group (order by value) filter (where type='pageview' and target='engaged')::numeric / 1000, 1) as median_engaged_s,
-    percentile_cont(0.5) within group (order by value) filter (where type='scroll') as median_scroll_pct
-    from analytics_events where ${since}`,
-  Pages: `select host, path, count(*) filter (where type='pageview' and target is null) as views, count(distinct session_id) as sessions,
-    percentile_cont(0.5) within group (order by value) filter (where type='scroll') as median_scroll_pct
-    from analytics_events where ${since} group by 1, 2 order by views desc limit 25`,
+  Overview: `select sum(views) as views, count(distinct session_id) as sessions,
+    round(percentile_cont(0.5) within group (order by engaged_ms)::numeric / 1000, 1) as median_engaged_s,
+    percentile_cont(0.5) within group (order by scroll_pct) as median_scroll_pct
+    from (${visits}) v`,
+  Pages: `select host, path, sum(views) as views, count(distinct session_id) as sessions,
+    percentile_cont(0.5) within group (order by scroll_pct) as median_scroll_pct
+    from (${visits}) v group by 1, 2 order by views desc limit 25`,
   Sections: `select path, target as section, count(distinct session_id) as sessions, round(percentile_cont(0.5) within group (order by value)::numeric / 1000, 1) as median_s
     from analytics_events where type='section' and ${since} group by 1, 2 order by sessions desc limit 30`,
   Clicks: `select path, type, target, count(*) as clicks from analytics_events where type in ('click','outbound') and ${since}
