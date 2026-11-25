@@ -3,6 +3,7 @@ import type { GetStaticPaths, ImageMetadata } from 'astro';
 import { Image, getImage } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import ProjectLinks from '../../components/ProjectLinks.astro';
+import { profile } from '../../data/profile';
 import { projects, type Project } from '../../data/projects';
 import { roleSummary, myPart } from '../../lib/format';
 import { categoriesByProject } from '../../data/project-categories';
@@ -243,7 +244,7 @@ const structuredData = {
     )
   }
 
-  <p class="ask">Questions about {p.title}? <a href="mailto:veermickey@gmail.com">Email me</a></p>
+  <p class="ask">Questions about {p.title}? <a href={profile.links.find((l) => l.label === 'Email')?.href}>Email me</a></p>
 
   <nav class="strip" aria-label="More projects">
     {
@@ -314,7 +315,7 @@ const structuredData = {
 
   .head h1 {
     /* Fluid, capped at the display max, and never wider than the column allows for the longest word. */
-    font-size: min(clamp(2.5rem, 1.2rem + 5.5vw, 5.75rem), calc(100cqi / (var(--chars) * 0.64)));
+    font-size: min(var(--step-4), calc(100cqi / (var(--chars) * 0.64)));
     font-weight: 800;
     line-height: 0.98;
     letter-spacing: -0.04em;
@@ -560,14 +561,16 @@ const structuredData = {
 
   .related {
     margin-top: var(--space-section);
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--ink);
+    padding-top: 0.875rem;
+    border-top: 2px solid var(--ink);
   }
 
+  /* Same header as the home page sections. */
   .related h2 {
-    font-size: var(--step-2);
+    font-size: var(--step-3);
     font-weight: 800;
-    letter-spacing: -0.025em;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
   }
 
   .related ul {

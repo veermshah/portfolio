@@ -123,8 +123,8 @@ const first = stops[0];
     z-index: 100;
     display: grid;
     grid-template-rows: auto 1fr auto;
-    padding: clamp(1.25rem, 3vw, 2.25rem) var(--gutter);
-    color: #f5f5f5;
+    padding-bottom: clamp(1.25rem, 3vw, 2.25rem);
+    color: var(--ink);
     pointer-events: none;
     /* Safety net: never cover the page for more than a few seconds, whatever happens to the script. */
     animation: intro-gone 0s linear 5s forwards;
@@ -137,7 +137,8 @@ const first = stops[0];
     left: 0;
     right: 0;
     height: 50.5%;
-    background: #0a0a0a;
+    /* The board follows the theme the visitor is about to see, so there is no flash of the other one. */
+    background: var(--bg);
     transition: transform 0.75s cubic-bezier(0.76, 0, 0.24, 1);
   }
   .intro::before { top: 0; }
@@ -148,6 +149,10 @@ const first = stops[0];
   .intro.is-open > * { opacity: 0; }
 
   .intro-top, .intro-bottom {
+    width: 100%;
+    max-width: calc(var(--wide) + 2 * var(--gutter));
+    margin: 0 auto;
+    padding: 0 var(--gutter);
     display: flex;
     justify-content: space-between;
     gap: 1rem;
@@ -157,10 +162,12 @@ const first = stops[0];
     text-transform: uppercase;
     font-variant-numeric: tabular-nums;
   }
+  /* Same height and gutter as the site header, so the name stays put when the board opens. */
+  .intro-top { height: var(--header-h); align-items: center; }
   .intro-top b { font-weight: 500; }
-  .intro-bottom { color: rgb(245 245 245 / 0.6); }
+  .intro-bottom { color: var(--muted); }
   .intro-home { opacity: 0; transition: opacity 0.3s ease; }
-  .intro.is-home .intro-home { opacity: 1; color: #f5f5f5; }
+  .intro.is-home .intro-home { opacity: 1; color: var(--ink); }
 
   .intro-board { position: relative; display: grid; place-items: center; align-content: center; min-height: 0; }
   .intro-map {
@@ -172,7 +179,7 @@ const first = stops[0];
   }
   .intro-map path {
     fill: none;
-    stroke: #f5f5f5;
+    stroke: var(--ink);
     stroke-width: 0.8;
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
@@ -180,8 +187,8 @@ const first = stops[0];
     animation-delay: calc(0.2s + var(--i) * 30ms);
   }
   @keyframes route-draw { to { stroke-dashoffset: 0; } }
-  .intro-map circle { fill: #f5f5f5; }
-  .intro-here circle:first-child { fill: none; stroke: #f5f5f5; stroke-width: 1.2; }
+  .intro-map circle { fill: var(--ink); }
+  .intro-here circle:first-child { fill: none; stroke: var(--ink); stroke-width: 1.2; }
   .intro-code {
     display: flex;
     font-size: clamp(6rem, 30vw, 22rem);

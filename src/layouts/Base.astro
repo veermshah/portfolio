@@ -54,15 +54,16 @@ const ogHeight = Astro.props.ogImageHeight ?? (isSiteCard ? 630 : undefined);
 const year = new Date().getFullYear();
 const navItems = [
   { label: 'Work', href: '/#work' },
-  { label: 'Projects', href: '/#projects' },
   { label: 'Experience', href: '/#experience' },
   { label: 'Education', href: '/#education' },
   { label: 'Photos', href: '/photography/', current: Astro.url.pathname.startsWith('/photography') },
   { label: 'Blog', href: 'https://blog.veermickey.com' },
   { label: 'Resume', href: '/resume.pdf' },
 ];
-const footerSite = navItems.filter((item) => ['Work', 'Projects', 'Photos', 'Blog'].includes(item.label));
-const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
+const footerSite = navItems.filter((item) => ['Work', 'Experience', 'Photos', 'Blog'].includes(item.label));
+// One list of places to reach Veer, in one order, everywhere it appears.
+const elsewhereOrder = ['Email', 'GitHub', 'LinkedIn', 'Devpost', 'Resume'];
+const footerElsewhere = elsewhereOrder
   .map((label) => profile.links.find((link) => link.label === label))
   .filter((link): link is { label: string; href: string } => Boolean(link?.href));
 ---
@@ -130,6 +131,7 @@ const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
         <nav class="site-nav" aria-label="Site">
           {navItems.map((item) => <a href={item.href} aria-current={item.current ? 'page' : undefined}>{item.label}</a>)}
         </nav>
+        <a class="header-resume" href="/resume.pdf">Resume</a>
         <button class="menu-button" type="button" aria-expanded="false" aria-controls="site-menu" hidden>
           Menu<span class="menu-lines" aria-hidden="true"></span>
         </button>
@@ -148,7 +150,7 @@ const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
                 <a href={item.href} aria-current={item.current ? 'page' : undefined}>
                   <span class="menu-no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
                   <span class="menu-label">{item.label}</span>
-                  <span class="menu-arrow" aria-hidden="true">↗</span>
+                  <span class="menu-arrow" aria-hidden="true">{item.href.startsWith('/#') ? '→' : '↗'}</span>
                 </a>
               </li>
             ))}
@@ -157,7 +159,7 @@ const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
         <div class="site-menu-foot">
           <button class="menu-switch" type="button" role="switch" aria-checked="false"><span class="menu-switch-track" aria-hidden="true"></span>Dark mode</button>
           <ul class="menu-pills" aria-label="Elsewhere">
-            {profile.links.filter((link) => ['Email', 'LinkedIn', 'GitHub'].includes(link.label) && link.href).map((link) => <li><a href={link.href}>{link.label}<span aria-hidden="true">↗</span></a></li>)}
+            {footerElsewhere.filter((link) => link.label !== 'Resume').map((link) => <li><a href={link.href}>{link.label}</a></li>)}
           </ul>
         </div>
       </div>
@@ -177,7 +179,7 @@ const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
           <ul class="footer-col footer-right" aria-label="Elsewhere">
             {footerElsewhere.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
           </ul>
-          <p class="footer-meta"><span>© {year} {profile.name}</span><a href="https://github.com/veermshah/portfolio">Site source</a></p>
+          <p class="footer-meta"><span>© {year} {profile.name}</span><span class="footer-time" data-local-time>Dallas, Texas</span><a href="https://github.com/veermshah/portfolio">Site source</a></p>
         </div>
         <div class="footer-glow" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
       </footer>
@@ -217,6 +219,14 @@ const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
         )).catch(() => {});
         t.finished.finally(() => root.classList.remove('theme-wipe'));
       });
+      // Veer's local time in the footer, the same clock that turns the site dark at night.
+      const clock = document.querySelector('[data-local-time]');
+      if (clock) {
+        const fmt = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
+        const tick = () => { clock.textContent = `Dallas ${fmt.format(new Date())}`; };
+        tick();
+        setInterval(tick, 30000);
+      }
       // The menu is a modal dialog, so focus stays inside, Esc closes it and the page behind is inert.
       const menu = document.getElementById('site-menu');
       const menuButton = document.querySelector('.menu-button');
@@ -252,7 +262,6 @@ const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
     </script>
     <script>
       import "../scripts/track";
-      import "../scripts/motion";
     </script>
   </body>
 </html>

@@ -43,7 +43,10 @@ const featured = [
   if (!project) throw new Error(`Missing featured project: ${feature.slug}`);
   return { project, label: project.award ?? '', detail: feature.detail ?? project.pitch };
 });
-const links = profile.links.filter((l) => l.href && l.label !== 'Email');
+// Same places and order as the menu and footer; Unsplash lives on the Photography page.
+const links = ['GitHub', 'LinkedIn', 'Devpost', 'Resume']
+  .map((label) => profile.links.find((l) => l.label === label))
+  .filter((l): l is { label: string; href: string } => Boolean(l?.href));
 // The sheet holds everything not already shown in Selected work. Prototype sessions go last so
 // shipped work and award winners lead.
 const featuredSlugs = new Set(featured.map((f) => f.project.slug));
@@ -135,7 +138,7 @@ const structuredData = {
       {featured.map(({ project, label, detail }, i) => {
         const t = thumb(project);
         return (
-          <li class="select" data-tilt="5">
+          <li class="select">
             <div class="frame-media">
               {t ? (
                 <Image src={t.src} alt={t.alt} widths={[480, 800, 1200]} sizes="(max-width: 40rem) 100vw, 36rem" format="webp" loading={i < 2 ? 'eager' : 'lazy'} />
@@ -174,7 +177,7 @@ const structuredData = {
         sheet.map((p) => {
           const t = thumb(p);
           return (
-            <li class="frame" data-tilt="7" data-categories={categoriesByProject[p.slug].join(' ')}>
+            <li class="frame" data-categories={categoriesByProject[p.slug].join(' ')}>
               <div class="frame-media">
                 {t ? (
                   <Image src={t.src} alt={t.alt} widths={[360, 720]} sizes="(max-width: 36rem) 100vw, (max-width: 56rem) 50vw, (max-width: 72rem) 33vw, 300px" format="webp" loading="lazy" />
@@ -318,6 +321,8 @@ const structuredData = {
      full width on phones with the name under it, a tall column beside the text on desktop. */
   .hero-layout { display: grid; grid-template-columns: minmax(0, 1fr); }
   .hero-portrait { width: 100%; }
+  /* Phones: name and bio first, so the first screen says who this is; the portrait follows. */
+  @media (max-width: 39.99rem) { .hero-portrait { order: 2; width: min(100%, 20rem); margin-top: 2rem; } }
   @media (min-width: 40rem) { .hero-portrait { width: min(100%, 24rem); } }
   @media (min-width: 64rem) {
     .hero-layout { grid-template-columns: minmax(0, 1fr) min(clamp(22rem, 34vw, 32rem), calc((100svh - 9.5rem) * 0.8)); column-gap: clamp(2.5rem, 5vw, 5rem); align-items: center; }
@@ -341,7 +346,7 @@ const structuredData = {
         animation-timeline: scroll(root);
         animation-range: 0 90vh;
       }
-      @keyframes hero-text-drift { to { transform: translate3d(0, -7vh, 0); opacity: 0.25; } }
+      @keyframes hero-text-drift { to { transform: translate3d(0, -7vh, 0); } }
     }
   }
   @supports (animation-timeline: view()) and (overflow-clip-margin: content-box) {
@@ -411,16 +416,14 @@ const structuredData = {
   :global(.hero) .contact a { color: color-mix(in srgb, var(--hero-ink) 82%, transparent); }
   :global(.hero) .contact a:hover { color: var(--hero-ink); }
   :global(.hero) a:focus-visible { outline-color: var(--hero-ink); }
-  :global(.hero .contact-button) { background: var(--hero-ink); border-color: var(--hero-ink); color: var(--hero-on-ink); }
-  :global(.hero .contact-button:hover) { background: transparent; color: var(--hero-ink); }
+  :global(.hero .button.is-primary) { background: var(--hero-ink); border-color: var(--hero-ink); color: var(--hero-on-ink); }
+  :global(.hero .button.is-primary::before) { background: var(--hero-on-ink); }
+  :global(.hero .button.is-primary:hover) { color: var(--hero-ink); }
   /* Comes last to win over the colours above. Until the dots take over, the h1 is transparent but still in the accessibility tree. */
   :global(.hero.dot-pending) .display { color: transparent; text-shadow: none; }
 
   /* Sections */
   .section { margin-top: var(--space-section); scroll-margin-top: 4.5rem; }
-  .section-head { position: relative; padding-top: 0.875rem; margin-bottom: clamp(1.75rem, 4vw, 3rem); }
-  .section-head::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--ink); transform-origin: left; }
-  .section-title { font-size: clamp(1.75rem, 1.2rem + 2vw, 2.75rem); font-weight: 800; line-height: 0.95; letter-spacing: -0.04em; text-wrap: balance; }
   .section-title .count { font-size: var(--step-1); font-weight: 700; line-height: 1; letter-spacing: 0; color: var(--muted); font-variant-numeric: tabular-nums; vertical-align: top; margin-left: 0.1em; }
   .stretched::after { content: ''; position: absolute; inset: 0; z-index: 1; }
 
@@ -428,33 +431,21 @@ const structuredData = {
      both themes, like the film itself. */
   .frame-media { position: relative; aspect-ratio: 3 / 2; padding: 3px; background: #0a0a0a; }
   .frame-media { aspect-ratio: auto; }
-  /* Hover (mouse): the print lifts and tilts toward the pointer (scripts/motion.ts), the picture zooms
-     inside its frame and a soft light follows the cursor. Touch gets a quick press instead. */
+  /* Hover (mouse): the print lifts and the picture zooms inside its frame. Touch gets a quick press instead. */
   .frame-media {
-    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
     translate: 0 var(--lift, 0);
     box-shadow: 0 0 0 transparent;
     transition: translate 0.45s var(--ease), box-shadow 0.45s var(--ease);
   }
   .frame-media :global(img) { transition: scale 0.7s var(--ease), filter 0.5s var(--ease); }
-  .frame-media::after {
-    content: '';
-    position: absolute;
-    inset: 3px;
-    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.28), transparent 50%);
-    opacity: 0;
-    transition: opacity 0.4s var(--ease);
-    pointer-events: none;
-  }
   @media (hover: hover) and (pointer: fine) {
     :is(.select, .frame):hover .frame-media { --lift: -8px; box-shadow: 0 28px 50px -24px rgb(0 0 0 / 0.55); }
     :is(.select, .frame):hover .frame-media :global(img) { scale: 1.07; }
-    :is(.select, .frame):hover .frame-media::after { opacity: 1; }
-    .sheet:has(.frame:hover) .frame:not(:hover) .frame-media :global(img) { filter: saturate(0.6) brightness(0.92); }
   }
   :is(.select, .frame):active .frame-media { scale: 0.985; }
   .frame-media { transition: translate 0.45s var(--ease), box-shadow 0.45s var(--ease), scale 0.2s var(--ease); }
   .frame-media :global(img) { width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; object-position: top center; }
+  :global(:root[data-theme='dark']) .frame-media { background: #262626; }
   .frame-blank { display: flex; align-items: flex-end; aspect-ratio: 3 / 2; padding: 1rem; background: var(--accent-soft); color: var(--ink); font-size: var(--step-2); font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
 
   /* Selected work: big frames. Size alone marks them as picks. */
@@ -465,6 +456,8 @@ const structuredData = {
   /* The first pick leads: full width on wide screens, image beside its copy. */
   @media (min-width: 64rem) {
     .select:first-child { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: clamp(2rem, 4vw, 3.5rem); align-items: center; }
+    .select:last-child:nth-child(even) { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: clamp(2rem, 4vw, 3.5rem); align-items: center; }
+    .select:last-child:nth-child(even) > :first-child { order: 2; }
     .select:first-child h3 { font-size: clamp(2.5rem, 1.6rem + 3vw, 4rem); }
   }
   .select h3 { font-size: var(--step-3); font-weight: 800; line-height: 1; letter-spacing: -0.035em; }
@@ -477,7 +470,7 @@ const structuredData = {
 
   /* All projects: the contact sheet, frames edge to edge in colour. */
   .project-filter-controls { margin-bottom: clamp(2rem, 4vw, 2.75rem); }
-  .project-filters { display: flex; flex-wrap: wrap; gap: 0.35rem 0.25rem; margin-inline: -0.75rem; }
+  .project-filters { display: flex; flex-wrap: wrap; gap: 0.35rem 0.25rem; margin-inline: 0 -0.75rem; }
   .project-filters button { position: relative; min-height: 2.75rem; padding: 0.35rem 0.75rem; border: 0; background: none; font: inherit; color: var(--muted); cursor: pointer; }
   .project-filters button:hover, .project-filters button[aria-pressed='true'] { color: var(--ink); }
   .project-filters button { border-radius: 999px; transition: background-color 0.25s var(--ease), color 0.25s var(--ease), scale 0.15s var(--ease); }
@@ -530,13 +523,6 @@ const structuredData = {
   .experience-logo { flex: none; width: 2.25rem; height: 2.25rem; overflow: hidden; border-radius: var(--radius); background: #fff; outline: 1px solid var(--rule); }
   .experience-logo :global(img) { width: 100%; height: 100%; object-fit: contain; }
   .experience-role { margin-top: 0.6rem; font-weight: 700; }
-  .experience h3, .experience-logo { transition: translate 0.4s var(--ease), rotate 0.4s var(--ease); }
-  @media (hover: hover) {
-    .experience > li:hover h3 { translate: 0.5rem 0; }
-    .experience > li:hover .experience-logo { rotate: -8deg; }
-    .skills > div:hover dt { translate: 0.35rem 0; }
-  }
-  .skills dt { transition: translate 0.3s var(--ease); }
   .experience-lead { margin-top: 0.75rem; max-width: var(--measure); color: var(--muted); text-wrap: pretty; }
   .more summary { display: inline-flex; align-items: center; min-height: 2.75rem; cursor: pointer; list-style: none; font-size: var(--step--1); font-weight: 700; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.25em; }
   .more summary::-webkit-details-marker { display: none; }
@@ -566,17 +552,18 @@ const structuredData = {
   /* Contact: the page closes on a full-width block of ink. */
   .contact-section { --c-bg: #0a0a0a; --c-ink: #f5f5f5; margin-top: var(--space-section); margin-inline: calc(50% - 50vw); background: var(--c-bg); color: var(--c-ink); }
   /* Film black in both themes; on the dark page a rule marks where it starts. */
-  :global(:root[data-theme='dark']) .contact-section { border-top: 1px solid var(--rule); }
+  :global(:root[data-theme='dark']) .contact-section { --c-bg: #f5f5f5; --c-ink: #0a0a0a; }
   .contact-inner { max-width: calc(var(--wide) + 2 * var(--gutter)); margin: 0 auto; padding: clamp(4rem, 3rem + 7vw, 8rem) var(--gutter); }
   .contact-section h2 { font-size: var(--step-display); font-weight: 800; line-height: 0.9; letter-spacing: -0.04em; }
   .contact-section p { margin-top: clamp(1.25rem, 2.5vw, 1.75rem); max-width: 34rem; font-size: var(--step-1); line-height: 1.5; color: color-mix(in srgb, var(--c-ink) 78%, var(--c-bg)); text-wrap: pretty; }
   .contact-actions { margin-top: clamp(1.75rem, 3vw, 2.5rem); display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.75rem; }
-  .contact-section :global(.contact-button) { min-height: 2.75rem; background: var(--c-ink); border-color: var(--c-ink); color: var(--c-bg); }
-  .contact-section :global(.contact-button:hover) { background: transparent; color: var(--c-ink); }
+  .contact-section :global(.button.is-primary) { background: var(--c-ink); border-color: var(--c-ink); color: var(--c-bg); }
+  .contact-section :global(.button.is-primary::before) { background: var(--c-bg); }
+  .contact-section :global(.button.is-primary:hover) { color: var(--c-ink); }
   .contact-links { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0 1.25rem; font-size: 0.9375rem; }
   .contact-links a { display: inline-flex; align-items: center; min-height: 2.75rem; color: color-mix(in srgb, var(--c-ink) 78%, var(--c-bg)); text-decoration: none; }
-  .contact-links a:hover { color: var(--c-ink); text-decoration-line: underline; }
-  .contact-section a:focus-visible, .contact-section :global(.contact-button:focus-visible) { outline-color: var(--c-ink); }
+  .contact-links a:hover { color: var(--c-ink); }
+  .contact-section a:focus-visible, .contact-section :global(.button:focus-visible) { outline-color: var(--c-ink); }
 
   @media print {
     .frame .frame-media :global(img) { filter: none; }

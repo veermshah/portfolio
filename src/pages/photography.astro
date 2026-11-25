@@ -101,7 +101,12 @@ const structuredData = {
     </a>
   </section>
 
-  <section id="gallery" aria-label="Photos">
+  <FlightGlobe />
+
+  <section id="gallery" class="gallery" aria-labelledby="gallery-heading">
+    <header class="section-head">
+      <h2 id="gallery-heading" class="section-title">Photos</h2>
+    </header>
     {shots.length > 0 ? (
       <ul class="sheet" data-gallery>
         {shots.map((photo, i) => (
@@ -143,8 +148,6 @@ const structuredData = {
     )}
     {shots.length > 0 && <p class="credit">Photos by <a href={profileUrl}>Veer Mickey Shah</a> on <a href={unsplashHome}>Unsplash</a>.</p>}
   </section>
-
-  <FlightGlobe />
 
   <dialog class="viewer" data-viewer aria-label="Photo viewer">
     <img data-viewer-img alt="" />
@@ -222,10 +225,11 @@ const structuredData = {
 </script>
 
 <style>
+  .gallery { margin-top: var(--space-section); }
   .intro {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-end;
+    align-items: last baseline;
     justify-content: space-between;
     gap: 1.25rem 2rem;
     padding-bottom: clamp(1.5rem, 1rem + 2vw, 2.5rem);
