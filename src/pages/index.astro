@@ -9,6 +9,8 @@ import { notes, formatDate } from '../data/notes';
 import Base from '../layouts/Base.astro';
 import ProjectLinks from '../components/ProjectLinks.astro';
 import { profile } from '../data/profile';
+import { getImage } from 'astro:assets';
+import portraitSrc from '../assets/portrait.jpg';
 import { projects } from '../data/projects';
 import { projectCategories, categoriesByProject } from '../data/project-categories';
 import { jsonLd } from '../lib/seo';
@@ -33,6 +35,7 @@ const filters = [
 ];
 
 const featured = [
+  { slug: 'proofsnap', label: 'Product', detail: 'Photo of a handwritten proof in, a Lean 4 check of every step out.' },
   { slug: 'veer', label: 'Compiler engineering', detail: 'Static contracts for KV-cache memory, token budgets and numeric error.' },
   { slug: 'dishbrain-playground', label: 'Experimental work', detail: 'Controlled experiments with paired seeds, ablations and held-out evaluation.' },
   { slug: 'wander', label: 'Accessibility', detail: 'Indoor navigation with a voice guide, 3D mapping and deterministic routing.' },
@@ -46,6 +49,8 @@ const featured = [
 const links = profile.links.filter((l) => l.href && l.label !== 'Email');
 
 const siteUrl = new URL('/', Astro.site).href;
+const portrait = await getImage({ src: portraitSrc, width: 800, format: 'jpg' });
+const portraitUrl = new URL(portrait.src, Astro.site).href;
 const structuredData = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -74,6 +79,7 @@ const structuredData = {
       alternateName: profile.alternateNames,
       url: siteUrl,
       jobTitle: 'Software Engineer',
+      image: { '@type': 'ImageObject', url: portraitUrl, width: 800, height: 800, caption: `${profile.name} at his UT Dallas graduation` },
       description: profile.description,
       email: profile.links.find((l) => l.label === 'Email')?.href,
       alumniOf: { '@type': 'CollegeOrUniversity', name: 'University of Texas at Dallas', url: 'https://www.utdallas.edu' },

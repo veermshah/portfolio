@@ -12,7 +12,7 @@ export const profile = {
   alternateNames: ['Veer Mickey Shah', 'Veer Mickey'],
   /** Used for <meta name="description"> on the home page. */
   description:
-    'Veer Shah (Veer Mickey Shah) is a software engineer, UT Dallas computer science master’s student and director of HackUTD, joining Capital One full time in 2027 after internships there and at Fidelity in AWS distributed systems and retrieval.',
+    'Veer Shah (Veer Mickey Shah): software engineer, UT Dallas computer science master’s student and HackUTD director, joining Capital One full time in 2027.',
   links: [
     { label: 'GitHub', href: 'https://github.com/veermshah' },
     { label: 'Devpost', href: 'https://devpost.com/veermickey' },
