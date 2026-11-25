@@ -8,7 +8,6 @@ import ContactButton from '../components/ContactButton.astro';
 import Base from '../layouts/Base.astro';
 import ProjectLinks from '../components/ProjectLinks.astro';
 import Hero from '../components/Hero.astro';
-import Intro from '../components/Intro.astro';
 import HeroPortrait from '../components/HeroPortrait.astro';
 import { profile } from '../data/profile';
 import { getImage } from 'astro:assets';
@@ -112,7 +111,6 @@ const structuredData = {
 <Base title={`${profile.name} (${profile.shortName}), software engineer`} description={profile.description} wide>
   <script is:inline slot="head" type="application/ld+json" set:html={jsonLd(structuredData)} />
   {profile.sameAs.map((href) => <link slot="head" rel="me" href={href} />)}
-  <Intro />
   <Hero>
     <div class="hero-layout">
       <div class="hero-portrait"><HeroPortrait /></div>
