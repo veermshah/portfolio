@@ -610,15 +610,16 @@ main:has(> .contact-section:last-child) + .site-footer { margin-top: 0; border-t
 .footer-glow span:nth-child(3) { height: 50%; left: 18%; right: 18%; background: radial-gradient(50% 100% at 50% 100%, var(--glow-1), color-mix(in srgb, var(--glow-1) 40%, transparent) 45%, transparent 76%); }
 .footer-glow span:nth-child(4) { height: 26%; left: 30%; right: 30%; background: radial-gradient(50% 100% at 50% 100%, color-mix(in srgb, var(--glow-4) 90%, #fff), transparent 75%); mix-blend-mode: screen; }
 /* On paper the glow is softer, so the type above it keeps its contrast. */
-:root:not([data-theme='dark']) .footer-glow { opacity: 0.75; }
+/* On paper: no screen blend (it would wash out to white), and a touch more colour so it reads. */
+:root:not([data-theme='dark']) .footer-glow span:nth-child(4) { mix-blend-mode: normal; background: radial-gradient(50% 100% at 50% 100%, color-mix(in srgb, var(--glow-4) 70%, transparent), transparent 75%); }
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
-    .footer-glow span { animation-name: glow-rise; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% cover 55%; }
-    .footer-glow span:nth-child(2) { animation-range: entry 10% cover 60%; }
-    .footer-glow span:nth-child(3) { animation-range: entry 20% cover 65%; }
-    .footer-glow span:nth-child(4) { animation-range: entry 30% cover 70%; }
+    .footer-glow span { animation-name: glow-rise; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% entry 80%; }
+    .footer-glow span:nth-child(2) { animation-range: entry 10% entry 90%; }
+    .footer-glow span:nth-child(3) { animation-range: entry 20% entry 95%; }
+    .footer-glow span:nth-child(4) { animation-range: entry 30% entry 100%; }
     @keyframes glow-rise { from { transform: translate3d(0, 60%, 0) scaleX(0.7); opacity: 0; } }
-    .footer-mark { animation-name: mark-rise; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% cover 40%; }
+    .footer-mark { animation-name: mark-rise; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% entry 60%; }
     @keyframes mark-rise { from { translate: 0 30%; opacity: 0; scale: 0.94; } }
   }
 }
