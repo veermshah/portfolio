@@ -15,7 +15,7 @@ One face, Atkinson Hyperlegible Next. Display 800 weight, tracking no tighter th
 - Square corners (`--radius: 2px`). Buttons are flat rectangles with a 1px ink border that invert on hover.
 - Selected work is marked by size alone. Hover and focus underline a frame's title; the pager outlines the current project in ink.
 - The portrait is the hero's main element: head and shoulders at 4:5, full content width on phones, a 30rem column on desktop, no frame, a deep shadow.
-- Header: a VS monogram block and the name. Clear over the home hero, solid after it. Nav links draw an underline on hover and keep it on the current page or section. Below 48rem the links live in a full-screen menu (a modal dialog) behind a hamburger.
+- Header: a VS monogram block and the name. Clear over the home hero at the top of the page, solid as soon as you scroll. Nav links draw an underline on hover and keep it on the current page or section. Below 48rem the links live in a full-screen menu (a modal dialog) behind a hamburger.
 - Frames sit edge to edge with 3px gutters on film black.
 
 ## Motion
