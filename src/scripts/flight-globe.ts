@@ -38,7 +38,7 @@ function arc(a: Vec, b: Vec): Vec[] {
   const dot = Math.min(1, Math.max(-1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]));
   const omega = Math.acos(dot);
   const steps = Math.max(12, Math.round(omega * 40));
-  const lift = Math.min(0.32, 0.04 + omega * 0.16);
+  const lift = Math.min(0.16, 0.02 + omega * 0.08);
   const s = Math.sin(omega) || 1;
   const pts: Vec[] = [];
   for (let i = 0; i <= steps; i++) {
@@ -112,7 +112,7 @@ export function mountFlightGlobe(canvas: HTMLCanvasElement) {
     ctx!.stroke();
 
     // Land dots, brighter toward the middle of the disc. Four alpha bands keep it to four fills.
-    const dot = Math.max(1, 1.15 * dpr);
+    const dot = Math.max(1, 1.4 * dpr);
     const bands: Path2D[] = [new Path2D(), new Path2D(), new Path2D(), new Path2D()];
     for (const p of land) {
       const v = view(p, cl, sl, ct, st);
@@ -122,7 +122,7 @@ export function mountFlightGlobe(canvas: HTMLCanvasElement) {
     }
     ctx!.fillStyle = ink;
     bands.forEach((path, i) => {
-      ctx!.globalAlpha = 0.12 + i * 0.09;
+      ctx!.globalAlpha = 0.18 + i * 0.14;
       ctx!.fill(path);
     });
 
@@ -140,7 +140,8 @@ export function mountFlightGlobe(canvas: HTMLCanvasElement) {
       let pen = false;
       for (let j = 0; j <= end; j++) {
         const v = view(pts[j], cl, sl, ct, st);
-        const shown = v[2] > 0 || v[0] * v[0] + v[1] * v[1] > 1;
+        // In front of the globe, or lifted past its edge; never the far side of a long arc.
+        const shown = v[2] > 0 || (v[2] > -0.2 && v[0] * v[0] + v[1] * v[1] > 1);
         if (!shown) { pen = false; continue; }
         const x = c + v[0] * R, y = c - v[1] * R;
         if (pen) ctx!.lineTo(x, y); else { ctx!.moveTo(x, y); pen = true; }
