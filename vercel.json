@@ -5,6 +5,39 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/notes",
+      "destination": "https://blog.veermickey.com/",
+      "permanent": true,
+      "missing": [
+        {
+          "type": "host",
+          "value": "blog.veermickey.com"
+        }
+      ]
+    },
+    {
+      "source": "/notes/:path*",
+      "destination": "https://blog.veermickey.com/",
+      "permanent": true,
+      "missing": [
+        {
+          "type": "host",
+          "value": "blog.veermickey.com"
+        }
+      ]
+    },
+    {
+      "source": "/rss.xml",
+      "destination": "https://blog.veermickey.com/rss.xml",
+      "permanent": true,
+      "missing": [
+        {
+          "type": "host",
+          "value": "blog.veermickey.com"
+        }
+      ]
+    },
+    {
       "source": "/dishbrain-playground",
       "destination": "https://veermshah.github.io/dishbrain-playground/",
       "permanent": false

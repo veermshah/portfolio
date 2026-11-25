@@ -27,8 +27,6 @@ interface Props {
   noindex?: boolean;
   /** Use the wide container (home page grids). */
   wide?: boolean;
-  /** Which RSS feed to list first in the head; feed readers usually pick the first one. */
-  primaryFeed?: 'notes' | 'blog';
 }
 
 const {
@@ -41,13 +39,9 @@ const {
   sitemap = '/sitemap-index.xml',
   noindex = false,
   wide = false,
-  primaryFeed = 'notes',
 } = Astro.props;
-// Absolute URLs, because the blog subdomain serves its own /rss.xml at the same path.
-const feeds = [
-  { key: 'notes', title: `${profile.name}, notes`, href: new URL('/rss.xml', Astro.site).href },
-  { key: 'blog', title: `${profile.name}, blog`, href: `${BLOG_ORIGIN}/rss.xml` },
-].sort((a, b) => Number(b.key === primaryFeed) - Number(a.key === primaryFeed));
+// The blog is the one place for writing, so its feed is the site's only feed.
+const feeds = [{ title: `${profile.name}, blog`, href: `${BLOG_ORIGIN}/rss.xml` }];
 // A noindex page with no explicit canonical (the 404 page) gets no canonical link rather than one to its own error path.
 const canonical = Astro.props.canonical ?? (noindex ? undefined : new URL(Astro.url.pathname, Astro.site));
 const ogUrl = new URL(ogImage, Astro.site);
@@ -120,7 +114,6 @@ const year = new Date().getFullYear();
           <a class="nav-optional" href="/#work">Work</a>
           <a class="nav-optional" href="/#experience">Experience</a>
           <a class="nav-optional" href="/#education">Education</a>
-          <a href="/notes/" aria-current={Astro.url.pathname.startsWith('/notes') ? 'page' : undefined}>Notes</a>
           <a href="/photography/" aria-current={Astro.url.pathname.startsWith('/photography') ? 'page' : undefined}>Photos</a>
           <a href="https://blog.veermickey.com">Blog</a>
           <a href="/resume.pdf">Resume</a>

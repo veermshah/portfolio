@@ -3,7 +3,6 @@ import { profile } from '../data/profile';
 import { projects } from '../data/projects';
 import { experience } from '../data/experience';
 import { education } from '../data/education';
-import { notes } from '../data/notes';
 import { BLOG_ORIGIN } from '../lib/blog/config';
 
 /**
@@ -29,7 +28,6 @@ export const GET: APIRoute = ({ site }) => {
     '',
     `- [Home](${url('/')}): introduction, featured work, experience, education and skills, and every project`,
     `- [Resume](${url('/resume.pdf')}): PDF resume`,
-    `- [Notes](${url('/notes/')}): short technical notes (RSS: ${url('/rss.xml')})`,
     `- [Photography](${url('/photography/')}): photos, also published on Unsplash`,
     `- [Blog](${BLOG_ORIGIN}): posts (RSS: ${BLOG_ORIGIN}/rss.xml)`,
     '',
@@ -44,10 +42,6 @@ export const GET: APIRoute = ({ site }) => {
     '## Projects',
     '',
     ...projects.map((p) => `- [${p.title}](${url(`/projects/${p.slug}/`)}): ${plain(p.pitch)}${p.award ? ` (${p.award})` : ''}`),
-    '',
-    '## Notes',
-    '',
-    ...notes.map((n) => `- [${n.frontmatter.title}](${url(`/notes/${n.slug}/`)}): ${n.frontmatter.description}`),
     '',
     '## Profiles',
     '',

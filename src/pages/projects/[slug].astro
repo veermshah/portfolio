@@ -6,7 +6,6 @@ import ProjectLinks from '../../components/ProjectLinks.astro';
 import { projects, type Project } from '../../data/projects';
 import { roleSummary, myPart } from '../../lib/format';
 import { categoriesByProject } from '../../data/project-categories';
-import { notes } from '../../data/notes';
 import { breadcrumbs, jsonLd, metaDescription, personRef, projectTitle, schemaIds } from '../../lib/seo';
 
 export const getStaticPaths = (() =>
@@ -53,8 +52,6 @@ const related = projects
   .sort((a, b) => b.shared - a.shared || Math.abs(a.i - here) - Math.abs(b.i - here) || a.i - b.i)
   .slice(0, 3)
   .map(({ other }) => other);
-// Notes whose text links to this project's page.
-const relatedNotes = notes.filter((note) => note.rawContent().includes(`/projects/${p.slug}/`));
 
 // SEO: a descriptive title, a 110 to 160 character description, the lead screenshot as the share card, and JSON-LD.
 const pageTitle = projectTitle(p.slug, p.title, p.pitch);
@@ -188,7 +185,7 @@ const structuredData = {
   </article>
 
   {
-    (related.length > 0 || relatedNotes.length > 0) && (
+    related.length > 0 && (
       <aside class="related" aria-label="Related reading">
         {related.length > 0 && (
           <>
@@ -198,19 +195,6 @@ const structuredData = {
                 <li>
                   <a href={`/projects/${r.slug}/`}>{r.title}</a>
                   <p>{stripped(r.pitch)}</p>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-        {relatedNotes.length > 0 && (
-          <>
-            <h2 id="related-notes">{relatedNotes.length > 1 ? 'Notes on this project' : 'A note on this project'}</h2>
-            <ul aria-labelledby="related-notes">
-              {relatedNotes.map((note) => (
-                <li>
-                  <a href={`/notes/${note.slug}/`}>{note.frontmatter.title}</a>
-                  <p>{note.frontmatter.description}</p>
                 </li>
               ))}
             </ul>

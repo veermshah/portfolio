@@ -80,9 +80,9 @@ The site is served at `https://www.veermickey.com`; the apex `veermickey.com` re
 - `/wetware-emulator/*`
 - `/jev-calibration-lab/*`
 
-## Notes and featured projects
+## Featured projects
 
-Add Markdown files in `src/content/notes/` with quoted `title`, `description`, and ISO `date` frontmatter. Set `draft: true` to exclude a post from the site. Published notes appear at `/notes/<filename>/`, in the notes index, and on the home page. They are also in the RSS feed at `/rss.xml`. `/llms.txt`, a plain-text summary of the site for language models, is generated from `src/data` and the notes at build time. The two initial notes summarize the existing Veer and DishBrain project write-ups.
+Writing lives on the blog at blog.veermickey.com, which has its own feed at `https://blog.veermickey.com/rss.xml`. The old `/notes` pages and the old `/rss.xml` feed on the main site redirect there (see `vercel.json`). `/llms.txt`, a plain-text summary of the site for language models, is generated from `src/data` at build time.
 
 The `featured` list in `src/pages/index.astro` selects the home-page highlights (currently five). The contact button uses the Email link in `src/data/profile.ts`.
 

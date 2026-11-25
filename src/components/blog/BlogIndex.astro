@@ -17,7 +17,7 @@ Astro.response.headers.set('Cache-Control', CDN_CACHE);
 const title = tag ? `Posts tagged “${tag}” | Veer Shah` : 'Blog | Veer Shah';
 const canonical = canonicalFor(tag ? `/tags/${encodeURIComponent(tag)}` : '/');
 ---
-<Base title={title} description={BLOG_DESCRIPTION} canonical={canonical} sitemap="/sitemap.xml" ogImage={`${BLOG_ORIGIN}/og.png`} ogImageAlt="Veer Shah" primaryFeed="blog">
+<Base title={title} description={BLOG_DESCRIPTION} canonical={canonical} sitemap="/sitemap.xml" ogImage={`${BLOG_ORIGIN}/og.png`} ogImageAlt="Veer Shah">
   <a class="blog-back" href="https://veermickey.com/">← Veer Shah</a>
   <h1 class="blog-title">Blog</h1>
   {tag && <p class="blog-filter">Posts tagged <strong>{tag}</strong> · <a href={`${base}/`}>All posts</a></p>}
