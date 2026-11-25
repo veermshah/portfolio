@@ -21,8 +21,6 @@ export function initHeroPhotos() {
   if (!rest.length) return;
 
   const first = stage.querySelector<HTMLImageElement>('.hero-photo')!;
-  const strip = hero.querySelector<HTMLElement>('.hero-strip');
-  const stripItems = strip ? [...strip.querySelectorAll<HTMLLIElement>('li')] : [];
   const credit = hero.querySelector<HTMLAnchorElement>('[data-photo-link]');
   const frames: HTMLImageElement[] = [first];
   const ready = new Set([0]);
@@ -34,10 +32,6 @@ export function initHeroPhotos() {
     frames[current].classList.remove('is-active');
     frames[i].classList.add('is-active');
     current = i;
-    stripItems.forEach((li, n) => {
-      li.classList.toggle('is-current', n === i);
-      li.querySelector('button')?.setAttribute('aria-pressed', String(n === i));
-    });
     const page = frames[i].dataset.page;
     if (credit && page) credit.href = page;
   };
@@ -71,16 +65,6 @@ export function initHeroPhotos() {
       }, () => {});
     });
   };
-  // Picking a frame on the strip shows it now and restarts the hold.
-  strip?.addEventListener('click', (event) => {
-    const button = (event.target as Element).closest<HTMLButtonElement>('button[data-frame]');
-    if (!button) return;
-    const i = Number(button.dataset.frame);
-    if (!ready.has(i) || i === current) return;
-    show(i);
-    schedule();
-  });
-  if (strip) strip.hidden = false;
 
   if (document.readyState === 'complete') loadRest();
   else addEventListener('load', loadRest, { once: true });

@@ -106,15 +106,19 @@ const structuredData = {
   <script is:inline slot="head" type="application/ld+json" set:html={jsonLd(structuredData)} />
   {profile.sameAs.map((href) => <link slot="head" rel="me" href={href} />)}
   <Hero>
-    <div data-reveal><HeroPortrait /></div>
-    <h1 id="hero-name" class="display" data-reveal style="--reveal-i: 1">{profile.name}</h1>
-    <div class="name-slot" aria-hidden="true" hidden></div>
-    <p class="bio" data-reveal style="--reveal-i: 2">{profile.bio}</p>
-    <div class="hero-actions" data-reveal style="--reveal-i: 3">
-      <ContactButton />
-      <ul class="contact" aria-label="Elsewhere">
-        {links.map((l) => <li><a class="icon-link" href={l.href} rel={profile.sameAs.includes(l.href!) ? 'me' : undefined}><LinkIcon name={l.label} />{l.label}</a></li>)}
-      </ul>
+    <div class="hero-layout">
+      <div class="hero-portrait" data-reveal><HeroPortrait /></div>
+      <div class="hero-text">
+        <h1 id="hero-name" class="display" data-reveal style="--reveal-i: 1">{profile.name}</h1>
+        <div class="name-slot" aria-hidden="true" hidden></div>
+        <p class="bio" data-reveal style="--reveal-i: 2">{profile.bio}</p>
+        <div class="hero-actions" data-reveal style="--reveal-i: 3">
+          <ContactButton />
+          <ul class="contact" aria-label="Elsewhere">
+            {links.map((l) => <li><a class="icon-link" href={l.href} rel={profile.sameAs.includes(l.href!) ? 'me' : undefined}><LinkIcon name={l.label} />{l.label}</a></li>)}
+          </ul>
+        </div>
+      </div>
     </div>
   </Hero>
 
@@ -308,7 +312,43 @@ const structuredData = {
 </script>
 
 <style>
-  /* Hero (layout, background and dots live in components/Hero.astro) */
+  /* Hero (background and dots live in components/Hero.astro). The portrait is the big element:
+     full width on phones with the name under it, a tall column beside the text on desktop. */
+  .hero-layout { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .hero-portrait { width: 100%; }
+  @media (min-width: 40rem) { .hero-portrait { width: min(100%, 24rem); } }
+  @media (min-width: 64rem) {
+    .hero-layout { grid-template-columns: minmax(0, 1fr) clamp(20rem, 30vw, 30rem); column-gap: clamp(2.5rem, 5vw, 5rem); align-items: center; }
+    .hero-portrait { grid-column: 2; grid-row: 1; width: 100%; }
+    .hero-text { grid-column: 1; grid-row: 1; }
+    .hero-text .display, .hero-text .name-slot { margin-top: 0; }
+  }
+  /* Parallax, CSS only (see Hero.astro): the portrait rises a little faster than the page, and the
+     big Selected work images slide gently inside their frames. */
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .hero-portrait {
+        animation: portrait-rise linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 100vh;
+      }
+      @keyframes portrait-rise { to { transform: translate3d(0, -9vh, 0); } }
+    }
+  }
+  @supports (animation-timeline: view()) and (overflow-clip-margin: content-box) {
+    @media (prefers-reduced-motion: no-preference) {
+      .select .frame-media { overflow: clip; overflow-clip-margin: content-box; }
+      .select .frame-media :global(img) {
+        animation: frame-slide linear both;
+        animation-timeline: view();
+        animation-range: cover;
+      }
+      @keyframes frame-slide {
+        from { transform: translate3d(0, -4%, 0) scale(1.1); }
+        to { transform: translate3d(0, 4%, 0) scale(1.1); }
+      }
+    }
+  }
   /* .name-slot reserves the h1's space while the dot name is drawn there, so it shares the h1's type. */
   .display, .name-slot {
     margin-top: clamp(1.25rem, 3vw, 2rem);
@@ -317,7 +357,6 @@ const structuredData = {
     line-height: 0.9;
     letter-spacing: -0.04em;
   }
-  .display::after { content: '.'; color: var(--accent); }
   .bio { margin-top: clamp(1.25rem, 2.5vw, 1.75rem); font-size: var(--step-1); line-height: 1.55; color: var(--muted); max-width: 38rem; text-wrap: pretty; }
   @media (max-width: 40rem) { .bio { font-size: 1.0625rem; line-height: 1.6; } }
   .hero-actions { margin-top: clamp(1.75rem, 3vw, 2.25rem); display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.75rem; }
@@ -328,7 +367,6 @@ const structuredData = {
   /* Hero over a photo: light text on the dark scrim in both themes. */
   :global(.hero) :is(.display, .bio, .contact) { text-shadow: 0 1px 14px rgb(0 0 0 / 0.35); }
   :global(.hero) .display { color: #fff; }
-  :global(.hero) .display::after { color: #fff; }
   :global(.hero) .bio { color: rgb(255 255 255 / 0.92); }
   :global(.hero) .contact a { color: rgb(255 255 255 / 0.88); }
   :global(.hero) .contact a:hover { color: #fff; }
@@ -336,7 +374,7 @@ const structuredData = {
   :global(.hero .contact-button) { background: #fff; border-color: #fff; color: #0a0a0a; }
   :global(.hero .contact-button:hover) { background: transparent; color: #fff; }
   /* Comes last to win over the colours above. Until the dots take over, the h1 is transparent but still in the accessibility tree. */
-  :global(.hero.dot-pending) .display, :global(.hero.dot-pending) .display::after { color: transparent; text-shadow: none; }
+  :global(.hero.dot-pending) .display { color: transparent; text-shadow: none; }
 
   /* Sections */
   .section { margin-top: var(--space-section); scroll-margin-top: 4.5rem; }

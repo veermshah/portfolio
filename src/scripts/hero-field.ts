@@ -78,7 +78,7 @@ export function initHeroField() {
 
     p.font = font(size);
     if (spaced) p.letterSpacing = `${spacing}px`;
-    const words = `${(title!.textContent ?? '').trim()}.`.split(/\s+/);
+    const words = (title!.textContent ?? '').trim().split(/\s+/);
     const lines: string[] = [];
     for (const word of words) {
       const joined = lines.length ? `${lines[lines.length - 1]} ${word}` : word;
@@ -98,17 +98,14 @@ export function initHeroField() {
     gap = spacing * scale * S;
     if (spaced) p.letterSpacing = `${gap}px`;
     p.textBaseline = 'alphabetic';
-    const m = p.measureText('Veer Shah.');
+    const m = p.measureText('Veer Shah');
     const ascent = m.fontBoundingBoxAscent ?? m.actualBoundingBoxAscent;
     const descent = m.fontBoundingBoxDescent ?? m.actualBoundingBoxDescent;
     // CSS centres the font's ascent + descent inside each line box.
     const baseline = (i: number) => (i * lh + (lh - (ascent + descent) / S) / 2) * S + ascent;
-    // Draw everything blue, then everything but the final period red on top: blue pixels left over
-    // belong to the period, which takes the accent colour like the h1's.
-    p.fillStyle = '#00f';
-    lines.forEach((l, i) => fill(l, baseline(i)));
+    // Red pixels are name dots; the blue channel marks accent dots, of which the name has none.
     p.fillStyle = '#f00';
-    lines.forEach((l, i) => fill(i === lines.length - 1 ? l.replace(/\.$/, '') : l, baseline(i)));
+    lines.forEach((l, i) => fill(l, baseline(i)));
     const { data, width: pw, height: ph } = p.getImageData(0, 0, p.canvas.width, p.canvas.height);
 
     let filled = 0;
@@ -321,7 +318,7 @@ export function initHeroField() {
   (async () => {
     try {
       const style = getComputedStyle(slot);
-      await document.fonts.load(`${style.fontWeight} 1em ${style.fontFamily}`, 'Veer Shah.');
+      await document.fonts.load(`${style.fontWeight} 1em ${style.fontFamily}`, 'Veer Shah');
       await document.fonts.ready;
     } catch {}
     if (reduce.matches) return giveUp();

@@ -15,10 +15,10 @@ const portrait = Object.values(found)[0]?.default;
       src={portrait}
       formats={['avif', 'webp']}
       fallbackFormat={portrait.format === 'png' ? 'png' : 'jpg'}
-      widths={[160, 320, 480]}
-      sizes="(min-width: 40rem) 10rem, 7.5rem"
-      width={320}
-      height={400}
+      widths={[380, 570, 760]}
+      sizes="(min-width: 64rem) 30rem, (min-width: 40rem) 24rem, calc(100vw - 2.5rem)"
+      width={760}
+      height={950}
       alt="Veer Shah at his UT Dallas graduation"
       loading="eager"
       fetchpriority="low"
@@ -28,17 +28,16 @@ const portrait = Object.values(found)[0]?.default;
 )}
 
 <style>
-  .portrait { flex: none; display: block; }
+  .portrait { display: block; }
+  /* Big and plain: no frame or ring, just the photo with a deep shadow so it sits on the
+     background photo instead of looking pasted on. */
   .portrait :global(img) {
-    width: 7.5rem;
+    display: block;
+    width: 100%;
     height: auto;
     aspect-ratio: 4 / 5;
     object-fit: cover;
     border-radius: var(--radius);
-    /* A thin white edge and a soft shadow keep the photo distinct on any background photo. */
-    box-shadow: 0 0 0 2px #fff, 0 18px 40px -14px rgb(0 0 0 / 0.75);
-  }
-  @media (min-width: 40rem) {
-    .portrait :global(img) { width: 10rem; }
+    box-shadow: 0 40px 90px -30px rgb(0 0 0 / 0.85);
   }
 </style>
