@@ -143,6 +143,7 @@ const structuredData = {
   <dialog class="viewer" data-viewer aria-label="Photo viewer">
     <img data-viewer-img alt="" />
     <p class="viewer-bar" aria-live="polite">
+      <span class="viewer-count" data-viewer-count></span>
       <span data-viewer-alt></span>
       <a data-viewer-page href="#">View on Unsplash</a>
     </p>
@@ -166,13 +167,22 @@ const structuredData = {
     const img = viewer.querySelector<HTMLImageElement>('[data-viewer-img]')!;
     const alt = viewer.querySelector<HTMLElement>('[data-viewer-alt]')!;
     const page = viewer.querySelector<HTMLAnchorElement>('[data-viewer-page]')!;
+    const count = viewer.querySelector<HTMLElement>('[data-viewer-count]')!;
     let index = 0;
+    const preload = (i: number) => { const l = links[(i + links.length) % links.length]; if (l) new Image().src = l.dataset.full!; };
     const show = (i: number) => {
       index = (i + links.length) % links.length;
       const link = links[index];
       const thumb = link.querySelector('img')!;
+      // Fade the old photo out, swap, and fade in once the new one has decoded, so the caption never
+      // sits under the wrong photo. The neighbours load in the background.
+      img.style.opacity = '0';
       img.src = link.dataset.full!;
       img.alt = thumb.alt;
+      img.decode().catch(() => {}).finally(() => { if (img.src.endsWith(link.dataset.full!)) img.style.opacity = '1'; });
+      preload(index + 1);
+      preload(index - 1);
+      count.textContent = `${index + 1} / ${links.length}`;
       alt.textContent = thumb.alt;
       // Local fallback photos have no Unsplash page to link to.
       page.hidden = !link.dataset.page;
@@ -261,7 +271,8 @@ const structuredData = {
   .viewer { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: rgb(10 10 10 / 0.96); color: #fff; }
   .viewer[open] { display: grid; grid-template-rows: 1fr auto; place-items: center; }
   .viewer::backdrop { background: rgb(0 0 0 / 0.6); }
-  .viewer img { max-width: 100%; max-height: calc(100dvh - 5rem); object-fit: contain; padding: 3.75rem 0.75rem 0; }
+  .viewer img { max-width: 100%; max-height: calc(100dvh - 5rem); object-fit: contain; padding: 3.75rem 0.75rem 0; transition: opacity 0.2s linear; }
+  .viewer-count { font-variant-numeric: tabular-nums; color: rgb(255 255 255 / 0.6); }
   .viewer-bar { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; justify-content: center; align-items: baseline; padding: 0.75rem 1rem 1.25rem; margin: 0; font-size: 0.875rem; text-align: center; }
   .viewer-bar span { color: rgb(255 255 255 / 0.75); }
   .viewer-bar span::first-letter { text-transform: uppercase; }

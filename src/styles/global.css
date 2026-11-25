@@ -85,6 +85,8 @@ body {
   max-width: calc(var(--wide) + 2 * var(--gutter));
   padding-top: clamp(3rem, 1.5rem + 6vw, 7rem);
 }
+/* Wide pages without a hero (project pages, photos) start closer to the header. */
+.page.is-wide:not(:has(.hero)) { padding-top: clamp(2rem, 1rem + 3vw, 4rem); }
 
 @media (max-width: 30rem) {
   .page {
@@ -418,3 +420,4 @@ html { overflow-x: clip; }
 
 /* The home page ends on the full-width contact block; the footer sits right under it. */
 main:has(> .contact-section:last-child) + .site-footer { margin-top: 0; border-top: 0; }
+.site-footer a { display: inline-flex; align-items: center; min-height: 2.75rem; }

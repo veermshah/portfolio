@@ -23,20 +23,12 @@ const thumb = (p: (typeof projects)[number]) => {
   const src = first ? assets[`../assets/projects/${p.slug}/${first.file}`]?.default : undefined;
   return first && src ? { src, alt: first.alt } : undefined;
 };
-const categoryLabel: Record<string, string> = Object.fromEntries(projectCategories.map((c) => [c.id, c.label]));
 
 const logos = import.meta.glob<{ default: ImageMetadata }>('../assets/experience/*.{jpg,png}', { eager: true });
 
 for (const project of projects) {
   if (!categoriesByProject[project.slug]?.length) throw new Error(`Missing categories for ${project.slug}`);
 }
-const filters = [
-  { id: 'all', label: 'All', count: projects.length },
-  ...projectCategories.map((category) => ({
-    ...category,
-    count: projects.filter((project) => categoriesByProject[project.slug].includes(category.id)).length,
-  })),
-];
 
 const featured = [
   { slug: 'proofsnap', label: 'Product', detail: 'Photo of a handwritten proof in, a Lean 4 check of every step out.' },
@@ -48,9 +40,20 @@ const featured = [
 ].map((feature: { slug: string; label?: string; detail?: string }) => {
   const project = projects.find((project) => project.slug === feature.slug);
   if (!project) throw new Error(`Missing featured project: ${feature.slug}`);
-  return { project, label: feature.label ?? project.award ?? '', detail: feature.detail ?? project.pitch };
+  return { project, label: project.award ?? '', detail: feature.detail ?? project.pitch };
 });
 const links = profile.links.filter((l) => l.href && l.label !== 'Email');
+// The sheet holds everything not already shown in Selected work. Prototype sessions go last so
+// shipped work and award winners lead.
+const featuredSlugs = new Set(featured.map((f) => f.project.slug));
+const isPrototype = (p: (typeof projects)[number]) => /prototype session/i.test(p.context ?? '');
+const sheet = projects.filter((p) => !featuredSlugs.has(p.slug)).sort((a, b) => Number(isPrototype(a)) - Number(isPrototype(b)));
+const filters = [
+  { id: 'all', label: 'All', count: sheet.length },
+  ...projectCategories
+    .map((category) => ({ ...category, count: sheet.filter((project) => categoriesByProject[project.slug].includes(category.id)).length }))
+    .filter((category) => category.count > 0),
+];
 
 const siteUrl = new URL('/', Astro.site).href;
 const portrait = await getImage({ src: portraitSrc, width: 640, format: 'jpg' });
@@ -153,7 +156,7 @@ const structuredData = {
 
   <section id="projects" class="section" aria-labelledby="projects-heading">
     <header class="section-head">
-      <h2 id="projects-heading" class="section-title">All projects <span class="count">{projects.length}</span></h2>
+      <h2 id="projects-heading" class="section-title">More projects <span class="count">{sheet.length}</span></h2>
     </header>
     <div class="project-filter-controls" hidden>
       <div class="project-filters" role="group" aria-label="Filter projects by type">
@@ -163,13 +166,12 @@ const structuredData = {
           </button>
         ))}
       </div>
-      <p class="filter-status" role="status" aria-live="polite" aria-atomic="true">Showing all {projects.length} projects</p>
+      <p class="filter-status visually-hidden" role="status" aria-live="polite" aria-atomic="true">Showing all {sheet.length} projects</p>
     </div>
     <ol class="sheet" id="project-list">
       {
-        projects.map((p) => {
+        sheet.map((p) => {
           const t = thumb(p);
-          const types = categoriesByProject[p.slug].map((id) => categoryLabel[id]).join(', ');
           return (
             <li class="frame" data-categories={categoriesByProject[p.slug].join(' ')}>
               <div class="frame-media">
@@ -181,13 +183,9 @@ const structuredData = {
               </div>
               <div class="frame-copy">
                 <h3><a class="stretched" href={`/projects/${p.slug}/`}>{p.title}</a></h3>
-                <p class="frame-meta">
-                  {p.context && <span>{p.context}</span>}
-                  <span>{types}</span>
-                </p>
-                {p.award && <p class="frame-award">{p.award}</p>}
+                {p.award ? <p class="frame-award">{p.award}</p> : p.context && <p class="frame-meta">{p.context}</p>}
                 <p class="frame-pitch">{p.pitch}</p>
-                <ProjectLinks project={p} />
+                <ProjectLinks project={p} writeup={false} />
               </div>
             </li>
           );
@@ -255,7 +253,7 @@ const structuredData = {
 
   <section class="contact-section" aria-labelledby="contact-heading">
     <div class="contact-inner">
-      <h2 id="contact-heading">Let’s talk.</h2>
+      <h2 id="contact-heading">Let’s talk</h2>
       <p>Questions about a project, an opportunity, or an idea to build together? Send me an email.</p>
       <div class="contact-actions">
         <ContactButton />
@@ -382,7 +380,7 @@ const structuredData = {
   /* Sections */
   .section { margin-top: var(--space-section); scroll-margin-top: 4.5rem; }
   .section-head { padding-top: 0.875rem; border-top: 2px solid var(--ink); margin-bottom: clamp(1.75rem, 4vw, 3rem); }
-  .section-title { font-size: clamp(2.25rem, 1.35rem + 3.8vw, 4.5rem); font-weight: 800; line-height: 0.95; letter-spacing: -0.04em; text-wrap: balance; }
+  .section-title { font-size: clamp(1.75rem, 1.2rem + 2vw, 2.75rem); font-weight: 800; line-height: 0.95; letter-spacing: -0.04em; text-wrap: balance; }
   .section-title .count { font-size: var(--step-1); font-weight: 700; line-height: 1; letter-spacing: 0; color: var(--muted); font-variant-numeric: tabular-nums; vertical-align: top; margin-left: 0.1em; }
   .stretched::after { content: ''; position: absolute; inset: 0; z-index: 1; }
 
@@ -397,7 +395,12 @@ const structuredData = {
   .selects { list-style: none; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(3rem, 6vw, 4.5rem) clamp(2rem, 4.5vw, 3.75rem); }
   @media (min-width: 40rem) { .selects { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .select { position: relative; display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
-  .select-copy { display: grid; gap: 0.5rem; max-width: 34rem; }
+  .select-copy { display: grid; gap: 0.5rem; max-width: 34rem; padding-left: 3px; }
+  /* The first pick leads: full width on wide screens, image beside its copy. */
+  @media (min-width: 64rem) {
+    .select:first-child { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: clamp(2rem, 4vw, 3.5rem); align-items: center; }
+    .select:first-child h3 { font-size: clamp(2.5rem, 1.6rem + 3vw, 4rem); }
+  }
   .select h3 { font-size: var(--step-3); font-weight: 800; line-height: 1; letter-spacing: -0.035em; }
   .select h3 a { text-decoration: none; }
   .select:hover h3 a { text-decoration-line: underline; text-decoration-thickness: 2px; text-decoration-color: currentColor; }
@@ -485,17 +488,19 @@ const structuredData = {
   .skills dd { margin: 0; color: var(--muted); }
 
   /* Contact: the page closes on a full-width block of ink. */
-  .contact-section { margin-top: var(--space-section); margin-inline: calc(50% - 50vw); background: var(--ink); color: var(--bg); }
+  .contact-section { --c-bg: #0a0a0a; --c-ink: #f5f5f5; margin-top: var(--space-section); margin-inline: calc(50% - 50vw); background: var(--c-bg); color: var(--c-ink); }
+  /* Film black in both themes; on the dark page a rule marks where it starts. */
+  :global(:root[data-theme='dark']) .contact-section { border-top: 1px solid var(--rule); }
   .contact-inner { max-width: calc(var(--wide) + 2 * var(--gutter)); margin: 0 auto; padding: clamp(4rem, 3rem + 7vw, 8rem) var(--gutter); }
   .contact-section h2 { font-size: var(--step-display); font-weight: 800; line-height: 0.9; letter-spacing: -0.04em; }
-  .contact-section p { margin-top: clamp(1.25rem, 2.5vw, 1.75rem); max-width: 34rem; font-size: var(--step-1); line-height: 1.5; color: color-mix(in srgb, var(--bg) 78%, var(--ink)); text-wrap: pretty; }
+  .contact-section p { margin-top: clamp(1.25rem, 2.5vw, 1.75rem); max-width: 34rem; font-size: var(--step-1); line-height: 1.5; color: color-mix(in srgb, var(--c-ink) 78%, var(--c-bg)); text-wrap: pretty; }
   .contact-actions { margin-top: clamp(1.75rem, 3vw, 2.5rem); display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.75rem; }
-  .contact-section :global(.contact-button) { min-height: 2.75rem; background: var(--bg); border-color: var(--bg); color: var(--ink); }
-  .contact-section :global(.contact-button:hover) { background: transparent; color: var(--bg); }
+  .contact-section :global(.contact-button) { min-height: 2.75rem; background: var(--c-ink); border-color: var(--c-ink); color: var(--c-bg); }
+  .contact-section :global(.contact-button:hover) { background: transparent; color: var(--c-ink); }
   .contact-links { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0 1.25rem; font-size: 0.9375rem; }
-  .contact-links a { min-height: 2.75rem; color: color-mix(in srgb, var(--bg) 78%, var(--ink)); text-decoration: none; }
-  .contact-links a:hover { color: var(--bg); text-decoration-line: underline; }
-  .contact-section a:focus-visible, .contact-section :global(.contact-button:focus-visible) { outline-color: var(--bg); }
+  .contact-links a { display: inline-flex; align-items: center; min-height: 2.75rem; color: color-mix(in srgb, var(--c-ink) 78%, var(--c-bg)); text-decoration: none; }
+  .contact-links a:hover { color: var(--c-ink); text-decoration-line: underline; }
+  .contact-section a:focus-visible, .contact-section :global(.contact-button:focus-visible) { outline-color: var(--c-ink); }
 
   @media print {
     .frame .frame-media :global(img) { filter: none; }
