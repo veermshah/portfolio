@@ -20,7 +20,7 @@
   --step-1: clamp(1.125rem, 1.06rem + 0.3vw, 1.3125rem);
   --step-2: clamp(1.3rem, 1.15rem + 0.65vw, 1.75rem);
   --step-3: clamp(1.75rem, 1.4rem + 1.5vw, 2.75rem);
-  --step-display: clamp(3.25rem, 1.6rem + 7vw, 6rem);
+  --step-display: clamp(3.25rem, 1.2rem + 10vw, 6rem);
 
   --space-section: clamp(4.5rem, 3rem + 6vw, 8.5rem);
   --radius: 2px;
