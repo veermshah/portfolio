@@ -1,6 +1,6 @@
 /** Helpers for page titles, meta descriptions and JSON-LD structured data. */
 
-const BRAND = 'Veer Shah';
+const BRAND = 'Veer Mickey Shah';
 
 /** Stable @id values shared by the home page graph and every other page. */
 export const schemaIds = (site: URL | string | undefined) => {
@@ -58,37 +58,44 @@ export const metaDescription = (parts: (string | undefined)[], min = 110, max = 
  * New projects work without an entry: projectTitle() falls back to the pitch's first clause.
  */
 export const projectTitlePhrases: Record<string, string> = {
-  'fog-map': 'Ranking ambiguous decisions in a spec',
-  'dynaflow-orchestrator': 'Agent coordination',
-  'popup-optimizer': 'Civic-service stops in Dallas',
-  'statebench-harness': 'State-tracking evaluation',
-  veer: 'Programming language for LLM programs',
-  wander: 'Indoor navigation for blind and low-vision people',
-  cambrian: 'Self-evolving swarm of DeFi trading agents',
-  'kaggle-agent': 'Autonomous agent for Kaggle competitions',
-  'dishbrain-playground': 'Simulated spiking neurons play Pong',
-  'jev-calibration-lab': 'Probability calibration benchmark',
-  'organoid-reservoir': 'Brainoware-style reservoir computing',
-  destina: 'Party game with Vision Pro and Solana',
-  habla: 'Spanish tutor you talk to, online or by phone',
-  'hack-stash': 'Getaway driving game in San Antonio',
-  'hack-odds': 'Hackathon prediction market on Solana',
-  moneyplant: 'LSTM and Black-Litterman robo-advisor',
-  'jev-support-desk': 'Developer-support ticket routing',
-  whatdoesdafoxsay: 'Reading companion for dyslexia',
-  'charity-clarity': 'Donation transparency on Solana',
-  aerovision: 'Gesture-controlled robot rover',
+  'fog-map': 'Ranking unclear spec decisions',
+  'popup-optimizer': 'Civic stops in Dallas',
+  'statebench-harness': 'State tracking',
+  veer: 'Language for LLM programs',
+  wander: 'Indoor navigation for the blind',
+  cambrian: 'Self-evolving DeFi agent swarm',
+  'kaggle-agent': 'Autonomous Kaggle agent',
+  'dishbrain-playground': 'Neurons play Pong',
+  'jev-calibration-lab': 'Calibration testing',
+  'organoid-reservoir': 'Reservoir computing',
+  destina: 'Party game with Vision Pro',
+  habla: 'Spanish tutor you talk to',
+  'hack-stash': 'San Antonio getaway game',
+  'hack-odds': 'Hackathon prediction market',
+  moneyplant: 'Black-Litterman robo-advisor',
+  'jev-support-desk': 'Support ticket routing',
+  whatdoesdafoxsay: 'Dyslexia reading helper',
+  'charity-clarity': 'Solana donation tracker',
+  aerovision: 'Gesture-driven rover',
+  proofsnap: 'Checks handwritten proofs',
+  riff: 'AI music studio in the browser',
+  firelens: 'Wildfire damage assessment',
+  quantumloans: 'Crypto-backed lending',
+  adaptrees: 'Variable-length key B+tree',
+  chainfund: 'Crowdfunding on Ethereum',
+  utdlang: 'Java compiler front-end',
+  'wetware-emulator': 'Virtual neuron culture',
 };
 
 /**
- * "<Title>: <short phrase> | Veer Shah". The phrase comes from projectTitlePhrases, or else the
+ * "<Title>: <short phrase> | Veer Mickey Shah". The phrase comes from projectTitlePhrases, or else the
  * pitch's first clause, cut only at a comma or before a connecting word so it still reads as a phrase.
- * Falls back to "<Title> | Veer Shah" when nothing fits within `max` characters.
+ * Falls back to "<Title> | Veer Mickey Shah" when nothing fits within `max` characters.
  */
-export const projectTitle = (slug: string, title: string, pitch: string, max = 65) => {
+export const projectTitle = (slug: string, title: string, pitch: string, max = 60) => {
   const suffix = ` | ${BRAND}`;
   const curated = projectTitlePhrases[slug];
-  if (curated) return `${title}: ${curated}${suffix}`;
+  if (curated) return `${title}: ${curated}${suffix}`.length <= max ? `${title}: ${curated}${suffix}` : `${title}${suffix}`;
   const room = max - title.length - 2 - suffix.length;
   let phrase = stripCode(pitch).split(/[:.;!?](?:\s|$)/)[0].replace(/^(?:A|An|The)\s+/, '');
   phrase = phrase.charAt(0).toUpperCase() + phrase.slice(1);

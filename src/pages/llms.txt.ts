@@ -22,7 +22,7 @@ export const GET: APIRoute = ({ site }) => {
     '',
     plain(profile.bio),
     '',
-    `Also known as ${profile.alternateNames.join(' and ')}. Based in the Dallas, Texas area (${profile.locality.city}, ${profile.locality.region}).`,
+    `Also known as ${new Intl.ListFormat('en', { type: 'conjunction' }).format(profile.alternateNames)}. Based in the Dallas, Texas area (${profile.locality.city}, ${profile.locality.region}).`,
     '',
     '## Pages',
     '',

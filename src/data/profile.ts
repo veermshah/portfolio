@@ -5,14 +5,16 @@ export interface ProfileLink {
 }
 
 export const profile = {
-  name: 'Veer Shah',
+  name: 'Veer Mickey Shah',
+  /** Short form for tight spots (the navbar wordmark, photo credits). */
+  shortName: 'Veer Shah',
   /** One line under the name on the home page. */
-  bio: 'Computer science master’s student at UT Dallas (Intelligent Systems, 4.00 GPA). I’ve built cloud and AI systems as an intern at Capital One and Fidelity. I love hackathons: I’ve won around ten, I direct HackUTD, and I coach events for MLH.',
+  bio: 'I’m Veer Shah, a computer science master’s student at UT Dallas (Intelligent Systems, 4.00 GPA). I’ve built cloud and AI systems as an intern at Capital One and Fidelity. I love hackathons: I’ve won around ten, I direct HackUTD, and I coach events for MLH.',
   /** Other names people search for; used in structured data and the home page title. */
-  alternateNames: ['Veer Mickey Shah', 'Veer Mickey'],
+  alternateNames: ['Veer Shah', 'Veer M. Shah', 'Veer Mickey'],
   /** Used for <meta name="description"> on the home page. */
   description:
-    'Veer Shah (Veer Mickey Shah): software engineer, UT Dallas computer science master’s student, HackUTD director and MLH Coach who loves hackathons.',
+    'Veer Mickey Shah (Veer Shah): software engineer, UT Dallas computer science master’s student, HackUTD director and MLH Coach who loves hackathons.',
   links: [
     { label: 'GitHub', href: 'https://github.com/veermshah' },
     { label: 'Devpost', href: 'https://devpost.com/veermickey' },

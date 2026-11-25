@@ -15,11 +15,11 @@ const posts = await publishedPosts(tag);
 if (tag && posts.length === 0) Astro.response.status = 404;
 Astro.response.headers.set('Cache-Control', CDN_CACHE);
 
-const title = tag ? `Posts tagged “${tag}” | Veer Shah` : 'Blog | Veer Shah';
+const title = tag ? `Posts tagged “${tag}” | Veer Mickey Shah` : 'Blog | Veer Mickey Shah';
 const canonical = canonicalFor(tag ? `/tags/${encodeURIComponent(tag)}` : '/');
 ---
-<Base title={title} description={BLOG_DESCRIPTION} canonical={canonical} sitemap="/sitemap.xml" ogImage={`${BLOG_ORIGIN}/og.png`} ogImageAlt="Veer Shah">
-  <BackLink href="https://veermickey.com/" label="Veer Shah" />
+<Base title={title} description={BLOG_DESCRIPTION} canonical={canonical} sitemap="/sitemap.xml" ogImage={`${BLOG_ORIGIN}/og.png`} ogImageAlt="Veer Mickey Shah">
+  <BackLink href="https://veermickey.com/" label="Veer Mickey Shah" />
   <h1 class="blog-title">Blog</h1>
   {tag && <p class="blog-filter">Posts tagged <strong>{tag}</strong> · <a href={`${base}/`}>All posts</a></p>}
   <PostList posts={posts} base={base} />

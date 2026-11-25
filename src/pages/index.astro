@@ -106,7 +106,7 @@ const structuredData = {
 };
 ---
 
-<Base title={`${profile.name} (${profile.alternateNames[0]}), software engineer`} description={profile.description} wide>
+<Base title={`${profile.name} (${profile.shortName}), software engineer`} description={profile.description} wide>
   <script is:inline slot="head" type="application/ld+json" set:html={jsonLd(structuredData)} />
   {profile.sameAs.map((href) => <link slot="head" rel="me" href={href} />)}
   <Hero>

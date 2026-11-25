@@ -98,7 +98,7 @@ export function initHeroField() {
     gap = spacing * scale * S;
     if (spaced) p.letterSpacing = `${gap}px`;
     p.textBaseline = 'alphabetic';
-    const m = p.measureText('Veer Shah');
+    const m = p.measureText('Veer Mickey Shah');
     const ascent = m.fontBoundingBoxAscent ?? m.actualBoundingBoxAscent;
     const descent = m.fontBoundingBoxDescent ?? m.actualBoundingBoxDescent;
     // CSS centres the font's ascent + descent inside each line box.
@@ -318,7 +318,7 @@ export function initHeroField() {
   (async () => {
     try {
       const style = getComputedStyle(slot);
-      await document.fonts.load(`${style.fontWeight} 1em ${style.fontFamily}`, 'Veer Shah');
+      await document.fonts.load(`${style.fontWeight} 1em ${style.fontFamily}`, 'Veer Mickey Shah');
       await document.fonts.ready;
     } catch {}
     if (reduce.matches) return giveUp();

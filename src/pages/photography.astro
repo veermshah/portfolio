@@ -40,7 +40,7 @@ const sizesFor = (width: number, height: number) => {
 const pageUrl = new URL('/photography/', Astro.site).href;
 const ids = schemaIds(Astro.site);
 const title = `Photography by ${profile.name}`;
-const description = `Photography by ${profile.name} (${profile.alternateNames[0]}), also published on Unsplash.`;
+const description = `Photography by ${profile.name} (${profile.shortName}): city skylines, architecture and travel, also published on Unsplash.`;
 const top = shots[0];
 const localCard = top ? undefined : await getImage({ src: photos[0].src, width: 1200, format: 'jpg', quality: 80 });
 const og = top
