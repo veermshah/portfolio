@@ -1,0 +1,61 @@
+---
+// Optional portrait above the name in the home hero, head and shoulders at 4:5. Renders only when src/assets/portrait.jpg (or
+// .jpeg, .png, .webp) exists; drop a 4:5 photo there to show it. Update the alt text below
+// if you swap in a different photo.
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+const found = import.meta.glob<{ default: ImageMetadata }>('../assets/portrait.{jpg,jpeg,png,webp}', { eager: true });
+const portrait = Object.values(found)[0]?.default;
+---
+
+{portrait && (
+  <span class="portrait" data-tilt="7">
+    <Picture
+      src={portrait}
+      formats={['avif', 'webp']}
+      fallbackFormat={portrait.format === 'png' ? 'png' : 'jpg'}
+      widths={[400, 640, 960, 1280, 1520]}
+      sizes="(min-width: 64rem) 32rem, (min-width: 40rem) 24rem, calc(100vw - 2.5rem)"
+      width={1520}
+      height={1900}
+      alt="Veer Mickey Shah at his UT Dallas graduation"
+      loading="eager"
+      fetchpriority="low"
+      decoding="async"
+    />
+  </span>
+)}
+
+<style>
+  /* Tilts toward the pointer (scripts/motion.ts) with a soft light that follows it. */
+  .portrait { position: relative; display: block; perspective: 1100px; }
+  .portrait :global(picture) { display: block; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); }
+  .portrait::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius);
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 30%), rgb(255 255 255 / 0.22), transparent 55%);
+    opacity: 0;
+    transition: opacity 0.4s var(--ease);
+    pointer-events: none;
+  }
+  .portrait:hover::after { opacity: 1; }
+  /* Settles in on load: movement only, no fade, so the photo paints at once. */
+  @media (prefers-reduced-motion: no-preference) {
+    .portrait { animation: portrait-in 1.1s var(--ease) both; }
+    @keyframes portrait-in { from { translate: 0 2.5rem; scale: 0.94; } }
+  }
+  /* Big and plain: no frame or ring, just the photo with a deep shadow so it sits on the
+     background photo instead of looking pasted on. */
+  .portrait :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: var(--radius);
+    box-shadow: 0 40px 90px -30px rgb(0 0 0 / 0.85);
+  }
+</style>

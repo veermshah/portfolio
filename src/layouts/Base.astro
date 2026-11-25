@@ -4,17 +4,25 @@ import '@fontsource/atkinson-hyperlegible-next/latin-700.css';
 import '@fontsource/atkinson-hyperlegible-next/latin-800.css';
 import '@fontsource/atkinson-hyperlegible-mono/latin-400.css';
 import '../styles/global.css';
+// Same file the 400 @font-face above points at, so the preload and the stylesheet share one hashed URL.
+import bodyFont from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff2?url';
 import { profile } from '../data/profile';
+import { BLOG_ORIGIN } from '../lib/blog/config';
 
 interface Props {
   title: string;
   description: string;
-  /** Path to an OG image under public/, defaults to the site card. */
+  /** Path to an OG image under public/ or an absolute URL, defaults to the site card. */
   ogImage?: string;
   ogImageAlt?: string;
+  /** Pixel size of a non-default OG image, when known. */
+  ogImageWidth?: number;
+  ogImageHeight?: number;
   /** Absolute canonical URL; defaults to this path on the main site. */
   canonical?: string;
   ogType?: 'website' | 'article';
+  /** ISO date for article:published_time (ogType article only). */
+  publishedTime?: string;
   sitemap?: string;
   noindex?: boolean;
   /** Use the wide container (home page grids). */
@@ -25,15 +33,35 @@ const {
   title,
   description,
   ogImage = '/og.png',
-  ogImageAlt = `${profile.name}, selected projects`,
+  ogImageAlt = `${profile.name}, software engineer, with his portrait`,
   ogType = 'website',
+  publishedTime,
   sitemap = '/sitemap-index.xml',
   noindex = false,
   wide = false,
 } = Astro.props;
-const canonical = Astro.props.canonical ?? new URL(Astro.url.pathname, Astro.site);
+// The blog is the one place for writing, so its feed is the site's only feed.
+const feeds = [{ title: `${profile.name}, blog`, href: `${BLOG_ORIGIN}/rss.xml` }];
+// A noindex page with no explicit canonical (the 404 page) gets no canonical link rather than one to its own error path.
+const canonical = Astro.props.canonical ?? (noindex ? undefined : new URL(Astro.url.pathname, Astro.site));
 const ogUrl = new URL(ogImage, Astro.site);
+const isSiteCard = ogImage.endsWith('/og.png');
+const ogWidth = Astro.props.ogImageWidth ?? (isSiteCard ? 1200 : undefined);
+const ogHeight = Astro.props.ogImageHeight ?? (isSiteCard ? 630 : undefined);
 const year = new Date().getFullYear();
+const navItems = [
+  { label: 'Work', href: '/#work' },
+  { label: 'Projects', href: '/#projects' },
+  { label: 'Experience', href: '/#experience' },
+  { label: 'Education', href: '/#education' },
+  { label: 'Photos', href: '/photography/', current: Astro.url.pathname.startsWith('/photography') },
+  { label: 'Blog', href: 'https://blog.veermickey.com' },
+  { label: 'Resume', href: '/resume.pdf' },
+];
+const footerSite = navItems.filter((item) => ['Work', 'Projects', 'Photos', 'Blog'].includes(item.label));
+const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
+  .map((label) => profile.links.find((link) => link.label === label))
+  .filter((link): link is { label: string; href: string } => Boolean(link?.href));
 ---
 
 <!doctype html>
@@ -53,71 +81,99 @@ const year = new Date().getFullYear();
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <link rel="preload" href={bodyFont} as="font" type="font/woff2" crossorigin />
     <meta name="author" content={profile.name} />
-    <meta name="theme-color" content="#fcfcfc" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#141517" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
     <script is:inline>
       for (const m of document.querySelectorAll('meta[name="theme-color"]')) {
         m.removeAttribute('media');
-        m.content = document.documentElement.dataset.theme === 'dark' ? '#141517' : '#fcfcfc';
+        m.content = document.documentElement.dataset.theme === 'dark' ? '#0a0a0a' : '#ffffff';
       }
     </script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="sitemap" href={sitemap} />
-    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {feeds.map((feed) => <link rel="alternate" type="application/rss+xml" title={feed.title} href={feed.href} />)}
+    <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'} />
 
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={profile.name} />
     <meta property="og:locale" content="en_US" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
+    {canonical && <meta property="og:url" content={canonical} />}
     <meta property="og:image" content={ogUrl} />
-    {ogImage.endsWith('/og.png') && <meta property="og:image:width" content="1200" />}
-    {ogImage.endsWith('/og.png') && <meta property="og:image:height" content="630" />}
+    {ogWidth && <meta property="og:image:width" content={String(ogWidth)} />}
+    {ogHeight && <meta property="og:image:height" content={String(ogHeight)} />}
     <meta property="og:image:alt" content={ogImageAlt} />
+    {ogType === 'article' && publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {ogType === 'article' && <meta property="article:author" content={new URL('/', Astro.site).href} />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogUrl} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
     <slot name="head" />
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
     <header class="site-header">
       <div class="site-header-inner">
-        <a class="wordmark" href="/">{profile.name}</a>
+        <a class="wordmark" href="/"><span class="monogram" aria-hidden="true"><span class="mono-v">V</span><span class="mono-s">S</span></span><span class="wordmark-swap"><span class="wordmark-name">{profile.name}</span><span class="wordmark-section" aria-hidden="true"></span></span></a>
         <nav class="site-nav" aria-label="Site">
-          <a class="nav-optional" href="/#work">Work</a>
-          <a class="nav-optional" href="/#experience">Experience</a>
-          <a class="nav-optional" href="/#education">Education</a>
-          <a href="/notes/" aria-current={Astro.url.pathname.startsWith('/notes') ? 'page' : undefined}>Notes</a>
-          <a href="/photography/" aria-current={Astro.url.pathname.startsWith('/photography') ? 'page' : undefined}>Photos</a>
-          <a href="https://blog.veermickey.com">Blog</a>
-          <a href="/resume.pdf">Resume</a>
+          <span class="nav-blob" aria-hidden="true"></span>
+          {navItems.map((item) => <a href={item.href} aria-current={item.current ? 'page' : undefined}>{item.label}</a>)}
         </nav>
+        <button class="menu-button" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="site-menu" hidden>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg>
+        </button>
         <button class="theme-toggle" type="button" aria-label="Toggle dark mode" hidden>
           <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
           <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
         </button>
       </div>
     </header>
+    <dialog class="site-menu" id="site-menu" aria-label="Menu">
+      <div class="site-menu-bar">
+        <a class="wordmark" href="/"><span class="monogram" aria-hidden="true">VS</span><span class="wordmark-name">{profile.name}</span></a>
+        <button class="menu-close" type="button" aria-label="Close menu">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg>
+        </button>
+      </div>
+      <nav aria-label="Site">
+        <ol class="site-menu-list">
+          {navItems.map((item, i) => <li style={`--i: ${i}`}><a href={item.href} aria-current={item.current ? 'page' : undefined}>{item.label}</a></li>)}
+        </ol>
+      </nav>
+      <button class="menu-theme" type="button">Switch to <span class="menu-theme-dark">dark</span><span class="menu-theme-light">light</span> mode</button>
+    </dialog>
     <div class:list={['page', { 'is-wide': wide }]}>
       <main id="main">
         <slot />
       </main>
       <footer class="site-footer">
-        <span>© {year} {profile.name}</span>
-        <a href="https://github.com/veermshah/portfolio">Site source</a>
+        <div class="footer-inner">
+          <p class="footer-mark"><a href="/">{profile.name}</a></p>
+          <nav class="footer-left" aria-label="Footer">
+            <ul class="footer-col">
+              {footerSite.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+            </ul>
+          </nav>
+          <ul class="footer-col footer-right" aria-label="Elsewhere">
+            {footerElsewhere.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
+          </ul>
+          <p class="footer-meta"><span>© {year} {profile.name}</span><a href="https://github.com/veermshah/portfolio">Site source</a></p>
+        </div>
+        <div class="footer-glow" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
       </footer>
     </div>
     <script is:inline>
       // The blog subdomain serves only blog pages, so portfolio links in the header go to the main site.
       if (location.hostname === 'blog.veermickey.com') {
-        for (const a of document.querySelectorAll('.site-header a[href^="/"]')) a.href = 'https://www.veermickey.com' + a.getAttribute('href');
+        for (const a of document.querySelectorAll('.site-header a[href^="/"], .site-menu a[href^="/"], .site-footer a[href^="/"]')) a.href = 'https://www.veermickey.com' + a.getAttribute('href');
       }
       const toggle = document.querySelector('.theme-toggle');
       const root = document.documentElement;
@@ -125,29 +181,86 @@ const year = new Date().getFullYear();
       toggle.hidden = false;
       syncToggle();
       toggle.addEventListener('click', () => {
+        // Ease the whole page between themes (skipped with reduced motion).
+        if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          root.classList.add('theme-switching');
+          setTimeout(() => root.classList.remove('theme-switching'), 450);
+        }
         root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
         try { sessionStorage.setItem('theme', root.dataset.theme); } catch {}
-        for (const m of document.querySelectorAll('meta[name="theme-color"]')) m.content = root.dataset.theme === 'dark' ? '#141517' : '#fcfcfc';
+        for (const m of document.querySelectorAll('meta[name="theme-color"]')) m.content = root.dataset.theme === 'dark' ? '#0a0a0a' : '#ffffff';
         syncToggle();
       });
+      // Phone menu: a modal dialog, so focus stays inside, Esc closes it and the page behind is inert.
+      const menu = document.getElementById('site-menu');
+      const menuButton = document.querySelector('.menu-button');
+      if (menu && menuButton && typeof menu.showModal === 'function') {
+        menuButton.hidden = false;
+        const setOpen = (open) => menuButton.setAttribute('aria-expanded', String(open));
+        menuButton.addEventListener('click', () => { menu.showModal(); setOpen(true); });
+        menu.addEventListener('close', () => { setOpen(false); menuButton.focus(); });
+        menu.querySelector('.menu-close').addEventListener('click', () => menu.close());
+        // A tap on the backdrop (outside the sheet) or on a link closes it.
+        menu.addEventListener('click', (e) => { if (e.target === menu || e.target.closest('a')) menu.close(); });
+        menu.querySelector('.menu-theme').addEventListener('click', () => toggle.click());
+        addEventListener('resize', () => { if (menu.open && matchMedia('(min-width: 60rem)').matches) menu.close(); }, { passive: true });
+      }
+
+      // At the top of the home page the header is clear over the hero; it turns solid as soon as you scroll.
       const header = document.querySelector('.site-header');
-      const onScroll = () => header?.classList.toggle('is-scrolled', scrollY > 8);
+      const onScroll = () => header?.classList.toggle('is-scrolled', scrollY > 24);
       addEventListener('scroll', onScroll, { passive: true });
       onScroll();
 
-      const revealed = document.querySelectorAll('[data-reveal]');
-      if ('IntersectionObserver' in window) {
+      // The sliding pill under the nav links: follows the pointer, then settles on the section on screen.
+      const nav = document.querySelector('.site-nav');
+      const blob = nav?.querySelector('.nav-blob');
+      const navLinks = nav ? [...nav.querySelectorAll('a')] : [];
+      let current = navLinks.find((a) => a.getAttribute('aria-current') === 'page') || null;
+      let shown = null;
+      const place = (link) => {
+        if (!blob) return;
+        shown = link;
+        navLinks.forEach((a) => a.classList.toggle('on-blob', a === link));
+        if (!link) { blob.classList.remove('is-on'); return; }
+        blob.style.setProperty('--x', link.offsetLeft + 'px');
+        blob.style.setProperty('--w', link.offsetWidth + 'px');
+        blob.classList.add('is-on');
+      };
+      navLinks.forEach((a) => {
+        a.addEventListener('pointerenter', () => place(a));
+        a.addEventListener('focus', () => place(a));
+      });
+      nav?.addEventListener('pointerleave', () => place(current));
+      nav?.addEventListener('focusout', (e) => { if (!nav.contains(e.relatedTarget)) place(current); });
+      place(current);
+      // Re-measure once the web font has loaded or the header changes shape (fallback text is wider).
+      const remeasure = () => place(shown);
+      document.fonts?.ready.then(remeasure);
+      if (nav && 'ResizeObserver' in window) new ResizeObserver(remeasure).observe(nav);
+      addEventListener('resize', remeasure, { passive: true });
+
+      // Home: as each section scrolls through the middle of the screen, the pill moves to its link and
+      // the wordmark swaps the name for the section's name.
+      const wordmark = document.querySelector('.site-header .wordmark');
+      const sectionLabel = wordmark?.querySelector('.wordmark-section');
+      const spy = navLinks.filter((a) => a.getAttribute('href').startsWith('/#')).map((a) => [a, document.getElementById(a.getAttribute('href').slice(2))]).filter(([, el]) => el);
+      if (spy.length && 'IntersectionObserver' in window) {
         const io = new IntersectionObserver((entries) => {
           for (const entry of entries) {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('is-in');
-              io.unobserve(entry.target);
-            }
+            const link = spy.find(([, el]) => el === entry.target)?.[0];
+            if (!link) continue;
+            link.classList.toggle('is-here', entry.isIntersecting);
+            if (entry.isIntersecting) current = link;
+            else if (current === link) current = null;
           }
-        }, { rootMargin: '0px 0px -40px 0px' });
-        revealed.forEach((el) => io.observe(el));
-      } else {
-        revealed.forEach((el) => el.classList.add('is-in'));
+          if (!nav.matches(':hover')) place(current);
+          if (sectionLabel) {
+            if (current) sectionLabel.textContent = current.textContent;
+            wordmark.classList.toggle('has-section', Boolean(current));
+          }
+        }, { rootMargin: '-45% 0px -50% 0px' });
+        spy.forEach(([, el]) => io.observe(el));
       }
     </script>
     <script is:inline>
@@ -164,6 +277,7 @@ const year = new Date().getFullYear();
     </script>
     <script>
       import "../scripts/track";
+      import "../scripts/motion";
     </script>
   </body>
 </html>

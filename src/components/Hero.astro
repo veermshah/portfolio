@@ -1,0 +1,209 @@
+---
+// Home hero: Veer's photos crossfading full-bleed behind the name, with the dot field forming the
+// name on top. The hero's text (kicker, h1, bio, links) comes from the page through the slot.
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { getUnsplashPhotos, UTM } from '../lib/unsplash';
+import marinaBay from '../assets/photos/marina-bay.jpg';
+import skylineNight from '../assets/photos/skyline-night.jpg';
+import bridge from '../assets/photos/bridge.jpg';
+import netSculpture from '../assets/photos/net-sculpture.jpg';
+
+const WIDTHS = [640, 960, 1280, 1920, 2560];
+const COUNT = 5;
+// The scrim darkens the photo, so a lower quality is not visible and saves bytes.
+const unsplashUrl = (raw: string, width: number) => `${raw}&w=${width}&auto=format&fit=max&q=60`;
+
+type Frame = { src: string; srcset: string; width: number; height: number; page?: string; color: string; alt: string };
+
+// Hand-picked city shots first (Unsplash photo IDs), topped up with the most popular landscape
+// photos if fewer than three picks come back. Without Unsplash, the local photos below.
+const PICKS = ['_NuB9bPqoKM', 'lbBv6o6sfcE', 'vEGdsT_Pca8', 'XBIoPstW5mY', 'xoE0k7kg2mI'];
+const landscape = (await getUnsplashPhotos()).filter((p) => p.width >= p.height * 1.25);
+const picked = PICKS.map((id) => landscape.find((p) => p.id === id)).filter((p) => p !== undefined);
+const shots = (picked.length >= 3 ? picked : [...picked, ...landscape.filter((p) => !picked.includes(p))]).slice(0, COUNT);
+const frames: Frame[] = shots.length
+  ? shots.map((p) => ({
+      src: unsplashUrl(p.raw, 1920),
+      srcset: WIDTHS.filter((w) => w <= p.width).map((w) => `${unsplashUrl(p.raw, w)} ${w}w`).join(', '),
+      alt: p.alt,
+      width: p.width,
+      height: p.height,
+      page: `${p.page}?${UTM}`,
+      color: p.color,
+    }))
+  : await Promise.all(
+      ([marinaBay, skylineNight, bridge, netSculpture] as ImageMetadata[]).map(async (src) => {
+        const image = await getImage({ src, widths: WIDTHS.filter((w) => w <= src.width), format: 'webp', quality: 60 });
+        return { src: image.src, srcset: image.srcSet.attribute, width: src.width, height: src.height, color: '#1b1d21', alt: '' };
+      }),
+    );
+const [lead, ...rest] = frames;
+---
+
+<section class="hero" aria-labelledby="hero-name">
+  <script is:inline>
+    (function (hero) {
+      // Hide the h1 text (it stays readable to screen readers) until the dot name takes its place,
+      // so the name doesn't flash as text first. Shown again if the dots haven't started in 3 s.
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches && document.createElement('canvas').getContext) {
+        hero.classList.add('dot-pending');
+        setTimeout(function () { if (!hero.classList.contains('has-dot-name')) hero.classList.remove('dot-pending'); }, 3000);
+      }
+    })(document.currentScript.parentElement);
+  </script>
+  <div class="hero-bg" aria-hidden="true">
+    <div class="hero-photos" style={`background-color: ${lead.color}`} data-frames={JSON.stringify(rest.map(({ src, srcset, page }) => ({ src, srcset, page })))}>
+      <img
+        class="hero-photo is-active"
+        src={lead.src}
+        srcset={lead.srcset}
+        sizes="100vw"
+        width={lead.width}
+        height={lead.height}
+        alt=""
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+        data-page={lead.page}
+      />
+    </div>
+    <div class="hero-scrim"></div>
+    <canvas class="hero-field"></canvas>
+  </div>
+  <slot />
+  <p class="hero-credit">
+    {lead.page ? <>Photo: <a href={lead.page} data-photo-link>Veer Mickey Shah on Unsplash</a></> : <>Photo: Veer Mickey Shah</>}
+    <span class="sep" aria-hidden="true">·</span>
+    <a href="/photography/">See all photos</a>
+  </p>
+</section>
+
+<script>
+  import { initHeroField } from '../scripts/hero-field';
+  import { initHeroPhotos } from '../scripts/hero-photos';
+
+  initHeroPhotos();
+  initHeroField();
+</script>
+
+<style>
+  .hero {
+    /* Matches .page.is-wide padding-top so the background reaches up to the header. */
+    --hero-pad: clamp(3rem, 1.5rem + 6vw, 7rem);
+    position: relative;
+    isolation: isolate;
+    padding-bottom: clamp(1rem, 3vw, 2rem);
+  }
+  /* On the photo the hero is light text on a dark scrim, whatever the site theme. */
+  .hero {
+    --hero-min: min(calc(100svh - 3.5rem - var(--hero-pad)), 48rem);
+    min-height: var(--hero-min);
+    padding-bottom: clamp(5.5rem, 4.5rem + 3vw, 7rem);
+    color: var(--hero-ink);
+  }
+  @media (max-width: 40rem) { .hero { min-height: 0; padding-bottom: 4rem; } }
+  /* Desktop: the same 3rem above (page padding) and below, and the hero runs to the bottom of the
+     screen, so the portrait and text sit in its vertical middle. */
+  @media (min-width: 64rem) {
+    .hero { --hero-pad: 3rem; --hero-min: calc(100svh - 3.5rem - var(--hero-pad)); padding-bottom: 3rem; display: grid; align-content: center; }
+  }
+  .hero-bg {
+    position: absolute;
+    z-index: -1;
+    /* Reaches up under the clear header too. */
+    top: calc(-1 * var(--hero-pad) - 3.5rem);
+    bottom: 0;
+    left: calc(50% - 50vw);
+    width: 100vw;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .hero-photos, .hero-scrim, .hero-field { position: absolute; inset: 0; width: 100%; height: 100%; }
+  /* :global because the later photos are created by the script, without Astro's scope attribute. */
+  .hero-photos :global(.hero-photo) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+  }
+  .hero-photos :global(.hero-photo.is-active) { opacity: 1; }
+  /* Parallax: the background photos drift down at a fraction of the scroll speed. CSS scroll-driven
+     animation on transform only, so it runs off the main thread with no JavaScript. The photo layer
+     is taller than the hero so the drift never shows an edge. Off with reduced motion and in
+     browsers without scroll timelines. */
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .hero-photos {
+        top: -22%;
+        height: 122%;
+        animation-name: hero-drift; animation-timing-function: linear; animation-fill-mode: both;
+        animation-timeline: scroll(root);
+        animation-range: 0 100vh;
+      }
+      @keyframes hero-drift { to { transform: translate3d(0, 17%, 0) scale(1.08); } }
+      /* The dot name moves with the hero text (same keyframes as .hero-text in index.astro), so the
+         dots stay on the name while both drift up more slowly than the page and fade. */
+      .hero-field {
+        animation-name: hero-text-drift; animation-timing-function: linear; animation-fill-mode: both;
+        animation-timeline: scroll(root);
+        animation-range: 0 90vh;
+      }
+      @keyframes hero-text-drift { to { transform: translate3d(0, -7vh, 0); opacity: 0.25; } }
+    }
+  }
+  /* At least 60% black behind text on phones, and behind the left (text) half on wide screens,
+     so white text keeps 4.5:1 even over a white sky. */
+  /* The wash follows the theme: a pale wash with ink text by day, a dark wash with white text at
+     night. Both keep text at 4.5:1 or better over the brightest photo. */
+  .hero-scrim {
+    --wash: 248 248 247;
+    background: linear-gradient(to bottom, rgb(var(--wash) / 0.8), rgb(var(--wash) / 0.76) 40%, rgb(var(--wash) / 0.9));
+    transition: background 0.4s ease;
+  }
+  @media (min-width: 64rem) {
+    .hero-scrim {
+      background:
+        linear-gradient(90deg, rgb(var(--wash) / 0.88), rgb(var(--wash) / 0.76) 55%, rgb(var(--wash) / 0.4)),
+        linear-gradient(to bottom, rgb(var(--wash) / 0.2), rgb(var(--wash) / 0.45));
+    }
+  }
+  :global(:root[data-theme='dark']) .hero-scrim { --wash: 8 9 11; background: linear-gradient(to bottom, rgb(var(--wash) / 0.62), rgb(var(--wash) / 0.6) 40%, rgb(var(--wash) / 0.74)); }
+  @media (min-width: 64rem) {
+    :global(:root[data-theme='dark']) .hero-scrim {
+      background:
+        linear-gradient(90deg, rgb(var(--wash) / 0.7), rgb(var(--wash) / 0.58) 55%, rgb(var(--wash) / 0.3)),
+        linear-gradient(to bottom, rgb(var(--wash) / 0.2), rgb(var(--wash) / 0.4));
+    }
+  }
+  .hero-field { display: none; }
+  .hero.has-dot-name .hero-field { display: block; }
+
+  /* A small frosted tag over the photo. */
+  .hero-credit {
+    position: absolute;
+    right: 0;
+    bottom: clamp(0.9rem, 2vw, 1.4rem);
+    padding: 0.3rem 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--hero-ink) 18%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--hero-on-ink) 35%, transparent);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: blur(12px) saturate(150%);
+    font-size: 0.75rem;
+    color: var(--hero-ink);
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .hero-credit { background: rgb(10 10 10 / 0.6); } }
+  /* Phones: the credit sits on the left. */
+  @media (max-width: 40rem) {
+    .hero-credit { left: 0; right: auto; bottom: 0.9rem; }
+  }
+  .hero-credit a { color: inherit; }
+  .hero-credit .sep { margin: 0 0.45em; }
+  .hero-credit a:hover { color: var(--hero-ink); }
+  .hero-credit a:focus-visible { outline-color: var(--hero-ink); }
+</style>

@@ -2,17 +2,72 @@
 import Base from '../layouts/Base.astro';
 ---
 
-<Base title="Page not found | Veer Shah" description="This page doesn’t exist.">
-  <h1 class="nf">Page not found</h1>
-  <p class="nf-body">This address doesn’t match anything here. <a href="/">Go to the project list</a>.</p>
+<Base title="Page not found | Veer Mickey Shah" description="This page doesn’t exist." noindex>
+  <div class="nf">
+    <span class="nf-frame" aria-hidden="true"></span>
+    <h1>Page not found</h1>
+    <p class="nf-body">This address doesn’t match anything here.</p>
+    <p class="nf-home">
+      <a class="nf-link" href="/#projects">Go to the project list</a>
+      <a class="nf-alt" href="/photography/">or see the photos</a>
+    </p>
+  </div>
 </Base>
 
 <style>
+  .nf-home { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.25rem; }
+  .nf-alt { display: inline-flex; align-items: center; min-height: 2.75rem; color: var(--muted); }
+  .nf-alt:hover { color: var(--ink); }
+  /* An unexposed frame: nothing printed here, and one plain way back to the sheet. */
+
   .nf {
-    font-size: 2rem;
+    padding-block: clamp(1rem, 0.5rem + 3vw, 3rem) clamp(2rem, 1rem + 4vw, 4rem);
   }
+
+  .nf-frame {
+    display: block;
+    width: min(100%, 15rem);
+    aspect-ratio: 3 / 2;
+    border: 1px dashed var(--muted);
+    margin-bottom: clamp(2rem, 1.5rem + 2vw, 3rem);
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 1.4rem + 5vw, 5rem);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+  }
+
   .nf-body {
-    margin-top: 1rem;
+    margin-top: 1.25rem;
+    font-size: var(--step-1);
     color: var(--muted);
+    max-width: 34ch;
+  }
+
+  .nf-home {
+    margin-top: 2rem;
+  }
+
+  .nf-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0.6rem 1.1rem;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.15s var(--ease), background-color 0.15s var(--ease);
+  }
+
+  .nf-link:hover {
+    background: var(--bg);
+    color: var(--ink);
   }
 </style>

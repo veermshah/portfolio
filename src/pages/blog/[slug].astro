@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ContactButton from '../../components/ContactButton.astro';
+import BackLink from '../../components/blog/BackLink.astro';
 import { publishedPost, type Post } from '../../lib/blog/posts';
 import { formatPostDate, readingMinutes, renderMarkdown, tagSlug } from '../../lib/blog/text';
 import { BLOG_ORIGIN, blogBase } from '../../lib/blog/config';
@@ -18,7 +19,7 @@ if (!found) {
 }
 const post = found ?? ({ title: '', slug, excerpt: '', content: '', tags: [], cover_image_url: null, published_at: null, updated_at: '' } as unknown as Post);
 const html = found ? renderMarkdown(post.content) : '';
-const description = post.excerpt || `${post.title}, by Veer Shah.`;
+const description = post.excerpt || `${post.title}, by Veer Mickey Shah.`;
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
@@ -26,36 +27,35 @@ const jsonLd = {
   description,
   datePublished: post.published_at,
   dateModified: post.updated_at,
-  author: { '@type': 'Person', '@id': new URL('/#person', Astro.site).href, name: 'Veer Shah', url: new URL('/', Astro.site).href },
+  author: { '@type': 'Person', '@id': new URL('/#person', Astro.site).href, name: 'Veer Mickey Shah', url: new URL('/', Astro.site).href },
   mainEntityOfPage: canonicalFor(`/${post.slug}`),
   ...(post.cover_image_url ? { image: post.cover_image_url } : {}),
   keywords: post.tags.join(', '),
 };
 ---
 {!found ? (
-<Base title="Post not found | Veer Shah" description="This post doesn’t exist." canonical={canonicalFor(`/${slug}`)} sitemap="/sitemap.xml" noindex>
-  <a class="blog-back" href={`${base}/`}>← All posts</a>
+<Base title="Post not found | Veer Mickey Shah" description="This post doesn’t exist." canonical={canonicalFor(`/${slug}`)} sitemap="/sitemap.xml" noindex>
+  <BackLink href={`${base}/`} label="All posts" />
   <h1 class="blog-title">Post not found</h1>
   <p class="blog-lede">There’s no published post at this address.</p>
 </Base>
 ) : (
 <Base
-  title={`${post.title} | Veer Shah`}
+  title={`${post.title} | Veer Mickey Shah`}
   description={description}
   canonical={canonicalFor(`/${post.slug}`)}
   ogType="article"
   ogImage={post.cover_image_url ?? `${BLOG_ORIGIN}/og.png`}
-  ogImageAlt={post.cover_image_url ? post.title : 'Veer Shah'}
+  ogImageAlt={post.cover_image_url ? post.title : 'Veer Mickey Shah'}
   sitemap="/sitemap.xml"
 >
   <Fragment slot="head">
     <meta property="article:published_time" content={post.published_at} />
     <meta property="article:modified_time" content={post.updated_at} />
     {post.tags.map((tag) => <meta property="article:tag" content={tag} />)}
-    <link rel="alternate" type="application/rss+xml" title="Veer Shah, blog" href={`${BLOG_ORIGIN}/rss.xml`} />
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </Fragment>
-  <a class="blog-back" href={`${base}/`}>← All posts</a>
+  <BackLink href={`${base}/`} label="All posts" />
   <article data-track="article">
     <header class="post-header">
       <p class="blog-meta"><time datetime={post.published_at}>{formatPostDate(post.published_at!)}</time> · {readingMinutes(post.content)} min read</p>
@@ -74,6 +74,6 @@ const jsonLd = {
 </Base>
 )}
 <style>
-  .post-aside { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); }
-  .post-aside p { margin-bottom: 1rem; }
+  .post-aside { margin-top: clamp(3rem, 2rem + 4vw, 5rem); padding-top: 1.5rem; border-top: 1px solid var(--ink); }
+  .post-aside p { margin-bottom: 1rem; font-size: var(--step-1); font-weight: 700; letter-spacing: -0.01em; }
 </style>

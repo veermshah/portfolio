@@ -2,20 +2,26 @@
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { experience } from '../data/experience';
-import { education, skills } from '../data/education';
+import { education, skills, knowsAbout } from '../data/education';
 import LinkIcon from '../components/LinkIcon.astro';
 import ContactButton from '../components/ContactButton.astro';
-import { notes, formatDate } from '../data/notes';
 import Base from '../layouts/Base.astro';
 import ProjectLinks from '../components/ProjectLinks.astro';
+import Hero from '../components/Hero.astro';
+import HeroPortrait from '../components/HeroPortrait.astro';
 import { profile } from '../data/profile';
+import { getImage } from 'astro:assets';
+import portraitSrc from '../assets/portrait.jpg';
 import { projects } from '../data/projects';
 import { projectCategories, categoriesByProject } from '../data/project-categories';
+import { jsonLd } from '../lib/seo';
 
 const assets = import.meta.glob<{ default: ImageMetadata }>('../assets/projects/*/*.{png,jpg,jpeg,webp}', { eager: true });
-const thumbnail = (p: (typeof projects)[number]) => {
+/** The project's lead image and its alt text, or undefined when it has none. */
+const thumb = (p: (typeof projects)[number]) => {
   const first = p.images[0];
-  return first ? assets[`../assets/projects/${p.slug}/${first.file}`]?.default : undefined;
+  const src = first ? assets[`../assets/projects/${p.slug}/${first.file}`]?.default : undefined;
+  return first && src ? { src, alt: first.alt } : undefined;
 };
 
 const logos = import.meta.glob<{ default: ImageMetadata }>('../assets/experience/*.{jpg,png}', { eager: true });
@@ -23,15 +29,9 @@ const logos = import.meta.glob<{ default: ImageMetadata }>('../assets/experience
 for (const project of projects) {
   if (!categoriesByProject[project.slug]?.length) throw new Error(`Missing categories for ${project.slug}`);
 }
-const filters = [
-  { id: 'all', label: 'All', count: projects.length },
-  ...projectCategories.map((category) => ({
-    ...category,
-    count: projects.filter((project) => categoriesByProject[project.slug].includes(category.id)).length,
-  })),
-];
 
 const featured = [
+  { slug: 'proofsnap', label: 'Product', detail: 'Photo of a handwritten proof in, a Lean 4 check of every step out.' },
   { slug: 'veer', label: 'Compiler engineering', detail: 'Static contracts for KV-cache memory, token budgets and numeric error.' },
   { slug: 'dishbrain-playground', label: 'Experimental work', detail: 'Controlled experiments with paired seeds, ablations and held-out evaluation.' },
   { slug: 'wander', label: 'Accessibility', detail: 'Indoor navigation with a voice guide, 3D mapping and deterministic routing.' },
@@ -40,11 +40,24 @@ const featured = [
 ].map((feature: { slug: string; label?: string; detail?: string }) => {
   const project = projects.find((project) => project.slug === feature.slug);
   if (!project) throw new Error(`Missing featured project: ${feature.slug}`);
-  return { project, label: feature.label ?? project.award ?? '', detail: feature.detail ?? project.pitch };
+  return { project, label: project.award ?? '', detail: feature.detail ?? project.pitch };
 });
 const links = profile.links.filter((l) => l.href && l.label !== 'Email');
+// The sheet holds everything not already shown in Selected work. Prototype sessions go last so
+// shipped work and award winners lead.
+const featuredSlugs = new Set(featured.map((f) => f.project.slug));
+const isPrototype = (p: (typeof projects)[number]) => /prototype session/i.test(p.context ?? '');
+const sheet = projects.filter((p) => !featuredSlugs.has(p.slug)).sort((a, b) => Number(isPrototype(a)) - Number(isPrototype(b)));
+const filters = [
+  { id: 'all', label: 'All', count: sheet.length },
+  ...projectCategories
+    .map((category) => ({ ...category, count: sheet.filter((project) => categoriesByProject[project.slug].includes(category.id)).length }))
+    .filter((category) => category.count > 0),
+];
 
 const siteUrl = new URL('/', Astro.site).href;
+const portrait = await getImage({ src: portraitSrc, width: 640, format: 'jpg' });
+const portraitUrl = new URL(portrait.src, Astro.site).href;
 const structuredData = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -73,76 +86,135 @@ const structuredData = {
       alternateName: profile.alternateNames,
       url: siteUrl,
       jobTitle: 'Software Engineer',
+      image: { '@type': 'ImageObject', url: portraitUrl, width: 640, height: 800, caption: `${profile.name} at his UT Dallas graduation` },
       description: profile.description,
-      email: profile.links.find((l) => l.label === 'Email')?.href,
-      alumniOf: { '@type': 'CollegeOrUniversity', name: 'University of Texas at Dallas', url: 'https://www.utdallas.edu' },
-      memberOf: { '@type': 'Organization', name: 'HackUTD', url: 'https://hackutd.co' },
-      sameAs: [...profile.links.filter((l) => l.href?.startsWith('https://')).map((l) => l.href), 'https://blog.veermickey.com'],
+      email: profile.links.find((l) => l.label === 'Email')?.href?.replace(/^mailto:/, ''),
+      alumniOf: { '@id': `${siteUrl}#utd` },
+      affiliation: [{ '@id': `${siteUrl}#mlh` }, { '@id': `${siteUrl}#utd` }],
+      memberOf: { '@id': `${siteUrl}#mlh` },
+      knowsAbout,
+      homeLocation: {
+        '@type': 'Place',
+        address: { '@type': 'PostalAddress', addressLocality: profile.locality.city, addressRegion: profile.locality.region, addressCountry: profile.locality.country },
+      },
+      sameAs: profile.sameAs,
     },
+    { '@type': 'CollegeOrUniversity', '@id': `${siteUrl}#utd`, name: 'University of Texas at Dallas', url: 'https://www.utdallas.edu' },
+    { '@type': 'Organization', '@id': `${siteUrl}#mlh`, name: 'Major League Hacking', alternateName: 'MLH', url: 'https://mlh.io' },
   ],
 };
 ---
 
-<Base title={`${profile.name} (${profile.alternateNames[0]}), software engineer`} description={profile.description} wide>
-  <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(structuredData)} />
-  <section class="hero" aria-labelledby="hero-name">
-    <canvas class="hero-field" aria-hidden="true"></canvas>
-    <p class="kicker" data-reveal><span class="pulse" aria-hidden="true"></span>Software engineer · M.S. CS, UT Dallas</p>
-    <h1 id="hero-name" class="display" data-reveal style="--reveal-i: 1">{profile.name}</h1>
-    <p class="bio" data-reveal style="--reveal-i: 2">{profile.bio}</p>
-    <div class="hero-actions" data-reveal style="--reveal-i: 3">
-      <ContactButton />
-      <ul class="contact" aria-label="Elsewhere">
-        {links.map((l) => <li><a class="icon-link" href={l.href}><LinkIcon name={l.label} />{l.label}</a></li>)}
-      </ul>
+<Base title={`${profile.name} (${profile.shortName}), software engineer`} description={profile.description} wide>
+  <script is:inline slot="head" type="application/ld+json" set:html={jsonLd(structuredData)} />
+  {profile.sameAs.map((href) => <link slot="head" rel="me" href={href} />)}
+  <Hero>
+    <div class="hero-layout">
+      <div class="hero-portrait"><HeroPortrait /></div>
+      <div class="hero-text">
+        <h1 id="hero-name" class="display" data-reveal style="--reveal-i: 1">{profile.name}</h1>
+        <div class="name-slot" aria-hidden="true" hidden></div>
+        <p class="bio" data-reveal style="--reveal-i: 2">{profile.bio}</p>
+        <div class="hero-actions" data-reveal style="--reveal-i: 3">
+          <ContactButton />
+          <ul class="contact" aria-label="Elsewhere">
+            {links.map((l) => <li><a class="icon-link" href={l.href} rel={profile.sameAs.includes(l.href!) ? 'me' : undefined}><LinkIcon name={l.label} />{l.label}</a></li>)}
+          </ul>
+        </div>
+      </div>
     </div>
-  </section>
+  </Hero>
 
   <section id="work" class="section" aria-labelledby="featured-heading">
-    <header class="section-head carousel-head" data-reveal>
-      <h2 id="featured-heading" class="section-title">Featured work</h2>
-      <div class="carousel-controls">
-        <span class="carousel-count" aria-hidden="true"><span data-current>1</span> / {featured.length}</span>
-        <button class="carousel-btn" type="button" data-dir="-1" aria-label="Previous project" disabled>←</button>
-        <button class="carousel-btn" type="button" data-dir="1" aria-label="Next project">→</button>
-      </div>
+    <header class="section-head" data-rise>
+      <h2 id="featured-heading" class="section-title">Selected work</h2>
     </header>
-    <ol class="carousel" aria-label="Featured projects" data-reveal style="--reveal-i: 1">
-      {featured.map(({ project, label, detail }, i) => (
-        <li class="featured-card">
-          <a class="featured-media" href={`/projects/${project.slug}/`} tabindex="-1" aria-hidden="true">
-            {thumbnail(project) && <Image src={thumbnail(project)!} alt="" widths={[480, 800, 1200, 1600]} sizes="(max-width: 48rem) 86vw, 46rem" format="webp" loading={i < 2 ? 'eager' : 'lazy'} />}
-          </a>
-          <div class="featured-copy">
-            {label && <p class="eyebrow">{label}</p>}
-            <h3><a class="stretched" href={`/projects/${project.slug}/`}>{project.title}</a></h3>
-            <p>{detail}</p>
-          </div>
-        </li>
-      ))}
+    <ol class="selects" aria-label="Featured projects">
+      {featured.map(({ project, label, detail }, i) => {
+        const t = thumb(project);
+        return (
+          <li class="select" data-tilt="5">
+            <div class="frame-media">
+              {t ? (
+                <Image src={t.src} alt={t.alt} widths={[480, 800, 1200]} sizes="(max-width: 40rem) 100vw, 36rem" format="webp" loading={i < 2 ? 'eager' : 'lazy'} />
+              ) : (
+                <span class="frame-blank" aria-hidden="true">{project.title}</span>
+              )}
+            </div>
+            <div class="select-copy">
+              <h3><a class="stretched" href={`/projects/${project.slug}/`}>{project.title}</a></h3>
+              <p class="select-detail">{detail}</p>
+              {label && <p class="select-label">{label}</p>}
+              <ProjectLinks project={project} writeup={false} />
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  </section>
+
+  <section id="projects" class="section" aria-labelledby="projects-heading">
+    <header class="section-head" data-rise>
+      <h2 id="projects-heading" class="section-title">More projects <span class="count">{sheet.length}</span></h2>
+    </header>
+    <div class="project-filter-controls" hidden>
+      <div class="project-filters" role="group" aria-label="Filter projects by type">
+        {filters.map((filter) => (
+          <button type="button" data-project-filter={filter.id} aria-pressed={filter.id === 'all' ? 'true' : 'false'} aria-controls="project-list">
+            {filter.label} <span class="filter-count">{filter.count}</span>
+          </button>
+        ))}
+      </div>
+      <p class="filter-status visually-hidden" role="status" aria-live="polite" aria-atomic="true">Showing all {sheet.length} projects</p>
+    </div>
+    <ol class="sheet" id="project-list">
+      {
+        sheet.map((p) => {
+          const t = thumb(p);
+          return (
+            <li class="frame" data-tilt="7" data-categories={categoriesByProject[p.slug].join(' ')}>
+              <div class="frame-media">
+                {t ? (
+                  <Image src={t.src} alt={t.alt} widths={[360, 720]} sizes="(max-width: 36rem) 100vw, (max-width: 56rem) 50vw, (max-width: 72rem) 33vw, 300px" format="webp" loading="lazy" />
+                ) : (
+                  <span class="frame-blank" aria-hidden="true">{p.title}</span>
+                )}
+              </div>
+              <div class="frame-copy">
+                <h3><a class="stretched" href={`/projects/${p.slug}/`}>{p.title}</a></h3>
+                {p.award ? <p class="frame-award">{p.award}</p> : p.context && <p class="frame-meta">{p.context}</p>}
+                <p class="frame-pitch">{p.pitch}</p>
+                <ProjectLinks project={p} writeup={false} />
+              </div>
+            </li>
+          );
+        })
+      }
     </ol>
   </section>
 
   <section id="experience" class="section" aria-labelledby="experience-heading">
-    <header class="section-head" data-reveal>
+    <header class="section-head" data-rise>
       <h2 id="experience-heading" class="section-title">Experience</h2>
     </header>
     <ol class="experience">
       {experience.map((item) => (
-        <li data-reveal>
-          <div class="experience-side">
-            <div class="experience-logo">
-              <Image src={logos[`../assets/experience/${item.logo}`].default} alt="" width={52} height={52} format="webp" loading="lazy" />
-            </div>
-            <p class="experience-meta">{item.period}<br />{item.location}</p>
-          </div>
+        <li data-rise>
+          <p class="when"><span>{item.period}</span><span>{item.location}</span></p>
           <div class="experience-main">
-            <h3>{item.company}</h3>
+            <h3>
+              {item.logo && logos[`../assets/experience/${item.logo}`] && (
+                <span class="experience-logo">
+                  <Image src={logos[`../assets/experience/${item.logo}`].default} alt="" width={52} height={52} format="webp" loading="lazy" />
+                </span>
+              )}
+              {item.company}
+            </h3>
             <p class="experience-role">{item.role}</p>
             <p class="experience-lead">{item.highlights[0]}</p>
             {item.highlights.length > 1 && (
               <details class="more">
-                <summary>More</summary>
+                <summary><span class="more-closed">More</span><span class="more-open">Less</span></summary>
                 <ul>{item.highlights.slice(1).map((line) => <li>{line}</li>)}</ul>
               </details>
             )}
@@ -153,23 +225,23 @@ const structuredData = {
   </section>
 
   <section id="education" class="section" aria-labelledby="education-heading">
-    <header class="section-head" data-reveal>
+    <header class="section-head" data-rise>
       <h2 id="education-heading" class="section-title">Education & skills</h2>
     </header>
     <div class="education-grid">
       <ol class="education">
         {education.map((item) => (
-          <li data-reveal>
-            <p class="experience-meta">{item.period}</p>
+          <li data-rise>
+            <p class="when"><span>{item.period}</span></p>
             <h3>{item.degree}</h3>
-            <p class="experience-role">{item.school}</p>
+            <p class="education-school">{item.school}</p>
             <p class="education-detail">{item.detail}</p>
           </li>
         ))}
       </ol>
-      <dl class="skills" data-reveal>
+      <dl class="skills">
         {skills.map((group) => (
-          <div>
+          <div data-rise="late">
             <dt>{group.label}</dt>
             <dd>{group.items}</dd>
           </div>
@@ -178,130 +250,21 @@ const structuredData = {
     </div>
   </section>
 
-  <section id="projects" class="section" aria-labelledby="projects-heading">
-    <header class="section-head" data-reveal>
-      <h2 id="projects-heading" class="section-title">All projects <span class="count">{projects.length}</span></h2>
-    </header>
-    <div class="project-filter-controls" hidden>
-      <div class="project-filters" role="group" aria-label="Filter projects by type">
-        {filters.map((filter) => (
-          <button type="button" data-project-filter={filter.id} aria-pressed={filter.id === 'all' ? 'true' : 'false'} aria-controls="project-list">
-            {filter.label} <span>{filter.count}</span>
-          </button>
-        ))}
+  <section class="contact-section" aria-labelledby="contact-heading">
+    <div class="contact-inner" data-rise>
+      <h2 id="contact-heading">Let’s talk</h2>
+      <p>Questions about a project, an opportunity, or an idea to build together? Send me an email.</p>
+      <div class="contact-actions">
+        <ContactButton />
+        <ul class="contact-links" aria-label="Elsewhere">
+          {links.map((l) => <li><a class="icon-link" href={l.href}><LinkIcon name={l.label} />{l.label}</a></li>)}
+        </ul>
       </div>
-      <p class="filter-status" role="status" aria-live="polite" aria-atomic="true">Showing all {projects.length} projects</p>
     </div>
-    <ol class="projects" id="project-list">
-      {
-        projects.map((p) => (
-          <li class="project" data-categories={categoriesByProject[p.slug].join(' ')} data-reveal>
-            <a class="thumbnail" href={`/projects/${p.slug}/`} tabindex="-1" aria-hidden="true">
-              {thumbnail(p) ? (
-                <Image src={thumbnail(p)!} alt="" widths={[360, 720]} sizes="(max-width: 40rem) 100vw, (max-width: 64rem) 50vw, 360px" format="webp" loading="lazy" />
-              ) : (
-                <span class="thumbnail-type"><span>{p.title}</span><small>{p.stack[0]}</small></span>
-              )}
-            </a>
-            <div class="project-copy">
-              <h3>
-                <a href={`/projects/${p.slug}/`}>{p.title}</a>
-                {p.award && <span class="award">{p.award}</span>}
-              </h3>
-              <p class="pitch">{p.pitch}</p>
-              <div class="project-foot">
-                <ProjectLinks project={p} />
-                <button class="peek-toggle" type="button" aria-expanded="false" aria-controls={`peek-${p.slug}`} aria-label={`Quick look: ${p.title}`}>Quick look</button>
-              </div>
-              <div class="peek" id={`peek-${p.slug}`} hidden>
-                <p class="peek-problem">{p.problem}</p>
-                {p.results.length > 0 && <ul class="peek-results">{p.results.slice(0, 3).map((r) => <li>{r}</li>)}</ul>}
-                <ul class="tags">{p.stack.map((t) => <li>{t}</li>)}</ul>
-                <a class="peek-more" href={`/projects/${p.slug}/`}>Full write-up <span aria-hidden="true">→</span></a>
-              </div>
-            </div>
-          </li>
-        ))
-      }
-    </ol>
-  </section>
-
-  <section class="section recent-notes" aria-labelledby="notes-heading">
-    <header class="section-head" data-reveal>
-      <h2 id="notes-heading" class="section-title">Notes</h2>
-    </header>
-    <div class="notes-grid">
-      {notes.slice(0, 2).map((note, i) => (
-        <article data-reveal style={`--reveal-i: ${i}`}>
-          <time datetime={note.frontmatter.date}>{formatDate(note.frontmatter.date)}</time>
-          <h3><a class="stretched" href={`/notes/${note.slug}/`}>{note.frontmatter.title}</a></h3>
-          <p>{note.frontmatter.description}</p>
-        </article>
-      ))}
-    </div>
-    <a class="all-notes" href="/notes/">All notes <span aria-hidden="true">→</span></a>
-  </section>
-
-  <section class="contact-section" aria-labelledby="contact-heading" data-reveal>
-    <h2 id="contact-heading">Let’s talk.</h2>
-    <p>Questions about a project, an opportunity, or an idea to build together? Send me an email.</p>
-    <ContactButton />
   </section>
 </Base>
 
 <script>
-  import { initHeroField } from '../scripts/hero-field';
-
-  for (const track of document.querySelectorAll<HTMLElement>('.carousel')) {
-    const section = track.closest('section')!;
-    const [prev, next] = section.querySelectorAll<HTMLButtonElement>('.carousel-btn');
-    const current = section.querySelector('[data-current]')!;
-    const items = [...track.children] as HTMLElement[];
-    const start = () => track.getBoundingClientRect().left + parseFloat(getComputedStyle(track).paddingLeft);
-    const index = () => {
-      const s = start();
-      let best = 0;
-      items.forEach((el, i) => { if (Math.abs(el.getBoundingClientRect().left - s) < Math.abs(items[best].getBoundingClientRect().left - s)) best = i; });
-      return best;
-    };
-    const pad = () => { track.style.scrollPaddingInline = getComputedStyle(track).paddingLeft; };
-    const atEnd = () => track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
-    const shown = () => (atEnd() ? items.length - 1 : index());
-    const update = () => {
-      const i = shown();
-      current.textContent = String(i + 1);
-      prev.disabled = track.scrollLeft <= 4;
-      next.disabled = atEnd();
-    };
-    const go = (dir: number) => {
-      const i = Math.min(items.length - 1, Math.max(0, shown() + dir));
-      track.scrollTo({ left: track.scrollLeft + items[i].getBoundingClientRect().left - start(), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-    };
-    prev.addEventListener('click', () => go(-1));
-    next.addEventListener('click', () => go(1));
-    track.addEventListener('scroll', () => requestAnimationFrame(update), { passive: true });
-    addEventListener('resize', () => { pad(); update(); });
-    pad();
-    update();
-  }
-
-  // Project cards expand in place to show the problem, results and stack.
-  for (const toggle of document.querySelectorAll<HTMLButtonElement>('.peek-toggle')) {
-    toggle.addEventListener('click', () => {
-      const card = toggle.closest<HTMLElement>('.project')!;
-      const open = toggle.getAttribute('aria-expanded') !== 'true';
-      toggle.setAttribute('aria-expanded', String(open));
-      toggle.textContent = open ? 'Close' : 'Quick look';
-      toggle.setAttribute('aria-label', toggle.getAttribute('aria-label')!.replace(/^(Quick look|Close):/, open ? 'Close:' : 'Quick look:'));
-      document.getElementById(toggle.getAttribute('aria-controls')!)!.hidden = !open;
-      card.classList.toggle('is-open', open);
-      const top = card.getBoundingClientRect().top;
-      if (open && (top < 64 || top > innerHeight * 0.6)) card.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-    });
-  }
-
-  initHeroField();
-
   // Printed copies should include every experience highlight.
   let openedForPrint: HTMLDetailsElement[] = [];
   addEventListener('beforeprint', () => {
@@ -315,7 +278,7 @@ const structuredData = {
 
   const controls = document.querySelector<HTMLElement>('.project-filter-controls');
   const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-project-filter]'));
-  const cards = Array.from(document.querySelectorAll<HTMLElement>('#project-list > .project'));
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('#project-list > .frame'));
   const status = document.querySelector<HTMLElement>('.filter-status');
 
   function selectFilter(requested: string | null) {
@@ -345,168 +308,278 @@ const structuredData = {
   window.addEventListener('popstate', () => selectFilter(new URLSearchParams(window.location.search).get('type')));
   selectFilter(new URLSearchParams(window.location.search).get('type'));
   if (controls) controls.hidden = false;
+
 </script>
 
 <style>
-  /* Hero */
-  .hero { position: relative; isolation: isolate; padding-bottom: clamp(1rem, 3vw, 2rem); }
-  .hero-field { position: absolute; z-index: -1; top: calc(-1 * clamp(3rem, 1.5rem + 6vw, 7rem)); left: calc(50% - 50vw); width: 100vw; height: calc(100% + clamp(3rem, 1.5rem + 6vw, 7rem) + 2rem); touch-action: pan-y; mask-image: linear-gradient(to bottom, #000 70%, transparent); -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent); }
-  .kicker { display: inline-flex; align-items: center; gap: 0.6rem; font-family: var(--mono); font-size: var(--step--1); color: var(--muted); padding: 0.3rem 0.75rem 0.3rem 0.6rem; border: 1px solid var(--rule); border-radius: 999px; background: color-mix(in srgb, var(--bg) 80%, transparent); }
-  @media (max-width: 30rem) { .kicker { font-size: 0.75rem; letter-spacing: -0.02em; white-space: nowrap; } }
-  .pulse { flex: none; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); }
-  @media (prefers-reduced-motion: no-preference) { .pulse { animation: pulse 2.4s var(--ease) infinite; } }
-  @keyframes pulse { 70% { box-shadow: 0 0 0 0.55rem transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
-  .display {
+  /* Hero (background and dots live in components/Hero.astro). The portrait is the big element:
+     full width on phones with the name under it, a tall column beside the text on desktop. */
+  .hero-layout { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .hero-portrait { width: 100%; }
+  @media (min-width: 40rem) { .hero-portrait { width: min(100%, 24rem); } }
+  @media (min-width: 64rem) {
+    .hero-layout { grid-template-columns: minmax(0, 1fr) min(clamp(22rem, 34vw, 32rem), calc((100svh - 9.5rem) * 0.8)); column-gap: clamp(2.5rem, 5vw, 5rem); align-items: center; }
+    .hero-portrait { grid-column: 2; grid-row: 1; width: 100%; }
+    .hero-text { grid-column: 1; grid-row: 1; }
+    .hero-text .display, .hero-text .name-slot { margin-top: 0; }
+  }
+  /* Parallax, CSS only (see Hero.astro): the portrait rises a little faster than the page, and the
+     big Selected work images slide gently inside their frames. */
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .hero-portrait {
+        animation-name: portrait-rise; animation-timing-function: linear; animation-fill-mode: both;
+        animation-timeline: scroll(root);
+        animation-range: 0 100vh;
+      }
+      @keyframes portrait-rise { to { transform: translate3d(0, -18vh, 0) rotate(-1.5deg); } }
+      /* The text lags behind and fades; the dot name in Hero.astro uses the same keyframes. */
+      .hero-text {
+        animation-name: hero-text-drift; animation-timing-function: linear; animation-fill-mode: both;
+        animation-timeline: scroll(root);
+        animation-range: 0 90vh;
+      }
+      @keyframes hero-text-drift { to { transform: translate3d(0, -7vh, 0); opacity: 0.25; } }
+    }
+  }
+  @supports (animation-timeline: view()) and (overflow-clip-margin: content-box) {
+    @media (prefers-reduced-motion: no-preference) {
+      .frame-media { overflow: clip; overflow-clip-margin: content-box; }
+      /* Every project image slides inside its frame as it passes, at different depths, so the page
+         reads in layers. The big picks move most. */
+      .frame-media :global(img) {
+        animation-name: frame-slide; animation-timing-function: linear; animation-fill-mode: both;
+        animation-timeline: view();
+        animation-range: cover;
+      }
+      .select .frame-media :global(img) { --drift: 7%; }
+      .frame:nth-child(odd) .frame-media :global(img) { --drift: 3%; }
+      .frame:nth-child(even) .frame-media :global(img) { --drift: 6%; }
+      @keyframes frame-slide {
+        from { transform: translate3d(0, calc(-1 * var(--drift, 4%)), 0) scale(1.16); }
+        to { transform: translate3d(0, var(--drift, 4%), 0) scale(1.16); }
+      }
+      /* The picks print in: each frame wipes open from the bottom as it enters, like paper coming
+         up in the tray. */
+      .select .frame-media {
+        animation-name: print-in; animation-timing-function: linear; animation-fill-mode: both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 70%;
+      }
+      @keyframes print-in { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+      /* Cards in the sheet rise in; even columns trail a little so a row arrives as a ripple. */
+      .frame { animation-name: rise-card; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
+      .frame:nth-child(even) { animation-range: entry 12% entry 70%; }
+      @keyframes rise-card { from { opacity: 0; translate: 0 4rem; } }
+      .select-copy { animation-name: rise-card; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% entry 80%; }
+      /* Section titles slide in from the left as their rule draws across. */
+      .section-head::before { animation-name: rule-draw; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% entry 100%; }
+      @keyframes rule-draw { from { transform: scaleX(0); } }
+      .section-title { animation-name: title-slide; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% cover 30%; }
+      @keyframes title-slide { from { translate: -1.5rem 0; opacity: 0; } }
+      /* The closing line grows into place. */
+      .contact-section h2 { animation-name: talk-grow; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 10% cover 45%; transform-origin: left bottom; }
+      @keyframes talk-grow { from { scale: 0.82; opacity: 0.2; } }
+    }
+  }
+  /* Hero copy settles in on load: movement only, no fade, so text paints at once (no LCP delay). */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-reveal] { animation: settle 0.9s var(--ease) both; animation-delay: calc(var(--reveal-i, 0) * 90ms); }
+    @keyframes settle { from { translate: 0 1.5rem; } }
+  }
+  /* .name-slot reserves the h1's space while the dot name is drawn there, so it shares the h1's type. */
+  .display, .name-slot {
     margin-top: clamp(1.25rem, 3vw, 2rem);
     font-size: var(--step-display);
     font-weight: 800;
     line-height: 0.9;
-    letter-spacing: -0.055em;
+    letter-spacing: -0.04em;
   }
-  .display::after { content: '.'; color: var(--accent); }
   .bio { margin-top: clamp(1.25rem, 2.5vw, 1.75rem); font-size: var(--step-1); line-height: 1.55; color: var(--muted); max-width: 38rem; text-wrap: pretty; }
+  @media (max-width: 40rem) { .bio { font-size: 1.0625rem; line-height: 1.6; } }
   .hero-actions { margin-top: clamp(1.75rem, 3vw, 2.25rem); display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.75rem; }
   .contact { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.35rem 1.25rem; font-size: 0.9375rem; }
   .contact a { color: var(--muted); text-decoration: none; }
   .contact a:hover { color: var(--ink); }
 
+  /* Hero over a photo: light text on the dark scrim in both themes. */
+  :global(:root[data-theme='dark'] .hero) :is(.display, .bio, .contact) { text-shadow: 0 1px 14px rgb(0 0 0 / 0.35); }
+  :global(.hero) .display { color: var(--hero-ink); }
+  :global(.hero) .bio { color: color-mix(in srgb, var(--hero-ink) 88%, transparent); }
+  :global(.hero) .contact a { color: color-mix(in srgb, var(--hero-ink) 82%, transparent); }
+  :global(.hero) .contact a:hover { color: var(--hero-ink); }
+  :global(.hero) a:focus-visible { outline-color: var(--hero-ink); }
+  :global(.hero .contact-button) { background: var(--hero-ink); border-color: var(--hero-ink); color: var(--hero-on-ink); }
+  :global(.hero .contact-button:hover) { background: transparent; color: var(--hero-ink); }
+  /* Comes last to win over the colours above. Until the dots take over, the h1 is transparent but still in the accessibility tree. */
+  :global(.hero.dot-pending) .display { color: transparent; text-shadow: none; }
+
   /* Sections */
   .section { margin-top: var(--space-section); scroll-margin-top: 4.5rem; }
-  .section-head { display: flex; align-items: baseline; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--rule); margin-bottom: clamp(1.5rem, 3vw, 2.25rem); }
-  .section-title { font-size: var(--step-3); font-weight: 800; letter-spacing: -0.04em; }
-  :global(main) { counter-reset: section; }
-  .section-head { counter-increment: section; }
-  .section-head .section-title::before { content: counter(section, decimal-leading-zero); display: block; margin-bottom: 0.4rem; font-family: var(--mono); font-size: var(--step--1); font-weight: 400; letter-spacing: 0; color: var(--accent); }
-  .section-title .count { font-family: var(--mono); font-size: var(--step--1); font-weight: 400; color: var(--muted); letter-spacing: 0; vertical-align: 0.6em; margin-left: 0.25rem; }
-  .stretched::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+  .section-head { position: relative; padding-top: 0.875rem; margin-bottom: clamp(1.75rem, 4vw, 3rem); }
+  .section-head::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--ink); transform-origin: left; }
+  .section-title { font-size: clamp(1.75rem, 1.2rem + 2vw, 2.75rem); font-weight: 800; line-height: 0.95; letter-spacing: -0.04em; text-wrap: balance; }
+  .section-title .count { font-size: var(--step-1); font-weight: 700; line-height: 1; letter-spacing: 0; color: var(--muted); font-variant-numeric: tabular-nums; vertical-align: top; margin-left: 0.1em; }
+  .stretched::after { content: ''; position: absolute; inset: 0; z-index: 1; }
 
-  /* Featured */
-  .carousel-head { display: flex; align-items: end; justify-content: space-between; gap: 1rem; }
-  .carousel-controls { display: flex; align-items: center; gap: 0.5rem; }
-  .carousel-count { white-space: nowrap; font-family: var(--mono); font-size: var(--step--1); color: var(--muted); margin-right: 0.5rem; font-variant-numeric: tabular-nums; }
-  .carousel-btn { width: 2.5rem; height: 2.5rem; border-radius: 999px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); font: inherit; cursor: pointer; transition: border-color 0.2s var(--ease), opacity 0.2s var(--ease); }
-  .carousel-btn:hover:not(:disabled) { border-color: var(--ink); }
-  .carousel-btn:disabled { opacity: 0.35; cursor: default; }
-  .carousel { list-style: none; margin: 0 calc(50% - 50vw); padding: 0.25rem max(var(--gutter), calc(50vw - 50%)) 1rem; display: grid; grid-auto-flow: column; grid-auto-columns: min(86vw, 46rem); gap: clamp(0.875rem, 2vw, 1.5rem); overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: max(var(--gutter), (100vw - var(--wide)) / 2); overscroll-behavior-x: contain; scrollbar-width: none; }
-  .carousel::-webkit-scrollbar { display: none; }
-  .carousel > li { scroll-snap-align: start; }
-  .featured-card { position: relative; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; background: var(--bg); transition: border-color 0.25s var(--ease); }
-  .featured-card:hover { border-color: color-mix(in srgb, var(--ink) 30%, var(--rule)); }
-  .featured-media { display: block; aspect-ratio: 16 / 10; overflow: hidden; background: var(--accent-soft); border-bottom: 1px solid var(--rule); }
-  .featured-media :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: top center; transition: transform 0.6s var(--ease); }
-  .featured-card:hover .featured-media :global(img) { transform: scale(1.03); }
-  .featured-copy { padding: clamp(1rem, 2vw, 1.4rem); display: flex; flex-direction: column; flex: 1; gap: 0.6rem; }
-  .eyebrow { color: var(--muted); font-size: var(--step--1); }
-  .featured-card h3 { font-size: var(--step-2); letter-spacing: -0.02em; }
-  .featured-card h3 a { text-decoration: none; }
-  .featured-copy > p:not(.eyebrow) { font-size: 0.9375rem; color: var(--muted); }
-  .featured-card:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .featured-card a:focus-visible { outline: none; }
+  /* Frames: a print on the contact sheet, set in a strip of film black. The rebate stays black in
+     both themes, like the film itself. */
+  .frame-media { position: relative; aspect-ratio: 3 / 2; padding: 3px; background: #0a0a0a; }
+  .frame-media { aspect-ratio: auto; }
+  /* Hover (mouse): the print lifts and tilts toward the pointer (scripts/motion.ts), the picture zooms
+     inside its frame and a soft light follows the cursor. Touch gets a quick press instead. */
+  .frame-media {
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    translate: 0 var(--lift, 0);
+    box-shadow: 0 0 0 transparent;
+    transition: translate 0.45s var(--ease), box-shadow 0.45s var(--ease);
+  }
+  .frame-media :global(img) { transition: scale 0.7s var(--ease), filter 0.5s var(--ease); }
+  .frame-media::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.28), transparent 50%);
+    opacity: 0;
+    transition: opacity 0.4s var(--ease);
+    pointer-events: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    :is(.select, .frame):hover .frame-media { --lift: -8px; box-shadow: 0 28px 50px -24px rgb(0 0 0 / 0.55); }
+    :is(.select, .frame):hover .frame-media :global(img) { scale: 1.07; }
+    :is(.select, .frame):hover .frame-media::after { opacity: 1; }
+    .sheet:has(.frame:hover) .frame:not(:hover) .frame-media :global(img) { filter: saturate(0.6) brightness(0.92); }
+  }
+  :is(.select, .frame):active .frame-media { scale: 0.985; }
+  .frame-media { transition: translate 0.45s var(--ease), box-shadow 0.45s var(--ease), scale 0.2s var(--ease); }
+  .frame-media :global(img) { width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; object-position: top center; }
+  .frame-blank { display: flex; align-items: flex-end; aspect-ratio: 3 / 2; padding: 1rem; background: var(--accent-soft); color: var(--ink); font-size: var(--step-2); font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+
+  /* Selected work: big frames. Size alone marks them as picks. */
+  .selects { list-style: none; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(3rem, 6vw, 4.5rem) clamp(2rem, 4.5vw, 3.75rem); }
+  @media (min-width: 40rem) { .selects { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .select { position: relative; display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+  .select-copy { display: grid; gap: 0.5rem; max-width: 34rem; padding-left: 3px; }
+  /* The first pick leads: full width on wide screens, image beside its copy. */
+  @media (min-width: 64rem) {
+    .select:first-child { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: clamp(2rem, 4vw, 3.5rem); align-items: center; }
+    .select:first-child h3 { font-size: clamp(2.5rem, 1.6rem + 3vw, 4rem); }
+  }
+  .select h3 { font-size: var(--step-3); font-weight: 800; line-height: 1; letter-spacing: -0.035em; }
+  .select h3 a { text-decoration: none; }
+  .select:hover h3 a { text-decoration-line: underline; text-decoration-thickness: 2px; text-decoration-color: currentColor; }
+  .select-detail { color: var(--muted); text-wrap: pretty; }
+  .select-label { font-size: var(--step--1); font-weight: 700; }
+  .select :global(.actions) { position: relative; z-index: 3; gap: 0 1.1rem; font-size: 0.9375rem; }
+  .select :global(.actions a), .select :global(.actions .pending) { display: inline-flex; align-items: center; min-height: 2.75rem; }
+
+  /* All projects: the contact sheet, frames edge to edge in colour. */
+  .project-filter-controls { margin-bottom: clamp(2rem, 4vw, 2.75rem); }
+  .project-filters { display: flex; flex-wrap: wrap; gap: 0.35rem 0.25rem; margin-inline: -0.75rem; }
+  .project-filters button { position: relative; min-height: 2.75rem; padding: 0.35rem 0.75rem; border: 0; background: none; font: inherit; color: var(--muted); cursor: pointer; }
+  .project-filters button:hover, .project-filters button[aria-pressed='true'] { color: var(--ink); }
+  .project-filters button { border-radius: 999px; transition: background-color 0.25s var(--ease), color 0.25s var(--ease), scale 0.15s var(--ease); }
+  .project-filters button:hover { background: var(--accent-soft); }
+  .project-filters button[aria-pressed='true'] { background: var(--ink); color: var(--bg); }
+  .project-filters button:active { scale: 0.94; }
+  .filter-count { margin-left: 0.15em; font-size: var(--step--1); font-variant-numeric: tabular-nums; }
+  .filter-status { margin-top: 0.5rem; color: var(--muted); font-size: var(--step--1); }
+
+  .sheet { list-style: none; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); column-gap: 0; row-gap: clamp(2.25rem, 4vw, 3rem); }
+  @media (min-width: 36rem) { .sheet { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  /* Phones: a dense two-up sheet of frames with title and type; the write-up, pitch and links are one tap away. */
+  @media (max-width: 35.99rem) {
+    .sheet { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 3px; row-gap: 1.5rem; }
+    .frame-copy { padding: 0.6rem 0.25rem 0 3px; gap: 0.2rem; }
+    .frame h3 { font-size: 1rem; }
+    .frame-pitch { display: none; }
+    /* Only the live site stays on the phone card; code, Devpost and the write-up are on the project page. */
+    .frame :global(.actions > :not(.live-link)) { display: none; }
+    .frame :global(.actions) { min-height: 0; }
+    .frame :global(.actions .live-link) { min-height: 2.75rem; font-size: 0.8125rem; }
+    .frame h3 a::after { content: ''; position: absolute; inset: 0; z-index: 3; }
+  }
+  @media (min-width: 56rem) { .sheet { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (min-width: 72rem) { .sheet { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .frame { position: relative; display: flex; flex-direction: column; min-width: 0; }
+  .frame[hidden] { display: none; }
+  .frame-copy { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.9rem 1.25rem 0 3px; }
+  .frame h3 { font-size: var(--step-1); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; }
+  .frame h3 a { text-decoration: none; }
+  .frame:hover h3 a { text-decoration-line: underline; text-decoration-thickness: 2px; text-decoration-color: currentColor; }
+  .frame-meta { display: grid; font-size: var(--step--1); line-height: 1.45; color: var(--muted); }
+  .frame-award { font-size: var(--step--1); font-weight: 700; line-height: 1.45; }
+  .frame-pitch { margin-top: 0.2rem; font-size: 0.9375rem; color: var(--muted); text-wrap: pretty; }
+  .frame :global(.actions) { position: relative; z-index: 3; gap: 0 1.1rem; font-size: 0.875rem; }
+  .frame :global(.actions a), .frame :global(.actions .pending) { display: inline-flex; align-items: center; min-height: 2.75rem; }
 
   /* Experience */
   .experience { list-style: none; padding: 0; }
-  .experience > li { display: grid; grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr); gap: 1.5rem clamp(1.5rem, 4vw, 4rem); padding: clamp(1.5rem, 3vw, 2.25rem) 0; border-bottom: 1px solid var(--rule); }
-  .experience > li:first-child { padding-top: 0.5rem; }
-  .experience-side { display: flex; flex-direction: column; gap: 0.9rem; }
-  .experience-logo { width: 3.25rem; height: 3.25rem; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--rule); border-radius: 10px; background: #fff; }
-  .experience-logo :global(img) { width: 2.75rem; height: 2.75rem; object-fit: contain; }
-  .experience-meta { color: var(--muted); font-size: var(--step--1); font-family: var(--mono); line-height: 1.6; }
-  .experience h3 { font-size: var(--step-2); letter-spacing: -0.02em; }
-  .experience-role { margin-top: 0.3rem; color: var(--accent); font-size: 0.9375rem; }
-  .experience-lead { margin-top: 0.9rem; color: var(--muted); font-size: 0.9375rem; max-width: var(--measure); }
-  .more { margin-top: 0.6rem; }
-  .more summary { cursor: pointer; font-size: var(--step--1); color: var(--muted); list-style: none; display: inline-flex; gap: 0.35rem; }
-  .more summary::-webkit-details-marker { display: none; }
-  .more summary::after { content: '+'; }
-  .more[open] summary::after { content: '−'; }
-  .more summary:hover { color: var(--ink); }
-  .experience-main ul { padding-left: 1.1rem; margin-top: 1rem; color: var(--muted); font-size: 0.9375rem; max-width: var(--measure); }
-  .experience-main ul li + li { margin-top: 0.55rem; }
-  .experience-main ul li::marker { color: color-mix(in srgb, var(--muted) 60%, transparent); }
-  @media (max-width: 40rem) {
-    .experience > li { grid-template-columns: 1fr; gap: 1rem; }
-    .experience-side { flex-direction: row; align-items: center; gap: 0.9rem; }
-  }
-
-  /* Education */
-  .education-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: start; }
-  .education { list-style: none; padding: 0; }
-  .education > li { padding: 0 0 1.5rem; }
-  .education > li + li { padding-top: 1.5rem; border-top: 1px solid var(--rule); }
-  .education h3 { font-size: var(--step-1); margin-top: 0.4rem; letter-spacing: -0.01em; }
-  .education-detail { margin-top: 0.5rem; color: var(--muted); font-size: 0.9375rem; }
-  .skills { margin: 0; border-top: 1px solid var(--rule); }
-  .skills > div { display: grid; grid-template-columns: 8.5rem 1fr; gap: 1rem; padding: 0.8rem 0; border-bottom: 1px solid var(--rule); font-size: 0.9375rem; }
-  .skills dt { color: var(--muted); font-family: var(--mono); font-size: var(--step--1); padding-top: 0.1rem; }
-  .skills dd { margin: 0; }
-  @media (max-width: 52rem) { .education-grid { grid-template-columns: 1fr; } }
-  @media (max-width: 30rem) { .skills > div { grid-template-columns: 1fr; gap: 0.2rem; } }
-
-  /* Projects */
-  .project-filter-controls { margin-bottom: clamp(1.5rem, 3vw, 2rem); }
-  .project-filters { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .project-filters button { font: inherit; font-size: 0.875rem; padding: 0.4rem 0.85rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--bg); color: var(--muted); cursor: pointer; transition: border-color 0.2s var(--ease), color 0.2s var(--ease), background 0.2s var(--ease); }
-  .project-filters button span { margin-left: 0.3rem; font-family: var(--mono); font-size: 0.75rem; opacity: 0.8; }
-  .project-filters button[aria-pressed='true'] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
-  .project-filters button:hover:not([aria-pressed='true']) { border-color: color-mix(in srgb, var(--ink) 35%, var(--rule)); color: var(--ink); }
-  .project-filters button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-  .filter-status { margin-top: 0.75rem; color: var(--muted); font-size: 0.8125rem; }
-  .projects { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); gap: clamp(2rem, 3vw, 2.75rem) clamp(1rem, 2vw, 1.5rem); }
-  .project { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
-  .project[hidden] { display: none; }
-  .thumbnail { display: block; overflow: hidden; aspect-ratio: 16 / 10; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--accent-soft); text-decoration: none; transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease); }
-  .thumbnail :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: top center; transition: transform 0.6s var(--ease); }
-  .project:hover .thumbnail { border-color: color-mix(in srgb, var(--ink) 30%, var(--rule)); }
-  .project:hover .thumbnail :global(img) { transform: scale(1.03); }
-  .thumbnail-type { display: flex; flex-direction: column; justify-content: flex-end; gap: 0.4rem; height: 100%; padding: 1.25rem; color: var(--accent); font-family: var(--mono); font-size: 1.05rem; background: linear-gradient(135deg, var(--accent-soft), color-mix(in srgb, var(--accent-soft) 40%, var(--bg))); }
-  .thumbnail-type small { font-size: 0.75rem; color: var(--muted); }
-  .project-copy { min-width: 0; }
-  .project h3 { font-size: var(--step-1); letter-spacing: -0.015em; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.6rem; }
-  .project h3 a { text-decoration: none; }
-  .project h3 a:hover { color: var(--accent); }
-  .project .award { white-space: normal; }
-  .pitch { margin-top: 0.45rem; font-size: 0.9375rem; }
-  .project-foot { margin-top: 0.7rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; }
-  .project :global(.actions) { font-size: 0.875rem; }
-  .peek-toggle { font: inherit; font-size: 0.8125rem; font-family: var(--mono); color: var(--accent); background: var(--accent-soft); border: 1px solid transparent; border-radius: 999px; padding: 0.3rem 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; transition: border-color 0.2s var(--ease); }
-  .peek-toggle::after { content: '+'; font-weight: 700; transition: transform 0.25s var(--ease); }
-  .peek-toggle[aria-expanded='true']::after { transform: rotate(45deg); }
-  .peek-toggle:hover { border-color: var(--accent); }
-  .peek-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .peek { margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--rule); display: grid; gap: 0.85rem; font-size: 0.9375rem; }
-  .peek-problem { color: var(--muted); max-width: var(--measure); }
-  .peek-results { padding-left: 1.1rem; display: grid; gap: 0.4rem; max-width: var(--measure); }
-  .peek-results li::marker { color: var(--accent); }
-  .peek-more { font-weight: 700; font-size: 0.9375rem; justify-self: start; }
-  .peek[hidden] { display: none; }
-  .project.is-open:not([hidden]) { grid-column: 1 / -1; }
+  .experience > li { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.6rem; padding: clamp(1.75rem, 3vw, 2.5rem) 0; border-bottom: 1px solid var(--rule); }
+  .experience > li:first-child { padding-top: 0; }
+  .when { display: flex; flex-wrap: wrap; gap: 0 0.5rem; font-size: var(--step--1); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .when span + span::before { content: '·'; margin-right: 0.5rem; }
   @media (min-width: 48rem) {
-    .project.is-open:not([hidden]) { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(1.25rem, 3vw, 2.5rem); align-items: start; }
+    .experience > li { grid-template-columns: 13rem minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 4rem); }
+    .experience .when { flex-direction: column; padding-top: 0.6rem; }
+    .experience .when span + span::before { content: none; }
   }
-  @media (prefers-reduced-motion: no-preference) {
-    .peek:not([hidden]) { animation: peek-in 0.35s var(--ease); }
+  .experience h3 { display: flex; align-items: center; gap: 0.75rem; font-size: clamp(1.5rem, 1.2rem + 1.3vw, 2.25rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; }
+  .experience-logo { flex: none; width: 2.25rem; height: 2.25rem; overflow: hidden; border-radius: var(--radius); background: #fff; outline: 1px solid var(--rule); }
+  .experience-logo :global(img) { width: 100%; height: 100%; object-fit: contain; }
+  .experience-role { margin-top: 0.6rem; font-weight: 700; }
+  .experience h3, .experience-logo { transition: translate 0.4s var(--ease), rotate 0.4s var(--ease); }
+  @media (hover: hover) {
+    .experience > li:hover h3 { translate: 0.5rem 0; }
+    .experience > li:hover .experience-logo { rotate: -8deg; }
+    .skills > div:hover dt { translate: 0.35rem 0; }
   }
-  @keyframes peek-in { from { opacity: 0; transform: translateY(-6px); } }
+  .skills dt { transition: translate 0.3s var(--ease); }
+  .experience-lead { margin-top: 0.75rem; max-width: var(--measure); color: var(--muted); text-wrap: pretty; }
+  .more summary { display: inline-flex; align-items: center; min-height: 2.75rem; cursor: pointer; list-style: none; font-size: var(--step--1); font-weight: 700; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.25em; }
+  .more summary::-webkit-details-marker { display: none; }
+  .more summary:hover { text-decoration-thickness: 2px; }
+  .more-open, .more[open] .more-closed { display: none; }
+  .more[open] .more-open { display: inline; }
+  .experience-main ul { padding-left: 1.1rem; margin-top: 0.25rem; max-width: var(--measure); color: var(--muted); }
+  .experience-main ul li + li { margin-top: 0.55rem; }
+  .experience-main ul li::marker { color: var(--ink); }
 
-  /* Notes */
-  .notes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: clamp(1rem, 2vw, 1.5rem); }
-  .recent-notes article { position: relative; padding: clamp(1.25rem, 2.5vw, 1.75rem); border: 1px solid var(--rule); border-radius: var(--radius); transition: border-color 0.25s var(--ease); }
-  .recent-notes article:hover { border-color: color-mix(in srgb, var(--ink) 30%, var(--rule)); }
-  .recent-notes article:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .recent-notes article a:focus-visible { outline: none; }
-  .recent-notes time { color: var(--muted); font-family: var(--mono); font-size: var(--step--1); }
-  .recent-notes h3 { margin: 0.6rem 0 0.6rem; font-size: var(--step-1); letter-spacing: -0.015em; }
-  .recent-notes h3 a { text-decoration: none; }
-  .recent-notes article p { color: var(--muted); font-size: 0.9375rem; }
-  .all-notes { display: inline-block; margin-top: 1.25rem; font-size: 0.9375rem; }
+  /* Education & skills */
+  .education-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(2.5rem, 5vw, 4.5rem); align-items: start; }
+  @media (min-width: 56rem) { .education-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); } }
+  .education { list-style: none; padding: 0; }
+  .education > li { padding-bottom: 1.5rem; }
+  .education > li + li { padding-top: 1.5rem; border-top: 1px solid var(--rule); }
+  .education h3 { margin-top: 0.4rem; font-size: var(--step-2); font-weight: 800; line-height: 1.1; letter-spacing: -0.025em; text-wrap: balance; }
+  .education-school { margin-top: 0.4rem; font-weight: 700; }
+  .education-detail { margin-top: 0.5rem; color: var(--muted); text-wrap: pretty; }
+  .skills { margin: 0; }
+  .skills > div { display: grid; gap: 0.15rem; padding: 0.9rem 0; border-top: 1px solid var(--rule); }
+  .skills > div:first-child { padding-top: 0; border-top: 0; }
+  @media (min-width: 30rem) { .skills > div { grid-template-columns: 8.5rem minmax(0, 1fr); gap: 1rem; } }
+  .skills dt { font-weight: 700; }
+  .skills dd { margin: 0; color: var(--muted); }
 
-  /* Contact */
-  .contact-section { margin-top: var(--space-section); padding-top: clamp(2rem, 4vw, 3rem); border-top: 1px solid var(--rule); }
-  .contact-section h2 { font-size: var(--step-3); letter-spacing: -0.035em; }
-  .contact-section p { margin: 0.75rem 0 1.5rem; color: var(--muted); max-width: 32rem; font-size: var(--step-0); }
+  /* Contact: the page closes on a full-width block of ink. */
+  .contact-section { --c-bg: #0a0a0a; --c-ink: #f5f5f5; margin-top: var(--space-section); margin-inline: calc(50% - 50vw); background: var(--c-bg); color: var(--c-ink); }
+  /* Film black in both themes; on the dark page a rule marks where it starts. */
+  :global(:root[data-theme='dark']) .contact-section { border-top: 1px solid var(--rule); }
+  .contact-inner { max-width: calc(var(--wide) + 2 * var(--gutter)); margin: 0 auto; padding: clamp(4rem, 3rem + 7vw, 8rem) var(--gutter); }
+  .contact-section h2 { font-size: var(--step-display); font-weight: 800; line-height: 0.9; letter-spacing: -0.04em; }
+  .contact-section p { margin-top: clamp(1.25rem, 2.5vw, 1.75rem); max-width: 34rem; font-size: var(--step-1); line-height: 1.5; color: color-mix(in srgb, var(--c-ink) 78%, var(--c-bg)); text-wrap: pretty; }
+  .contact-actions { margin-top: clamp(1.75rem, 3vw, 2.5rem); display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.75rem; }
+  .contact-section :global(.contact-button) { min-height: 2.75rem; background: var(--c-ink); border-color: var(--c-ink); color: var(--c-bg); }
+  .contact-section :global(.contact-button:hover) { background: transparent; color: var(--c-ink); }
+  .contact-links { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0 1.25rem; font-size: 0.9375rem; }
+  .contact-links a { display: inline-flex; align-items: center; min-height: 2.75rem; color: color-mix(in srgb, var(--c-ink) 78%, var(--c-bg)); text-decoration: none; }
+  .contact-links a:hover { color: var(--c-ink); text-decoration-line: underline; }
+  .contact-section a:focus-visible, .contact-section :global(.contact-button:focus-visible) { outline-color: var(--c-ink); }
+
   @media print {
-    .carousel-controls { display: none; }
-    .carousel { margin: 0; padding: 0; grid-auto-flow: row; grid-template-columns: 1fr 1fr; overflow: visible; }
-    .featured-card { break-inside: avoid; }
+    .frame .frame-media :global(img) { filter: none; }
+    .project-filter-controls { display: none; }
+    .contact-section { margin-inline: 0; background: none; color: inherit; }
+    .contact-inner { padding: 2rem 0; }
   }
 </style>

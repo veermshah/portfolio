@@ -12,7 +12,7 @@ const { project: p, writeup = true } = Astro.props;
 ---
 
 <p class="actions">
-  {p.live && <a class="icon-link" href={p.live}><LinkIcon name="Live" />Live<span class="visually-hidden"> site for {p.title}</span></a>}
+  {p.live && <a class="icon-link live-link" href={p.live}><LinkIcon name="Live" />Live site<span class="visually-hidden"> for {p.title}</span></a>}
   {
     p.codePrivate ? (
       <span class="pending">Code (soon)</span>

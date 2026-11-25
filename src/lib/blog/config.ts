@@ -1,7 +1,7 @@
 export const BLOG_HOST = 'blog.veermickey.com';
 export const BLOG_ORIGIN = `https://${BLOG_HOST}`;
-export const BLOG_TITLE = 'Blog | Veer Shah';
-export const BLOG_DESCRIPTION = 'Posts by Veer Shah.';
+export const BLOG_TITLE = 'Blog | Veer Mickey Shah';
+export const BLOG_DESCRIPTION = 'Posts by Veer Mickey Shah.';
 export const ADMIN_EMAIL = 'veermickey@gmail.com';
 export const IMAGE_BUCKET = 'post-images';
 

@@ -16,13 +16,23 @@ export const experience = [
   {
     company: 'HackUTD · ACM',
     logo: 'hackutd.png',
-    role: 'Director (previously Experience Organizer, January 2024 – January 2026)',
-    period: 'January 2026 – present',
+    role: 'Former Director (previously Experience Organizer, January 2024 – January 2026)',
+    period: 'Director from January 2026',
     location: 'Richardson, TX',
     highlights: [
       'Led a 45-member team organizing HackUTD, the largest 24-hour collegiate hackathon in North America, with 1,200+ participants, 15+ sponsors and more than $50,000 in prizes.',
       'Directed engineering for Jury, an open-source judging platform adopted by more than four hackathons nationwide, and HARP, a hackathon operations platform.',
-      'Competed in more than 12 hackathons, with wins at HackTX, PennApps, TAMUhack, HackSMU, HackUTA, HackFin and HackUPC.',
+      'Competed in hackathons across the country, with wins at HackTX, PennApps, TAMUhack, HackSMU, HackUTA, HackFin, HackUPC and RowdyHacks.',
+    ],
+  },
+  {
+    company: 'Major League Hacking (MLH)',
+    logo: 'mlh.png',
+    role: 'MLH Coach',
+    period: 'September 2026 – present',
+    location: 'Travel to MLH events',
+    highlights: [
+      'Staff MLH member hackathons as an event coach. At CodeRED Orion at the University of Houston I ran hardware lending and helped with judging.',
     ],
   },
   {

@@ -1,0 +1,9 @@
+---
+// The small link back up a level on blog pages. The arrow is drawn, not a text glyph.
+interface Props { href: string; label: string; }
+const { href, label } = Astro.props;
+---
+<a class="blog-back" href={href}>
+  <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M13 8H3.5M7.5 3.5 3 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" /></svg>
+  {label}
+</a>

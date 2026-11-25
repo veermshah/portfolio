@@ -5,6 +5,61 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/notes",
+      "destination": "https://blog.veermickey.com/",
+      "permanent": true,
+      "missing": [
+        {
+          "type": "host",
+          "value": "blog.veermickey.com"
+        }
+      ]
+    },
+    {
+      "source": "/notes/",
+      "destination": "https://blog.veermickey.com/",
+      "permanent": true,
+      "missing": [
+        {
+          "type": "host",
+          "value": "blog.veermickey.com"
+        }
+      ]
+    },
+    {
+      "source": "/notes/:path+",
+      "destination": "https://blog.veermickey.com/",
+      "permanent": true,
+      "missing": [
+        {
+          "type": "host",
+          "value": "blog.veermickey.com"
+        }
+      ]
+    },
+    {
+      "source": "/notes/:path+/",
+      "destination": "https://blog.veermickey.com/",
+      "permanent": true,
+      "missing": [
+        {
+          "type": "host",
+          "value": "blog.veermickey.com"
+        }
+      ]
+    },
+    {
+      "source": "/rss.xml",
+      "destination": "https://blog.veermickey.com/rss.xml",
+      "permanent": true,
+      "missing": [
+        {
+          "type": "host",
+          "value": "blog.veermickey.com"
+        }
+      ]
+    },
+    {
       "source": "/dishbrain-playground",
       "destination": "https://veermshah.github.io/dishbrain-playground/",
       "permanent": false
@@ -72,6 +127,24 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/resume.pdf",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/demos/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
         }
       ]
     }

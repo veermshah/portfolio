@@ -11,6 +11,8 @@ export const projectCategories = [
 type Category = (typeof projectCategories)[number]['id'];
 
 export const categoriesByProject: Record<string, readonly Category[]> = {
+  proofsnap: ['ai-ml', 'web-apps'],
+  riff: ['ai-ml', 'web-apps'],
   'fog-map': ['ai-ml', 'systems'],
   'dynaflow-orchestrator': ['ai-ml', 'systems'],
   'popup-optimizer': ['web-apps'],

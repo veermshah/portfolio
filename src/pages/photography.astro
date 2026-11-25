@@ -1,6 +1,7 @@
 ---
 import { Image, getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
+import FlightGlobe from '../components/FlightGlobe.astro';
 import { profile } from '../data/profile';
 import marinaBay from '../assets/photos/marina-bay.jpg';
 import skylineNight from '../assets/photos/skyline-night.jpg';
@@ -8,16 +9,17 @@ import bridge from '../assets/photos/bridge.jpg';
 import bokeh from '../assets/photos/bokeh.jpg';
 import netSculpture from '../assets/photos/net-sculpture.jpg';
 import { getUnsplashPhotos, sized, UTM } from '../lib/unsplash';
+import { breadcrumbs, jsonLd, personRef, schemaIds } from '../lib/seo';
 
 const unsplash = profile.links.find((l) => l.label === 'Unsplash')?.href ?? 'https://unsplash.com/@veermickey';
 
 const photos = await Promise.all(
   [
-    { src: marinaBay, alt: 'Marina Bay Sands and the ArtScience Museum under a cloudy sky', layout: 'wide' },
-    { src: bokeh, alt: 'Trees in front of a glass tower, with sunlight breaking through the leaves', layout: 'tall' },
-    { src: bridge, alt: 'People on a curved steel footbridge above a river, with a red tour boat passing below', layout: '' },
-    { src: netSculpture, alt: 'A suspended net sculpture lit magenta above a park at night', layout: '' },
-    { src: skylineNight, alt: 'City skyline at night with illuminated buildings and a park', layout: 'wide' },
+    { src: marinaBay, alt: 'Marina Bay Sands and the ArtScience Museum under a cloudy sky' },
+    { src: bokeh, alt: 'Trees in front of a glass tower, with sunlight breaking through the leaves' },
+    { src: bridge, alt: 'People on a curved steel footbridge above a river, with a red tour boat passing below' },
+    { src: netSculpture, alt: 'A suspended net sculpture lit magenta above a park at night' },
+    { src: skylineNight, alt: 'City skyline at night with illuminated buildings and a park' },
   ].map(async (photo) => ({ ...photo, full: (await getImage({ src: photo.src, width: 2400, format: 'webp' })).src })),
 );
 
@@ -25,25 +27,90 @@ const photos = await Promise.all(
 const shots = await getUnsplashPhotos();
 const profileUrl = `${unsplash}?${UTM}`;
 const unsplashHome = `https://unsplash.com/?${UTM}`;
+
+// The contact sheet lays frames out in justified rows: each frame's width is its aspect ratio times
+// the row height, so every photo keeps its own shape. `sizes` estimates that width per frame from
+// the row heights in the CSS below (about 136px on phones, 210px on tablets, 272px on desktop).
+const sizesFor = (width: number, height: number) => {
+  const ratio = width / height;
+  const px = (row: number, cap: number) => Math.round(Math.min(ratio * row * 1.5, cap));
+  return `(max-width: 30rem) ${px(136, 430)}px, (max-width: 64rem) ${px(210, 1000)}px, ${px(272, 1184)}px`;
+};
+
+// SEO: the top photo as the share card, and an ImageGallery with the photos as ImageObjects.
+const pageUrl = new URL('/photography/', Astro.site).href;
+const ids = schemaIds(Astro.site);
+const title = `Photography by ${profile.name}`;
+const description = `Photography by ${profile.name} (${profile.shortName}): city skylines, architecture and travel, also published on Unsplash.`;
+const top = shots[0];
+const localCard = top ? undefined : await getImage({ src: photos[0].src, width: 1200, format: 'jpg', quality: 80 });
+const og = top
+  ? { src: `${top.raw}&w=1200&fm=jpg&fit=max&q=80`, width: 1200, height: Math.round((1200 * top.height) / top.width), alt: top.alt }
+  : { src: new URL(localCard!.src, Astro.site).href, width: Number(localCard!.attributes.width), height: Number(localCard!.attributes.height), alt: photos[0].alt };
+const images = top
+  ? shots.slice(0, 30).map((photo) => ({
+      '@type': 'ImageObject',
+      contentUrl: sized(photo, 1200),
+      url: photo.page,
+      caption: photo.alt,
+      width: photo.width,
+      height: photo.height,
+      creator: personRef(Astro.site),
+      creditText: `${profile.name} on Unsplash`,
+      license: 'https://unsplash.com/license',
+      acquireLicensePage: photo.page,
+    }))
+  : photos.map((photo) => ({
+      '@type': 'ImageObject',
+      contentUrl: new URL(photo.full, Astro.site).href,
+      caption: photo.alt,
+      creator: personRef(Astro.site),
+      creditText: profile.name,
+    }));
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'ImageGallery',
+      '@id': `${pageUrl}#gallery`,
+      url: pageUrl,
+      name: title,
+      description,
+      inLanguage: 'en',
+      isPartOf: { '@id': ids.website },
+      author: personRef(Astro.site),
+      breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
+      associatedMedia: images,
+    },
+    breadcrumbs(`${pageUrl}#breadcrumb`, [
+      ['Home', ids.home],
+      ['Photography', pageUrl],
+    ]),
+  ],
+};
 ---
 
-<Base title={`Photography | ${profile.name}`} description={`Photos by ${profile.name}: cities, architecture, museums and night scenes.`} wide>
+<Base title={title} description={description} ogImage={og.src} ogImageAlt={og.alt} ogImageWidth={og.width} ogImageHeight={og.height} wide>
+  <script is:inline slot="head" type="application/ld+json" set:html={jsonLd(structuredData)} />
   <section id="photography" class="intro" aria-labelledby="photography-heading">
     <h1 id="photography-heading" class="display">Photography</h1>
-    <p class="lede">Cities, architecture and light.{shots.length > 0 && ` ${shots.length} photos.`}</p>
-    <a class="button unsplash" href={profileUrl}>Follow on Unsplash →</a>
+    <p class="lede">City skylines at night, architecture, museums, markets and deserts, from Dallas to Rome, Madrid, Budapest, Hong Kong and Singapore. {shots.length > 0 ? `All ${shots.length} photos here` : 'These photos'} are also on my Unsplash profile, free to use under the Unsplash License. Select a frame to see it larger.</p>
+    <a class="button unsplash" href={profileUrl}>
+      Follow on Unsplash
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M3 8h9.5M8.5 3.5 13 8l-4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" /></svg>
+    </a>
   </section>
 
-  {shots.length > 0 ? (
-    <section id="gallery" aria-label="Photos">
-      <ul class="masonry" data-gallery>
+  <section id="gallery" aria-label="Photos">
+    {shots.length > 0 ? (
+      <ul class="sheet" data-gallery>
         {shots.map((photo, i) => (
-          <li style={`aspect-ratio: ${photo.width} / ${photo.height}; background: ${photo.color};`}>
+          <li class="frame" style={`--ratio: ${(photo.width / photo.height).toFixed(4)}; aspect-ratio: ${photo.width} / ${photo.height}; background: ${photo.color};`}>
             <a href={`${photo.page}?${UTM}`} data-full={sized(photo, 2000)} data-page={`${photo.page}?${UTM}`} aria-label={`View larger: ${photo.alt}`}>
               <img
                 src={sized(photo, 600)}
-                srcset={[400, 600, 900, 1200].map((w) => `${sized(photo, w)} ${w}w`).join(', ')}
-                sizes="(max-width: 48rem) 50vw, (max-width: 80rem) 33vw, 25rem"
+                srcset={[400, 600, 900, 1200, 1600].map((w) => `${sized(photo, w)} ${w}w`).join(', ')}
+                sizes={sizesFor(photo.width, photo.height)}
                 width={photo.width}
                 height={photo.height}
                 alt={photo.alt}
@@ -51,41 +118,50 @@ const unsplashHome = `https://unsplash.com/?${UTM}`;
                 decoding="async"
               />
             </a>
+            <p class="caption" aria-hidden="true">{photo.alt}</p>
           </li>
         ))}
       </ul>
-      <p class="credit">Photos by <a href={profileUrl}>Veer Mickey Shah</a> on <a href={unsplashHome}>Unsplash</a>.</p>
-    </section>
-  ) : (
-    <section id="gallery" aria-label="Photos">
-      <ul class="gallery">
+    ) : (
+      <ul class="sheet" data-gallery>
         {photos.map((photo, i) => (
-          <li class:list={['shot', photo.layout]}>
-            <a href={photo.full} aria-label={`Open full size: ${photo.alt}`}>
+          <li class="frame" style={`--ratio: ${(photo.src.width / photo.src.height).toFixed(4)}; aspect-ratio: ${photo.src.width} / ${photo.src.height};`}>
+            <a href={photo.full} data-full={photo.full} aria-label={`Open full size: ${photo.alt}`}>
               <Image
                 src={photo.src}
                 alt={photo.alt}
                 widths={[480, 800, 1200, 1600, 2400]}
-                sizes={photo.layout === 'wide' ? '(max-width: 48rem) 100vw, 74rem' : '(max-width: 48rem) 100vw, 37rem'}
+                sizes={sizesFor(photo.src.width, photo.src.height)}
                 format="webp"
                 loading={i < 2 ? 'eager' : 'lazy'}
               />
             </a>
+            <p class="caption" aria-hidden="true">{photo.alt}</p>
           </li>
         ))}
       </ul>
-    </section>
-  )}
+    )}
+    {shots.length > 0 && <p class="credit">Photos by <a href={profileUrl}>Veer Mickey Shah</a> on <a href={unsplashHome}>Unsplash</a>.</p>}
+  </section>
+
+  <FlightGlobe />
 
   <dialog class="viewer" data-viewer aria-label="Photo viewer">
     <img data-viewer-img alt="" />
     <p class="viewer-bar" aria-live="polite">
+      <span class="viewer-count" data-viewer-count></span>
       <span data-viewer-alt></span>
       <a data-viewer-page href="#">View on Unsplash</a>
     </p>
-    <button type="button" class="viewer-btn viewer-close" data-viewer-close aria-label="Close">×</button>
-    <button type="button" class="viewer-btn viewer-prev" data-viewer-step="-1" aria-label="Previous photo">‹</button>
-    <button type="button" class="viewer-btn viewer-next" data-viewer-step="1" aria-label="Next photo">›</button>
+    <button type="button" class="viewer-btn viewer-close" data-viewer-close aria-label="Close">
+      <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" focusable="false"><path d="M4.5 4.5l11 11M15.5 4.5l-11 11" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
+    </button>
+    <button type="button" class="viewer-btn viewer-prev" data-viewer-step="-1" aria-label="Previous photo">
+      <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" focusable="false"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
+    </button>
+    <button type="button" class="viewer-btn viewer-next" data-viewer-step="1" aria-label="Next photo">
+      <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7.5 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
+    </button>
   </dialog>
 </Base>
 
@@ -97,15 +173,26 @@ const unsplashHome = `https://unsplash.com/?${UTM}`;
     const img = viewer.querySelector<HTMLImageElement>('[data-viewer-img]')!;
     const alt = viewer.querySelector<HTMLElement>('[data-viewer-alt]')!;
     const page = viewer.querySelector<HTMLAnchorElement>('[data-viewer-page]')!;
+    const count = viewer.querySelector<HTMLElement>('[data-viewer-count]')!;
     let index = 0;
+    const preload = (i: number) => { const l = links[(i + links.length) % links.length]; if (l) new Image().src = l.dataset.full!; };
     const show = (i: number) => {
       index = (i + links.length) % links.length;
       const link = links[index];
       const thumb = link.querySelector('img')!;
+      // Fade the old photo out, swap, and fade in once the new one has decoded, so the caption never
+      // sits under the wrong photo. The neighbours load in the background.
+      img.style.opacity = '0';
       img.src = link.dataset.full!;
       img.alt = thumb.alt;
+      img.decode().catch(() => {}).finally(() => { if (img.src.endsWith(link.dataset.full!)) img.style.opacity = '1'; });
+      preload(index + 1);
+      preload(index - 1);
+      count.textContent = `${index + 1} / ${links.length}`;
       alt.textContent = thumb.alt;
-      page.href = link.dataset.page!;
+      // Local fallback photos have no Unsplash page to link to.
+      page.hidden = !link.dataset.page;
+      page.href = link.dataset.page ?? '#';
     };
     gallery.addEventListener('click', (e) => {
       const link = (e.target as Element).closest<HTMLAnchorElement>('a[data-full]');
@@ -135,45 +222,132 @@ const unsplashHome = `https://unsplash.com/?${UTM}`;
 </script>
 
 <style>
-  .intro { padding-block: clamp(2.5rem, 6vw, 5rem) clamp(2rem, 4vw, 3rem); }
-  .display { font-size: clamp(3rem, 1rem + 8vw, 7.5rem); }
-  .lede { margin-top: 1rem; max-width: 36rem; color: var(--muted); font-size: var(--step-1); }
-  .unsplash { display: inline-block; margin-top: 1.5rem; }
+  .intro {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.25rem 2rem;
+    padding-bottom: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  }
+  .display {
+    /* "Photography." is about 6em wide at this tracking; the min() keeps it on one line down to 320px. */
+    font-size: min(var(--step-display), calc((100vw - 2 * var(--gutter)) / 6.1));
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+  }
+  .lede { order: 3; flex: 1 1 100%; max-width: 40rem; color: var(--muted); font-size: var(--step-1); line-height: 1.5; text-wrap: pretty; }
+  .unsplash svg { flex: none; transition: transform 0.2s var(--ease); }
+  .unsplash:hover svg { transform: translateX(3px); }
 
-  .masonry { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: clamp(0.5rem, 1.5vw, 1rem); }
-  .masonry li { break-inside: avoid; margin-bottom: clamp(0.5rem, 1.5vw, 1rem); border-radius: 0.4rem; overflow: hidden; }
-  .masonry a { display: block; height: 100%; }
-  .masonry img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease, opacity 0.3s ease; }
-  .masonry a:hover img, .masonry a:focus-visible img { transform: scale(1.03); }
-  .masonry a:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
-  @media (min-width: 48rem) { .masonry { columns: 3; } }
-  @media (min-width: 80rem) { .masonry { columns: 4; } }
-  .credit { margin-top: 1.5rem; color: var(--muted); font-size: 0.875rem; }
+  /* The contact sheet: frames in justified rows with one thin, even gutter. Each frame grows in
+     proportion to its aspect ratio, so every frame in a row ends up the same height and no photo
+     is cropped. The ::after filler keeps the last row from stretching. */
+  .sheet {
+    --row: clamp(8.5rem, 5rem + 14vw, 17rem);
+    --gap: clamp(3px, 0.15rem + 0.25vw, 6px);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--gap);
+  }
+  .sheet::after { content: ''; flex: 999 1 0; }
+  .frame {
+    position: relative;
+    flex: var(--ratio) 1 calc(var(--ratio) * var(--row));
+    min-width: 0;
+    background: var(--accent-soft);
+    color: var(--ink);
+  }
+  .frame a { display: block; height: 100%; overflow: clip; }
+  /* Each photo's description on a small frosted tag; shown on hover or focus, always in the page. */
+  .caption {
+    position: absolute;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    margin: 0;
+    padding: 0.35rem 0.65rem;
+    border: 1px solid rgb(255 255 255 / 0.2);
+    border-radius: 0.6rem;
+    background: rgb(10 10 10 / 0.35);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: blur(12px) saturate(150%);
+    color: #fff;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    text-wrap: pretty;
+    pointer-events: none;
+    opacity: 0;
+    translate: 0 0.4rem;
+    transition: opacity 0.3s var(--ease), translate 0.3s var(--ease);
+  }
+  .caption::first-letter { text-transform: uppercase; }
+  .frame:hover .caption, .frame:focus-within .caption { opacity: 1; translate: 0 0; }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .caption { background: rgb(10 10 10 / 0.75); } }
+  .frame :global(img) { transition: scale 0.7s var(--ease), filter 0.5s var(--ease); }
+  @media (hover: hover) and (pointer: fine) {
+    .frame:hover :global(img) { scale: 1.05; }
+    .sheet:has(.frame:hover) .frame:not(:hover) :global(img) { filter: brightness(0.75) saturate(0.7); }
+  }
+  /* Frames rise in as the sheet scrolls; every third trails a little. */
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .frame { animation-name: frame-rise; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% entry 50%; }
+      .frame:nth-child(3n + 2) { animation-range: entry 10% entry 62%; }
+      .frame:nth-child(3n) { animation-range: entry 20% entry 75%; }
+      @keyframes frame-rise { from { opacity: 0; translate: 0 2.5rem; scale: 0.97; } }
+    }
+  }
+  .frame img, .frame :global(img) { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .frame a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  /* A hairline of paper round the pencil keeps it readable over dark photos. */
 
-  .gallery { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(0.75rem, 1.5vw, 1.25rem); grid-template-columns: 1fr; }
-  .shot a { display: block; height: 100%; border-radius: 0.5rem; overflow: hidden; }
-  .shot :global(img) { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
-  .shot a:hover :global(img), .shot a:focus-visible :global(img) { transform: scale(1.02); }
-  @media (min-width: 48rem) {
-    .gallery { grid-template-columns: 1fr 1fr; grid-auto-rows: clamp(14rem, 24vw, 22rem); }
-    .wide { grid-column: 1 / -1; grid-row: span 2; }
-    .tall { grid-row: span 2; }
+  /* On phones the sheet runs to the edges of the screen. */
+  @media (max-width: 40rem) {
+    .sheet { margin-inline: calc(-1 * var(--gutter)); }
   }
 
-  .viewer { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: rgb(0 0 0 / 0.94); color: #fff; }
+  .credit { margin-top: 1.25rem; color: var(--muted); font-size: var(--step--1); }
+
+  .viewer { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: rgb(10 10 10 / 0.78); -webkit-backdrop-filter: blur(24px) saturate(140%); backdrop-filter: blur(24px) saturate(140%); color: #fff; }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .viewer { background: rgb(10 10 10 / 0.96); } }
   .viewer[open] { display: grid; grid-template-rows: 1fr auto; place-items: center; }
-  .viewer::backdrop { background: rgb(0 0 0 / 0.6); }
-  .viewer img { max-width: 100%; max-height: calc(100dvh - 5rem); object-fit: contain; padding: 3.5rem 0.75rem 0; }
+  .viewer::backdrop { background: rgb(0 0 0 / 0.25); }
+  .viewer img { max-width: 100%; max-height: calc(100dvh - 5rem); object-fit: contain; padding: 3.75rem 0.75rem 0; transition: opacity 0.2s linear; }
+  .viewer-count { font-variant-numeric: tabular-nums; color: rgb(255 255 255 / 0.6); }
   .viewer-bar { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; justify-content: center; align-items: baseline; padding: 0.75rem 1rem 1.25rem; margin: 0; font-size: 0.875rem; text-align: center; }
   .viewer-bar span { color: rgb(255 255 255 / 0.75); }
   .viewer-bar span::first-letter { text-transform: uppercase; }
   .viewer-bar a { color: #fff; }
-  .viewer-btn { position: absolute; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border: 0; border-radius: 50%; background: rgb(255 255 255 / 0.12); color: #fff; font: inherit; font-size: 1.75rem; line-height: 1; cursor: pointer; }
-  .viewer-btn:hover, .viewer-btn:focus-visible { background: rgb(255 255 255 / 0.25); }
+  .viewer-bar a[hidden] { display: none; }
+  .viewer :focus-visible { outline-color: #fff; }
+  .viewer-btn {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 1px solid rgb(255 255 255 / 0.22);
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.1);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s var(--ease), color 0.2s var(--ease), scale 0.15s var(--ease);
+  }
+  .viewer-btn:active { scale: 0.9; }
+  .viewer-btn:hover { background: #fff; color: #0a0a0a; border-color: #fff; }
   .viewer-close { top: 0.75rem; right: 0.75rem; }
   .viewer-prev, .viewer-next { top: 50%; transform: translateY(-50%); }
   .viewer-prev { left: 0.75rem; }
   .viewer-next { right: 0.75rem; }
 
-  @media (prefers-reduced-motion: reduce) { .shot :global(img), .masonry img { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .unsplash svg { transition: none; } }
 </style>

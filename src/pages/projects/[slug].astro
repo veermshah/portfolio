@@ -1,10 +1,12 @@
 ---
 import type { GetStaticPaths, ImageMetadata } from 'astro';
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import ProjectLinks from '../../components/ProjectLinks.astro';
 import { projects, type Project } from '../../data/projects';
 import { roleSummary, myPart } from '../../lib/format';
+import { categoriesByProject } from '../../data/project-categories';
+import { breadcrumbs, jsonLd, metaDescription, personRef, projectTitle, schemaIds } from '../../lib/seo';
 
 export const getStaticPaths = (() =>
   projects.map((project, i) => ({
@@ -39,48 +41,138 @@ const inline = (text: string) =>
 
 const [lead, ...rest] = images;
 const stripped = (s: string) => s.replace(/`/g, '');
+
+/** The first image of any project, for the frames on the contact strip at the foot of the page. */
+const frameOf = (project: Project) => {
+  const first = project.images[0];
+  return first ? assets[`../../assets/projects/${project.slug}/${first.file}`]?.default : undefined;
+};
+const prevFrame = prev && frameOf(prev);
+const nextFrame = next && frameOf(next);
+
+// The title is set as large as the column allows. Its longest word sets the ceiling, so a long
+// single word (WhatDoesDaFoxSay) shrinks to fit a 360px phone instead of breaking mid-word.
+const longestWord = Math.max(8, ...p.title.split(/\s+/).map((w) => w.length));
+
+// Related projects: up to three that share the most categories, then the nearest in list order.
+// Previous and next are skipped because the pager already links them. Deterministic for a given list.
+const here = projects.findIndex((x) => x.slug === p.slug);
+const mine = categoriesByProject[p.slug] ?? [];
+const related = projects
+  .map((other, i) => ({ other, i, shared: (categoriesByProject[other.slug] ?? []).filter((c) => mine.includes(c)).length }))
+  .filter(({ other, shared }) => shared > 0 && ![p.slug, prev?.slug, next?.slug].includes(other.slug))
+  .sort((a, b) => b.shared - a.shared || Math.abs(a.i - here) - Math.abs(b.i - here) || a.i - b.i)
+  .slice(0, 3)
+  .map(({ other }) => other);
+
+// SEO: a descriptive title, a 110 to 160 character description, the lead screenshot as the share card, and JSON-LD.
+const pageTitle = projectTitle(p.slug, p.title, p.pitch);
+const description = metaDescription([p.pitch, p.award && `${p.award}.`, p.problem]);
+const og = lead
+  ? await getImage({ src: lead.src, width: Math.min(1200, lead.src.width), format: 'jpg', quality: 80 })
+  : undefined;
+const pageUrl = new URL(`/projects/${p.slug}/`, Astro.site).href;
+const ogImageUrl = new URL(og?.src ?? '/og.png', Astro.site).href;
+const ids = schemaIds(Astro.site);
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebPage',
+      '@id': `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: pageTitle,
+      description,
+      inLanguage: 'en',
+      isPartOf: { '@id': ids.website },
+      breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
+      mainEntity: { '@id': `${pageUrl}#project` },
+    },
+    {
+      '@type': 'SoftwareSourceCode',
+      '@id': `${pageUrl}#project`,
+      name: p.title,
+      description: stripped(p.pitch),
+      url: pageUrl,
+      ...(p.code && !p.codePrivate && p.code.startsWith('https://') ? { codeRepository: p.code } : {}),
+      keywords: p.stack.join(', '),
+      image: ogImageUrl,
+      author: personRef(Astro.site),
+      ...(p.award ? { award: p.award } : {}),
+    },
+    breadcrumbs(`${pageUrl}#breadcrumb`, [
+      ['Home', ids.home],
+      ['Projects', `${ids.home}#projects`],
+      [p.title, pageUrl],
+    ]),
+  ],
+};
 ---
 
-<Base title={`${p.title} | Veer Shah`} description={stripped(p.pitch)}>
-  <nav class="crumb"><a href="/#projects">← All projects</a></nav>
+<Base
+  title={pageTitle}
+  description={description}
+  ogImage={ogImageUrl}
+  ogImageAlt={lead?.alt}
+  ogImageWidth={og ? Number(og.attributes.width) : undefined}
+  ogImageHeight={og ? Number(og.attributes.height) : undefined}
+  wide
+>
+  <script is:inline slot="head" type="application/ld+json" set:html={jsonLd(structuredData)} />
+  <nav class="crumb" aria-label="Breadcrumb"><a href="/#projects"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M13 8H3.5M7.5 3.5 3 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" /></svg>All projects</a></nav>
 
-  <article data-track="article">
-    <header class="head">
+  <article class="print" data-track="article">
+    <header class="head" style={`--chars: ${longestWord}`}>
       <h1>{p.title}</h1>
-      {p.award && <p class="award-line"><span class="award">{p.award}</span></p>}
-      <p class="pitch" set:html={inline(p.pitch)} />
+      {
+        p.award && (
+          <p class="award-line">
+            <span class="award-mark">
+              {p.award}
+            </span>
+          </p>
+        )
+      }
+      <div class="head-grid">
+        <p class="pitch" set:html={inline(p.pitch)} />
+        <dl class="facts">
+          <div>
+            <dt>Role</dt>
+            <dd>{roleSummary(p)}{myPart(p) && `. My part: ${myPart(p)}.`}</dd>
+          </div>
+          <div>
+            <dt>Stack</dt>
+            <dd>{p.stack.join(', ')}</dd>
+          </div>
+        </dl>
+      </div>
+      <div class="links">
+        <ProjectLinks project={p} writeup={false} />
+        {
+          p.extra && (
+            <p class="actions extra">
+              {p.extra.filter((l) => l.label !== 'Devpost').map((l) => (
+                <a href={l.href}>{l.label}</a>
+              ))}
+            </p>
+          )
+        }
+      </div>
     </header>
-
-    <dl class="facts">
-      <div>
-        <dt>Role</dt>
-        <dd>{roleSummary(p)}{myPart(p) && `. My part: ${myPart(p)}.`}</dd>
-      </div>
-      <div>
-        <dt>Stack</dt>
-        <dd><ul class="tags">{p.stack.map((t) => <li>{t}</li>)}</ul></dd>
-      </div>
-      <div>
-        <dt>Links</dt>
-        <dd>
-          <ProjectLinks project={p} writeup={false} />
-          {
-            p.extra && (
-              <p class="actions extra">
-                {p.extra.filter((l) => l.label !== 'Devpost').map((l) => (
-                  <a href={l.href}>{l.label}</a>
-                ))}
-              </p>
-            )
-          }
-        </dd>
-      </div>
-    </dl>
 
     {
       lead && (
-        <figure class="shot">
-          <Image src={lead.src} alt={lead.alt} widths={[680, 1360]} sizes="(max-width: 720px) 100vw, 680px" format="webp" quality={78} loading="eager" fetchpriority="high" />
+        <figure class="plate lead">
+          <Image
+            src={lead.src}
+            alt={lead.alt}
+            widths={[640, 960, 1280, 1600, 2000]}
+            sizes="(max-width: 40rem) 100vw, (max-width: 80rem) 92vw, 74rem"
+            format="webp"
+            quality={80}
+            loading="eager"
+            fetchpriority="high"
+          />
           {lead.caption && <figcaption>{lead.caption}</figcaption>}
         </figure>
       )
@@ -88,161 +180,534 @@ const stripped = (s: string) => s.replace(/`/g, '');
 
     {
       p.video && (
-        <figure class="shot">
+        <figure class="plate lead">
           <video src={p.video.src} controls muted playsinline preload="metadata" aria-label={p.video.caption} />
           <figcaption>{p.video.caption}</figcaption>
         </figure>
       )
     }
 
-    <section>
-      <h2>Problem</h2>
-      <p set:html={inline(p.problem)} />
-    </section>
+    <div class="body">
+      <section>
+        <h2>Problem</h2>
+        <div class="text">
+          <p set:html={inline(p.problem)} />
+        </div>
+      </section>
 
-    <section>
-      <h2>What I built</h2>
-      {p.built.map((para) => <p set:html={inline(para)} />)}
-    </section>
+      <section>
+        <h2>What I built</h2>
+        <div class="text">
+          {p.built.map((para) => <p set:html={inline(para)} />)}
+        </div>
+      </section>
 
-    <section>
-      <h2>Results</h2>
-      <ul class="results">{p.results.map((r) => <li set:html={inline(r)} />)}</ul>
-    </section>
+      <section>
+        <h2>Results</h2>
+        <div class="text">
+          <ul class="results">{p.results.map((r) => <li set:html={inline(r)} />)}</ul>
+        </div>
+      </section>
 
-    {
-      rest.map((img) => (
-        <figure class="shot">
-          <Image src={img.src} alt={img.alt} widths={[680, 1360]} sizes="(max-width: 720px) 100vw, 680px" format="webp" quality={78} />
-          {img.caption && <figcaption>{img.caption}</figcaption>}
-        </figure>
-      ))
-    }
+      {
+        rest.map((img) => (
+          <figure class="plate">
+            <Image
+              src={img.src}
+              alt={img.alt}
+              widths={[640, 960, 1280, 1800]}
+              sizes="(max-width: 40rem) 100vw, (max-width: 64rem) 92vw, 58rem"
+              format="webp"
+              quality={78}
+            />
+            {img.caption && <figcaption>{img.caption}</figcaption>}
+          </figure>
+        ))
+      }
+    </div>
   </article>
 
-  <nav class="pager" aria-label="More projects">
-    {prev ? <a href={`/projects/${prev.slug}/`} rel="prev">Previous: {prev.title}</a> : <span />}
-    {next ? <a href={`/projects/${next.slug}/`} rel="next">Next: {next.title}</a> : <a href="/">All projects</a>}
+  {
+    related.length > 0 && (
+      <aside class="related" aria-label="Related reading">
+        <h2 id="related-projects">Related projects</h2>
+        <ul aria-labelledby="related-projects">
+          {related.map((r) => (
+            <li>
+              <a href={`/projects/${r.slug}/`}>{r.title}</a>
+              <p>{stripped(r.pitch)}</p>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    )
+  }
+
+  <p class="ask">Questions about {p.title}? <a href="mailto:veermickey@gmail.com">Email me</a></p>
+
+  <nav class="strip" aria-label="More projects">
+    {
+      prev ? (
+        <a class="frame" href={`/projects/${prev.slug}/`} rel="prev">
+          <span class="frame-pic">
+            <span class="frame-img">
+              {prevFrame && <Image src={prevFrame} alt="" widths={[240, 480]} sizes="(max-width: 40rem) 31vw, 15rem" format="webp" loading="lazy" />}
+            </span>
+          </span>
+          <span class="frame-label">
+            <span class="frame-dir">Previous<span class="visually-hidden">:</span></span> <span class="frame-title">{prev.title}</span>
+          </span>
+        </a>
+      ) : null
+    }
+    {
+      next ? (
+        <a class="frame is-next" href={`/projects/${next.slug}/`} rel="next">
+          <span class="frame-pic">
+            <span class="frame-img">
+              {nextFrame && <Image src={nextFrame} alt="" widths={[240, 480]} sizes="(max-width: 40rem) 31vw, 15rem" format="webp" loading="lazy" />}
+            </span>
+          </span>
+          <span class="frame-label">
+            <span class="frame-dir">Next<span class="visually-hidden">:</span></span> <span class="frame-title">{next.title}</span>
+          </span>
+        </a>
+      ) : (
+        <a class="frame is-next" href="/#projects">
+          <span class="frame-pic">
+            <span class="frame-img frame-type"><span>All projects</span></span>
+          </span>
+        </a>
+      )
+    }
   </nav>
 </Base>
 
 <style>
+  /* A project page is a print made from one frame on the contact sheet: a big title block,
+     the lead image large and in colour, then the write-up set for reading. */
+
   .crumb {
-    font-size: 0.9375rem;
+    font-size: var(--step--1);
   }
 
+  .crumb a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    min-height: 2.75rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .crumb a:hover {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+
+  /* Title block */
+
   .head {
-    margin-top: 2.5rem;
+    margin-top: clamp(1.75rem, 1rem + 3vw, 3rem);
+    container-type: inline-size;
   }
 
   .head h1 {
-    font-size: var(--step-3);
-    letter-spacing: -0.035em;
+    /* Fluid, capped at the display max, and never wider than the column allows for the longest word. */
+    font-size: min(clamp(2.5rem, 1.2rem + 5.5vw, 5.75rem), calc(100cqi / (var(--chars) * 0.64)));
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+    overflow-wrap: break-word;
+    max-width: 16ch;
   }
 
   .award-line {
-    margin-top: 0.6rem;
+    margin-top: clamp(1.25rem, 0.9rem + 1vw, 1.75rem);
   }
 
-  .head .pitch {
-    margin-top: 0.75rem;
-    font-size: 1.1875rem;
-    line-height: 1.5;
-    color: var(--muted);
+  .award-mark {
+    display: inline-block;
+    font-size: var(--step-0);
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--ink);
+    overflow-wrap: break-word;
+  }
+
+  .head-grid {
+    margin-top: clamp(1.25rem, 0.8rem + 1.5vw, 2rem);
+    display: grid;
+    gap: 1.75rem;
+  }
+
+  .pitch {
+    font-size: var(--step-2);
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    max-width: 34ch;
+    text-wrap: pretty;
   }
 
   .facts {
-    margin: 2rem 0 0;
-    border-top: 1px solid var(--rule);
-  }
-
-  .facts > div {
+    margin: 0;
     display: grid;
-    grid-template-columns: 5.5rem 1fr;
     gap: 1rem;
-    padding: 0.7rem 0;
-    border-bottom: 1px solid var(--rule);
+    align-content: start;
+    font-size: 0.9375rem;
+    line-height: 1.5;
   }
 
   .facts dt {
-    color: var(--muted);
-    font-size: 0.9375rem;
-    padding-top: 0.05rem;
+    font-weight: 700;
   }
 
   .facts dd {
-    margin: 0;
-    font-size: 0.9375rem;
+    margin: 0.1rem 0 0;
+    color: var(--muted);
     min-width: 0;
+    overflow-wrap: break-word;
   }
 
-  .facts .tags {
-    padding-top: 0.15rem;
-  }
+  @media (min-width: 52rem) {
+    .head-grid {
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+      gap: 3rem;
+      align-items: start;
+    }
 
-  .extra {
-    margin-top: 0.25rem;
-  }
-
-  @media (max-width: 30rem) {
-    .facts > div {
-      grid-template-columns: 1fr;
-      gap: 0.2rem;
+    .facts {
+      padding-top: 0.45rem;
     }
   }
 
-  .shot {
-    margin-top: 2.5rem;
+  /* Links: flat rectangles with a 1px border that invert on hover. The first one is filled. */
+
+  .links {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
 
-  .shot video {
+  .links :global(.actions) {
+    display: contents;
+  }
+
+  .links :global(.actions a),
+  .links :global(.actions .pending) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    min-height: 2.75rem;
+    padding: 0.55rem 1rem;
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.25;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+    transition: color 0.15s var(--ease), background-color 0.15s var(--ease);
+  }
+
+  .links :global(.actions a:hover) {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .links > :global(.actions:first-child > a:first-child) {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .links > :global(.actions:first-child > a:first-child:hover) {
+    background: var(--bg);
+    color: var(--ink);
+  }
+
+  .links :global(.actions .pending) {
+    border-color: var(--rule);
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  /* Plates: the lead print runs the full width of the sheet; on a phone it runs edge to edge. */
+
+  .plate {
+    margin-top: clamp(2.5rem, 1.5rem + 3vw, 4rem);
+  }
+
+  .plate :global(img),
+  .plate video {
     display: block;
     width: 100%;
     border: 1px solid var(--rule);
-    border-radius: 4px;
-    background: #0d1117;
+    border-radius: var(--radius);
   }
 
-  .shot :global(img) {
-    width: 100%;
-    border: 1px solid var(--rule);
-    border-radius: 4px;
+  .plate :global(img) {
     background: #fff;
   }
 
-  .shot figcaption {
-    margin-top: 0.5rem;
-    font-size: 0.875rem;
+  .plate video {
+    background: #0a0a0a;
+  }
+
+  .plate figcaption {
+    margin-top: 0.6rem;
+    max-width: 60ch;
+    font-size: var(--step--1);
+    line-height: 1.45;
     color: var(--muted);
   }
 
-  section {
-    margin-top: 2.75rem;
+  .plate + .plate {
+    margin-top: 1rem;
   }
 
-  section h2 {
-    font-size: 1.125rem;
-    margin-bottom: 0.6rem;
+  @media (max-width: 40rem) {
+    .lead {
+      margin-inline: calc(-1 * var(--gutter));
+    }
+
+    .lead :global(img),
+    .lead video {
+      border-inline: 0;
+      border-radius: 0;
+    }
+
+    .lead figcaption {
+      padding-inline: var(--gutter);
+    }
   }
 
-  section p + p {
-    margin-top: 0.85rem;
+  /* The write-up: a reading column of about 66 characters, headings in a left rail on wide screens. */
+
+  .body {
+    --rail: 13rem;
+    --text: 40rem;
+    margin-top: clamp(2.5rem, 1.5rem + 3vw, 4.5rem);
+    max-width: calc(var(--rail) + var(--text) + 4rem);
+  }
+
+  .body section + section {
+    margin-top: clamp(2.75rem, 2rem + 2vw, 3.75rem);
+  }
+
+  .body h2 {
+    font-size: var(--step-2);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    margin-bottom: 0.85rem;
+    text-wrap: balance;
+  }
+
+  .text {
+    max-width: 66ch;
+  }
+
+  .text p {
+    text-wrap: pretty;
+  }
+
+  .text p + p {
+    margin-top: 1em;
   }
 
   .results {
-    padding-left: 1.15rem;
+    padding-left: 1.1em;
+    list-style: square;
+  }
+
+  .results li {
+    padding-left: 0.2em;
+    text-wrap: pretty;
+  }
+
+  .results li::marker {
+    color: var(--muted);
   }
 
   .results li + li {
-    margin-top: 0.5rem;
+    margin-top: 0.65em;
   }
 
-  .pager {
-    margin-top: 4rem;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 0.75rem 1.5rem;
+  .body .plate {
+    margin-top: clamp(2.75rem, 2rem + 2vw, 3.75rem);
+  }
+
+  @media (min-width: 60rem) {
+    .body section {
+      display: grid;
+      grid-template-columns: var(--rail) minmax(0, var(--text));
+      column-gap: 4rem;
+      align-items: start;
+    }
+
+    .body h2 {
+      margin-bottom: 0;
+      padding-top: 0.05em;
+      font-size: var(--step-1);
+    }
+  }
+
+  /* Related projects */
+
+  .related {
+    margin-top: var(--space-section);
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--ink);
+  }
+
+  .related h2 {
+    font-size: var(--step-2);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+  }
+
+  .related ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 1.5rem;
+    display: grid;
+    gap: 1.5rem 2.5rem;
+  }
+
+  .related a {
+    font-size: var(--step-1);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .related li p {
+    margin-top: 0.3rem;
     font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--muted);
+    max-width: 44ch;
+  }
+
+  @media (min-width: 52rem) {
+    .related ul {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+
+  .ask {
+    margin-top: clamp(3rem, 2rem + 3vw, 4.5rem);
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+    font-size: var(--step-1);
+    font-weight: 700;
+  }
+
+  .ask a { text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+
+  /* Previous on the left, next on the right; only what exists. */
+  .strip {
+    margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 18rem));
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .strip .is-next { grid-column: 2; text-align: right; }
+
+  .frame {
+    display: block;
+    min-width: 0;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .frame-pic {
+    position: relative;
+    display: block;
+  }
+
+  .frame-img {
+    display: block;
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    background: var(--accent-soft);
+    border: 1px solid var(--rule);
+  }
+
+  .frame-img :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  .frame:hover .frame-title,
+  .frame:focus-visible .frame-title {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+
+
+
+  .frame-type {
+    display: grid;
+    place-items: center;
+    padding: 0.5rem;
+    text-align: center;
+    font-weight: 800;
+    font-size: var(--step-1);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .frame-label {
+    display: block;
+    margin-top: 0.65rem;
+    padding-right: 0.25rem;
+    line-height: 1.25;
+  }
+
+  .frame-dir {
+    display: block;
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  .frame-title {
+    display: block;
+    margin-top: 0.1rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  a.frame:hover .frame-title {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+  }
+
+  .frame:focus-visible {
+    outline-offset: 6px;
+  }
+
+  @media (max-width: 30rem) {
+    .strip {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .frame-label {
+      font-size: 0.875rem;
+    }
+
+    .frame-type {
+      font-size: 0.9375rem;
+    }
   }
 </style>

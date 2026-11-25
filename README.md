@@ -1,6 +1,6 @@
 # portfolio
 
-My portfolio site: a short intro and twenty-eight projects, each with its own write-up page.
+My portfolio site: a short intro and thirty projects, each with its own write-up page.
 
 Static [Astro](https://astro.build) with hand-written CSS. A small client-side script filters projects; no trackers. Deployed on Vercel.
 
@@ -15,7 +15,10 @@ npm run build          # static site in dist/
 npm run preview        # serve dist/ locally
 npm run check:links    # internal links in dist/ (run after build)
 npm run check:external # internal links plus a request to every external link
+npm run indexnow       # after a deploy: submit the live sitemap's URLs to IndexNow
 ```
+
+IndexNow lets Bing and other engines recrawl right after a deploy. The key is `public/<key>.txt` (public by design); `npm run indexnow -- --dry-run` lists the URLs without sending them.
 
 ## Edit experience
 
@@ -48,7 +51,7 @@ Profile text and the top links (GitHub, LinkedIn, email, resume) are in [`src/da
 ### TODO
 
 - [x] **Resume.** Served at `public/resume.pdf` and linked in `src/data/profile.ts`. Replace the PDF there to update it.
-- [ ] Check the bio line in `src/data/profile.ts` is current.
+- [x] Bio line in `src/data/profile.ts` updated November 2026.
 
 ## Social card and icons
 
@@ -69,28 +72,27 @@ The Vercel project is `portfolio`. `vercel.json` sets the build, caching for has
 
 The canonical origin (sitemap, canonical links, OG image URL) is `SITE` in `astro.config.mjs`. It can also be set with the `SITE_URL` environment variable.
 
-## Moving veermickey.com to this site
+## Domain
 
-veermickey.com currently points at GitHub Pages, which also serves three project sites at `veermickey.com/<repo>/`. `vercel.json` already redirects those paths to `https://veermshah.github.io/<repo>/`, so old links keep working after the move:
+The site is served at `https://www.veermickey.com`; the apex `veermickey.com` redirects to www (308). The blog is on `blog.veermickey.com` in the same Vercel project. Three older project sites that used to live at `veermickey.com/<repo>/` on GitHub Pages are redirected by `vercel.json` to `https://veermshah.github.io/<repo>/`:
 
 - `/dishbrain-playground/*`
 - `/wetware-emulator/*`
 - `/jev-calibration-lab/*`
 
-Checklist, only when switching:
+## Featured projects
 
-1. Add `veermickey.com` (and `www.veermickey.com`) to the Vercel project: `npx vercel domains add veermickey.com`, or Project Settings > Domains.
-2. Update DNS at the registrar to the records Vercel shows (an `A` record for the apex, a `CNAME` for `www`). Wait for Vercel to show the domain as valid.
-3. Remove the custom domain from the `veermshah.github.io` repo's Pages settings (Settings > Pages > Custom domain), so the project Pages sites serve from `veermshah.github.io` again and the redirects above land on real pages.
-4. Set `SITE` in `astro.config.mjs` to `https://www.veermickey.com` (the apex redirects to www), update `SITE` default in `scripts/check-links.mjs`, and redeploy. Done.
-5. Update the DishBrain, Wetware and Jev entries in `src/data/projects.ts` and their repo homepages if any still use `veermickey.com/<repo>`.
-6. Check: `curl -sIL https://veermickey.com/dishbrain-playground/` ends in a 200 on `veermshah.github.io`.
+Writing lives on the blog at blog.veermickey.com, which has its own feed at `https://blog.veermickey.com/rss.xml`. The old `/notes` pages and the old `/rss.xml` feed on the main site redirect there (see `vercel.json`). `/llms.txt`, a plain-text summary of the site for language models, is generated from `src/data` at build time.
 
-## Notes and featured projects
+The `featured` list in `src/pages/index.astro` selects the home-page highlights (currently five). The contact button uses the Email link in `src/data/profile.ts`.
 
-Add Markdown files in `src/content/notes/` with quoted `title`, `description`, and ISO `date` frontmatter. Set `draft: true` to exclude a post from the site. Published notes appear at `/notes/<filename>/`, in the notes index, and on the home page. The two initial notes summarize the existing Veer and DishBrain project write-ups.
+## Home hero
 
-The `featured` list in `src/pages/index.astro` selects the three home-page highlights. The contact button uses the Email link in `src/data/profile.ts`.
+The hero (`src/components/Hero.astro`) shows up to five of my most popular landscape photos from Unsplash full-bleed behind my name, crossfading every 7 seconds, with the dot field (`src/scripts/hero-field.ts`) gathering into the name on top. It uses the same build-time fetch as the photography page; without `UNSPLASH_ACCESS_KEY` it uses the landscape photos in `src/assets/photos/`. Only the first photo loads with the page; the rest load after it, and not at all with Save-Data or on 2G/3G. Dots scatter from the mouse or a finger and spring back. With reduced motion, no JavaScript or no canvas, the hero is the first photo with the plain `<h1>`. The real `<h1>` is always in the HTML.
+
+### Portrait
+
+Drop a square photo at `src/assets/portrait.jpg` (or `.png`, `.webp`) and a small round portrait appears beside the bio; with no file, nothing renders. Its alt text is in `src/components/HeroPortrait.astro`.
 
 ## Photography page
 

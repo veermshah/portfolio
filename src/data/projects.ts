@@ -50,6 +50,51 @@ export interface Project {
 
 export const projects: Project[] = [
   {
+    slug: 'proofsnap',
+    title: 'ProofSnap',
+    pitch: 'Snap a photo of a handwritten proof and see exactly which step breaks: each step is translated into Lean 4 and checked by the proof assistant.',
+    role: { kind: 'Solo' },
+    stack: ['TypeScript', 'Next.js', 'Lean 4', 'Mathlib', 'AI SDK', 'Vercel Sandbox', 'Zod', 'Tailwind CSS'],
+    live: 'https://proofsnap-tan.vercel.app',
+    code: 'https://github.com/veermshah/proofsnap',
+    problem:
+      'Students get proofs back marked wrong with little detail on which step failed or why. A language model alone can grade confidently and still be wrong, so a formal proof checker decides each step and the model only translates and explains.',
+    built: [
+      'A vision model transcribes the theorem and splits the proof into numbered steps without fixing anything. The model then writes a Lean 4 + Mathlib file where every student step is its own `have` claim, so a false or unjustified step fails in Lean.',
+      'Lean runs in a Vercel Sandbox microVM booted from a snapshot with Mathlib and its build cache already in place, with all network access denied and a 150-second limit per check.',
+      'Lean errors are mapped back to steps. The model gets up to two repair passes for Lean technicalities without changing what any step claims, and `#print axioms` confirms no `sorry` or non-standard axiom slipped in.',
+      'Lean’s per-step result is the ground truth. The model explains each failing step in plain math, with a counterexample when there is one, and flags it when the formal statement doesn’t match what the student set out to prove.',
+    ],
+    results: [
+      'Live on Vercel.',
+      'A hand-labeled set of 9 proofs (correct ones, plus ones with a known first wrong step) runs through an admin route that checks whether the verdict and the first wrong step match. A daily cron keeps Lean warm.',
+    ],
+    images: [{ file: 'landing.webp', alt: 'ProofSnap home page: upload a photo of a handwritten proof or type it, with sample proofs to try', caption: 'Upload a photo or type the proof, then check it' }],
+  },
+  {
+    slug: 'riff',
+    title: 'Riff',
+    pitch: 'A music studio where Claude writes a multitrack loop from a described vibe, builds a band around chords you play on your laptop keyboard, and co-writes lyrics around your lines.',
+    role: { kind: 'Solo' },
+    stack: ['TypeScript', 'Electron', 'React', 'Tone.js', 'Anthropic SDK', 'Vite', 'Vitest'],
+    live: 'https://riff-studio-one.vercel.app',
+    code: 'https://github.com/veermshah/Call-Option-Calculator',
+    problem:
+      'Getting from an idea for a beat to something playable takes a DAW and a lot of clicking. Riff turns a described vibe or a few played chords into an editable multitrack loop, without the AI overwriting the parts you made yourself.',
+    built: [
+      'The composer sends the current song and recent chat to Claude with a JSON schema for the reply, so edits build on what exists. `normalizeSong()` clamps and cleans every response before it reaches the editor.',
+      'The home row plays chords in the song’s key, single notes or drums. Recorded parts are locked, and the app puts them back exactly after every model reply.',
+      'In the Lyrics tab, Claude finishes verses or writes choruses in your rhyme scheme. With “Keep my lines exactly” on, the app checks your lines came back word for word and warns about missing ones. It can also write a vocal melody, one note per syllable.',
+      'A Tone.js engine with synthesized instruments, swing, mute/solo and live edits; a piano roll; undo/redo; and Standard MIDI File export.',
+      'Runs as an Electron app (API key encrypted with `safeStorage`) or as a static site on Vercel, where the key stays in the browser and requests go straight to Anthropic.',
+    ],
+    results: [
+      'Live in the browser with your own Anthropic API key.',
+      '16 unit tests cover song normalization, MIDI output, music theory, locked tracks and lyric matching.',
+    ],
+    images: [{ file: 'studio.webp', alt: 'Riff studio in the browser: composer panel, transport with BPM, key, bars and swing, and Arrange and Lyrics tabs', caption: 'The web build, before a loop is composed' }],
+  },
+  {
   "slug": "fog-map",
   "title": "Fog Map",
   "pitch": "Compare interpretations of a spec and rank the decisions that need clarification.",
@@ -73,6 +118,7 @@ export const projects: Project[] = [
   "role": {
     "kind": "Solo"
   },
+  "live": "https://fog-map-pi.vercel.app/",
   "code": "https://github.com/veermshah/fog-map",
   "images": [{"file": "report.png", "alt": "Fog Map HTML report ranking ambiguous spec decisions, with backend, frontend and QA interpretations side by side", "caption": "The generated report from the live Qwen3 run"}],
   "extra": [
@@ -107,6 +153,7 @@ export const projects: Project[] = [
   "role": {
     "kind": "Solo"
   },
+  "live": "https://veermshah.github.io/dynaflow-orchestrator/",
   "code": "https://github.com/veermshah/dynaflow-orchestrator",
   "images": [{"file": "tokens-per-solved.png", "alt": "Bar chart of actual tokens per solved task for solo, fixed and generated workflows on math and multi-hop calibration tasks", "caption": "Tokens per solved task on the easy calibration set, from RESULTS.md"}],
   "extra": [
@@ -143,6 +190,7 @@ export const projects: Project[] = [
   "role": {
     "kind": "Solo"
   },
+  "live": "https://veermshah.github.io/popup-optimizer/",
   "code": "https://github.com/veermshah/popup-optimizer",
   "images": [{"file": "map.png", "alt": "Pop-Up Optimizer page: Dallas map with five ranked health-van stops and their estimated reach", "caption": "Default saved placement: five health-van stops, synthetic data"}],
   "extra": [
@@ -177,6 +225,7 @@ export const projects: Project[] = [
   "role": {
     "kind": "Solo"
   },
+  "live": "https://veermshah.github.io/statebench-harness/",
   "code": "https://github.com/veermshah/statebench-harness",
   "images": [
     {
@@ -458,7 +507,7 @@ export const projects: Project[] = [
     context: 'HackFin 2024',
     role: { kind: 'Team', size: 3, mine: 'Landing, Lend, Borrow and Crypto Health pages, the AI risk chat, most of the UI' },
     stack: ['React', 'Vite', 'Tailwind', 'Flask', 'Solidity', 'Hardhat', 'MetaMask SDK'],
-    live: 'https://quantumloans.vercel.app',
+    live: 'https://quantumloans.vercel.app/dashboard',
     code: 'https://github.com/veermshah/QuantumLoans',
     extra: [
       { label: 'Devpost', href: 'https://devpost.com/software/quantumloans' },
@@ -530,6 +579,7 @@ export const projects: Project[] = [
     pitch:
       'A getaway driving game through downtown San Antonio, steered with your hands, where each landmark vault opens a challenge on real hardware or a phone call.',
     context: 'RowdyHacks 2026',
+    award: 'Overall Track 3rd place and MLH Best Use of Presage, RowdyHacks XII',
     role: {
       kind: 'Team',
       size: 4,
@@ -538,7 +588,10 @@ export const projects: Project[] = [
     stack: ['Python', 'Flask-SocketIO', 'Raspberry Pi', 'Arduino', 'React Three Fiber', 'MediaPipe'],
     live: 'https://sa-night-drive.vercel.app',
     code: 'https://github.com/veermshah/rowdyhacks',
-    extra: [{ label: 'Devpost', href: 'https://devpost.com/software/hackstash' }],
+    extra: [
+      { label: 'Devpost', href: 'https://devpost.com/software/hackstash' },
+      { label: 'Demo video', href: 'https://youtu.be/Odbm37fi118' },
+    ],
     problem:
       'We wanted a heist game that used real San Antonio streets, needed no controller, and spilled out of the browser: each landmark vault opens a challenge on physical hardware or a real phone call.',
     built: [
@@ -737,7 +790,9 @@ export const projects: Project[] = [
       "React",
       "Gemini",
       "Auth0",
-      "MongoDB"
+      "MongoDB",
+      "Chart.js",
+      "Spline"
     ],
     "code": "https://github.com/veermshah/HackUPC",
     "extra": [
@@ -748,8 +803,10 @@ export const projects: Project[] = [
     ],
     "problem": "Planning with friends means reconciling different budgets, schedules and ideas about where to go.",
     "built": [
-      "A shared travel-planning experience that uses AI to recommend destinations and activities from the group’s preferences.",
-      "A Next.js and React app with Gemini, Auth0 and MongoDB."
+      "We built a group travel planner where each friend enters their preferences, budget and available dates in one shared form.",
+      "Gemini reads the group’s answers and recommends destinations, activities and timing.",
+      "For each option, the app shows typical restaurants, local events during the trip and its CO2 emissions.",
+      "The Next.js and React frontend uses Chart.js for charts and Spline for 3D elements, with Auth0 for login and MongoDB for user data."
     ],
     "results": [
       "Won the MLH Best Use of MongoDB Atlas prize at HackUPC 2025."
@@ -775,7 +832,8 @@ export const projects: Project[] = [
       "ElevenLabs",
       "OpenFace",
       "MediaPipe",
-      "Firebase"
+      "Firebase",
+      "Auth0"
     ],
     "code": "https://github.com/veermshah/hackuta25",
     "extra": [
@@ -786,8 +844,10 @@ export const projects: Project[] = [
     ],
     "problem": "Reading practice can be frustrating for children with dyslexia. We built a companion designed to make that practice calmer and more playful.",
     "built": [
-      "A reading companion combining speech with gaze and emotion-aware feedback.",
-      "Gemini and ElevenLabs support the reading experience, alongside OpenFace, MediaPipe and Firebase."
+      "We built a reading companion that listens as a child reads aloud, using ElevenLabs to transcribe the reading and flag tricky sections.",
+      "OpenFace and MediaPipe Iris track gaze and facial expressions, narrowing from paragraph to sentence to word to find where a reader gets stuck.",
+      "When the child looks confused or frustrated, the app offers a hint or encouragement, and Gemini summarizes focus and fluency into Firestore.",
+      "A parent area called Fox Mode shows that progress next to articles about dyslexia, and Auth0 handles sign-in."
     ],
     "results": [
       "Won MLH Best Use of Auth0 at HackUTA 7."
@@ -825,8 +885,9 @@ export const projects: Project[] = [
     ],
     "problem": "Donors often have little visibility into how charities allocate their contributions. We explored a public transaction record as a way to make that flow easier to inspect.",
     "built": [
-      "A donation platform built around recording contributions on Solana.",
-      "A React interface with Phantom wallet integration and Web3.js."
+      "We built a donation site where donors send SOL from their Phantom wallet directly to the charity's Phantom wallet.",
+      "Instead of writing smart contracts, we read Solana's transaction logs to track each donation.",
+      "After each donation, the site records the donor, the amount and the timestamp, and shows the full log publicly."
     ],
     "results": [
       "Won GoDaddy Best Domain Name and a Solana prize at HackTheChains."
@@ -862,8 +923,9 @@ export const projects: Project[] = [
     ],
     "problem": "As autonomous and human-operated aircraft share space, familiar marshalling gestures offer an interface between people and machines. We explored the idea on a rover.",
     "built": [
-      "A computer-vision prototype that interprets gestures using Python, OpenCV and MediaPipe.",
-      "Viam rover integration to translate the gesture interface into a physical robotics demonstration."
+      "We built a system that lets a person steer a Viam rover with hand gestures based on standard aircraft marshalling signals.",
+      "A hand-tracking model reads the webcam feed frame by frame and maps each gesture to one of five commands: forward, backward, turn left, turn right or stop.",
+      "We used Viam's app, API and Python SDK to send those commands to the rover's wheels."
     ],
     "results": [
       "Won Best Use of Viam Software in Robotics at PennApps XXIV."

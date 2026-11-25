@@ -10,7 +10,7 @@ export const prerender = false;
 export const GET: APIRoute = async () => {
   const posts = await publishedPosts();
   const response = await rss({
-    title: 'Veer Shah, blog',
+    title: 'Veer Mickey Shah, blog',
     description: BLOG_DESCRIPTION,
     site: BLOG_ORIGIN,
     items: posts.map((post) => ({
