@@ -30,8 +30,8 @@ const unsplashHome = `https://unsplash.com/?${UTM}`;
 // SEO: the top photo as the share card, and an ImageGallery with the photos as ImageObjects.
 const pageUrl = new URL('/photography/', Astro.site).href;
 const ids = schemaIds(Astro.site);
-const title = `Photography by ${profile.name}: cities, architecture and light`;
-const description = `Photography by ${profile.name} (${profile.alternateNames[0]}): cities, architecture, museums and night scenes, also published on Unsplash.`;
+const title = `Photography by ${profile.name}`;
+const description = `Photography by ${profile.name} (${profile.alternateNames[0]}), also published on Unsplash.`;
 const top = shots[0];
 const localCard = top ? undefined : await getImage({ src: photos[0].src, width: 1200, format: 'jpg', quality: 80 });
 const og = top
@@ -84,7 +84,6 @@ const structuredData = {
   <script is:inline slot="head" type="application/ld+json" set:html={jsonLd(structuredData)} />
   <section id="photography" class="intro" aria-labelledby="photography-heading">
     <h1 id="photography-heading" class="display">Photography</h1>
-    <p class="lede">Cities, architecture and light.{shots.length > 0 && ` ${shots.length} photos.`}</p>
     <a class="button unsplash" href={profileUrl}>Follow on Unsplash →</a>
   </section>
 
