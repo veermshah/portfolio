@@ -83,6 +83,16 @@ Add Markdown files in `src/content/notes/` with quoted `title`, `description`, a
 
 The `featured` list in `src/pages/index.astro` selects the home-page highlights (currently five). The contact button uses the Email link in `src/data/profile.ts`.
 
+## Home hero
+
+The hero (`src/components/Hero.astro`) shows up to five of my most popular landscape photos from Unsplash full-bleed behind my name, crossfading every 7 seconds, with the dot field (`src/scripts/hero-field.ts`) gathering into the name on top. It uses the same build-time fetch as the photography page; without `UNSPLASH_ACCESS_KEY` it uses the landscape photos in `src/assets/photos/`. Only the first photo loads with the page; the rest load after it, and not at all with Save-Data or on 2G/3G. Dots scatter from the mouse or a finger and spring back. With reduced motion, no JavaScript or no canvas, the hero is the first photo with the plain `<h1>`. The real `<h1>` is always in the HTML.
+
+**Temporary, for picking a version:** `/?hero=photo` shows only the photo crossfade with the plain name, `/?hero=dots` only the dot name on the normal page background. Once one is chosen, remove the `?hero=` lines from the inline script at the top of `Hero.astro` and the unused variant's code.
+
+### Portrait
+
+Drop a square photo at `src/assets/portrait.jpg` (or `.png`, `.webp`) and a small round portrait appears beside the bio; with no file, nothing renders. Its alt text is in `src/components/HeroPortrait.astro`.
+
 ## Photography page
 
 `/photography/` lists every photo on [Unsplash @veermickey](https://unsplash.com/@veermickey), most popular first, fetched at build time by `src/lib/unsplash.ts`. Set `UNSPLASH_ACCESS_KEY` (an Unsplash app Access Key) in Vercel (Production and Preview). Without it, or if the API fails, the page falls back to the five photos in `src/assets/photos/`. New Unsplash uploads appear on the next deploy. Unsplash's API rules apply: images load from Unsplash's CDN, and links back carry the `UTM` params.

@@ -1,0 +1,154 @@
+---
+// Home hero: Veer's photos crossfading full-bleed behind the name, with the dot field forming the
+// name on top. The hero's text (kicker, h1, bio, links) comes from the page through the slot.
+//
+// Temporary: /?hero=photo shows only the photos, /?hero=dots only the dot name. See README.
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { getUnsplashPhotos, UTM } from '../lib/unsplash';
+import marinaBay from '../assets/photos/marina-bay.jpg';
+import skylineNight from '../assets/photos/skyline-night.jpg';
+import bridge from '../assets/photos/bridge.jpg';
+import netSculpture from '../assets/photos/net-sculpture.jpg';
+
+const WIDTHS = [640, 960, 1280, 1920, 2560];
+const COUNT = 5;
+// The scrim darkens the photo, so a lower quality is not visible and saves bytes.
+const unsplashUrl = (raw: string, width: number) => `${raw}&w=${width}&auto=format&fit=max&q=60`;
+
+type Frame = { src: string; srcset: string; width: number; height: number; page?: string; color: string };
+
+// Most popular landscape photos from Unsplash (already sorted by popularity), else the local ones.
+const shots = (await getUnsplashPhotos()).filter((p) => p.width >= p.height * 1.25).slice(0, COUNT);
+const frames: Frame[] = shots.length
+  ? shots.map((p) => ({
+      src: unsplashUrl(p.raw, 1920),
+      srcset: WIDTHS.filter((w) => w <= p.width).map((w) => `${unsplashUrl(p.raw, w)} ${w}w`).join(', '),
+      width: p.width,
+      height: p.height,
+      page: `${p.page}?${UTM}`,
+      color: p.color,
+    }))
+  : await Promise.all(
+      ([marinaBay, skylineNight, bridge, netSculpture] as ImageMetadata[]).map(async (src) => {
+        const image = await getImage({ src, widths: WIDTHS.filter((w) => w <= src.width), format: 'webp', quality: 60 });
+        return { src: image.src, srcset: image.srcSet.attribute, width: src.width, height: src.height, color: '#1b1d21' };
+      }),
+    );
+const [lead, ...rest] = frames;
+---
+
+<section class="hero" data-hero="both" aria-labelledby="hero-name">
+  <script is:inline>
+    (function (hero) {
+      var mode = new URLSearchParams(location.search).get('hero');
+      if (mode === 'photo' || mode === 'dots') hero.dataset.hero = mode;
+      // Hide the h1 text (it stays readable to screen readers) until the dot name takes its place,
+      // so the name doesn't flash as text first. Shown again if the dots haven't started in 3 s.
+      if (hero.dataset.hero !== 'photo' && !matchMedia('(prefers-reduced-motion: reduce)').matches && document.createElement('canvas').getContext) {
+        hero.classList.add('dot-pending');
+        setTimeout(function () { if (!hero.classList.contains('has-dot-name')) hero.classList.remove('dot-pending'); }, 3000);
+      }
+    })(document.currentScript.parentElement);
+  </script>
+  <div class="hero-bg" aria-hidden="true">
+    <div class="hero-photos" style={`background-color: ${lead.color}`} data-frames={JSON.stringify(rest.map(({ src, srcset, page }) => ({ src, srcset, page })))}>
+      <img
+        class="hero-photo is-active"
+        src={lead.src}
+        srcset={lead.srcset}
+        sizes="100vw"
+        width={lead.width}
+        height={lead.height}
+        alt=""
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+        data-page={lead.page}
+      />
+    </div>
+    <div class="hero-scrim"></div>
+    <canvas class="hero-field"></canvas>
+  </div>
+  <slot />
+  <p class="hero-credit">
+    {lead.page ? <>Photo: <a href={lead.page} data-photo-link>Veer Shah on Unsplash</a></> : <>Photo: Veer Shah</>}
+    <span class="sep" aria-hidden="true">·</span>
+    <a href="/photography/">See all photos</a>
+  </p>
+</section>
+
+<script>
+  import { initHeroField } from '../scripts/hero-field';
+  import { initHeroPhotos } from '../scripts/hero-photos';
+
+  initHeroPhotos();
+  initHeroField();
+</script>
+
+<style>
+  .hero {
+    /* Matches .page.is-wide padding-top so the background reaches up to the header. */
+    --hero-pad: clamp(3rem, 1.5rem + 6vw, 7rem);
+    position: relative;
+    isolation: isolate;
+    padding-bottom: clamp(1rem, 3vw, 2rem);
+  }
+  /* On the photo the hero is light text on a dark scrim, whatever the site theme. */
+  .hero:not([data-hero='dots']) {
+    min-height: min(calc(100svh - 3.5rem - var(--hero-pad)), 48rem);
+    padding-bottom: clamp(4rem, 3rem + 3vw, 5.5rem);
+    color: #fff;
+  }
+  .hero-bg {
+    position: absolute;
+    z-index: -1;
+    top: calc(-1 * var(--hero-pad));
+    bottom: 0;
+    left: calc(50% - 50vw);
+    width: 100vw;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .hero-photos, .hero-scrim, .hero-field { position: absolute; inset: 0; width: 100%; height: 100%; }
+  /* :global because the later photos are created by the script, without Astro's scope attribute. */
+  .hero-photos :global(.hero-photo) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+  }
+  .hero-photos :global(.hero-photo.is-active) { opacity: 1; }
+  /* At least 60% black behind text on phones, and behind the left (text) half on wide screens,
+     so white text keeps 4.5:1 even over a white sky. */
+  .hero-scrim { background: linear-gradient(to bottom, rgb(8 9 11 / 0.62), rgb(8 9 11 / 0.6) 40%, rgb(8 9 11 / 0.74)); }
+  @media (min-width: 64rem) {
+    .hero-scrim {
+      background:
+        linear-gradient(90deg, rgb(8 9 11 / 0.7), rgb(8 9 11 / 0.58) 55%, rgb(8 9 11 / 0.3)),
+        linear-gradient(to bottom, rgb(8 9 11 / 0.2), rgb(8 9 11 / 0.4));
+    }
+  }
+  .hero-field { display: none; }
+  .hero.has-dot-name .hero-field { display: block; }
+  .hero[data-hero='dots'] .hero-photos,
+  .hero[data-hero='dots'] .hero-scrim,
+  .hero[data-hero='dots'] .hero-credit { display: none; }
+
+  .hero-credit {
+    position: absolute;
+    right: 0;
+    bottom: clamp(0.9rem, 2vw, 1.4rem);
+    font-size: 0.75rem;
+    color: rgb(255 255 255 / 0.85);
+    text-shadow: 0 1px 6px rgb(0 0 0 / 0.6);
+  }
+  .hero-credit a { color: inherit; }
+  .hero-credit .sep { margin: 0 0.45em; }
+  .hero-credit a:hover { color: #fff; }
+  .hero-credit a:focus-visible { outline-color: #fff; }
+</style>
