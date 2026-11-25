@@ -11,7 +11,8 @@ export const BLOG_HOST = process.env.BLOG_HOST ?? 'blog.veermickey.com';
 export default defineConfig({
   site: SITE,
   trailingSlash: 'ignore',
-  build: { format: 'directory' },
+  // Inline the CSS so first paint needs no extra request (the render-blocking stylesheets cost ~400 ms on PageSpeed's mobile run).
+  build: { format: 'directory', inlineStylesheets: 'always' },
   adapter: vercel({ isr: { expiration: 60 } }),
   integrations: [sitemap({ filter: (page) => !new URL(page).pathname.startsWith('/blog') }), blogHost({ host: BLOG_HOST, mainHosts: ['veermickey.com', 'www.veermickey.com'], aliasHosts: ['portfolio-wheat-xi-reyo27zre0.vercel.app'], canonicalOrigin: SITE.replace(/\/$/, '') })],
   image: {
