@@ -360,7 +360,8 @@ const structuredData = {
   /* Frames: a print on the contact sheet, set in a strip of film black. The rebate stays black in
      both themes, like the film itself. */
   .frame-media { position: relative; aspect-ratio: 3 / 2; padding: 3px; background: #0a0a0a; }
-  .frame-media :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .frame-media { aspect-ratio: auto; }
+  .frame-media :global(img) { width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; object-position: top center; }
   .frame-blank { display: flex; align-items: flex-end; height: 100%; padding: 1rem; background: var(--accent-soft); color: var(--ink); font-size: var(--step-2); font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
 
   /* Selected work: big frames, in colour, circled. */
