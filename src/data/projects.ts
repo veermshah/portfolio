@@ -579,6 +579,7 @@ export const projects: Project[] = [
     pitch:
       'A getaway driving game through downtown San Antonio, steered with your hands, where each landmark vault opens a challenge on real hardware or a phone call.',
     context: 'RowdyHacks 2026',
+    award: 'Overall Track 3rd place and MLH Best Use of Presage, RowdyHacks XII',
     role: {
       kind: 'Team',
       size: 4,
