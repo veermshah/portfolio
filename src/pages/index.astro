@@ -111,7 +111,7 @@ const structuredData = {
   {profile.sameAs.map((href) => <link slot="head" rel="me" href={href} />)}
   <Hero>
     <div class="hero-layout">
-      <div class="hero-portrait" data-reveal><HeroPortrait /></div>
+      <div class="hero-portrait"><HeroPortrait /></div>
       <div class="hero-text">
         <h1 id="hero-name" class="display" data-reveal style="--reveal-i: 1">{profile.name}</h1>
         <div class="name-slot" aria-hidden="true" hidden></div>
@@ -127,14 +127,14 @@ const structuredData = {
   </Hero>
 
   <section id="work" class="section" aria-labelledby="featured-heading">
-    <header class="section-head">
+    <header class="section-head" data-rise>
       <h2 id="featured-heading" class="section-title">Selected work</h2>
     </header>
     <ol class="selects" aria-label="Featured projects">
       {featured.map(({ project, label, detail }, i) => {
         const t = thumb(project);
         return (
-          <li class="select">
+          <li class="select" data-tilt="5">
             <div class="frame-media">
               {t ? (
                 <Image src={t.src} alt={t.alt} widths={[480, 800, 1200]} sizes="(max-width: 40rem) 100vw, 36rem" format="webp" loading={i < 2 ? 'eager' : 'lazy'} />
@@ -155,7 +155,7 @@ const structuredData = {
   </section>
 
   <section id="projects" class="section" aria-labelledby="projects-heading">
-    <header class="section-head">
+    <header class="section-head" data-rise>
       <h2 id="projects-heading" class="section-title">More projects <span class="count">{sheet.length}</span></h2>
     </header>
     <div class="project-filter-controls" hidden>
@@ -173,7 +173,7 @@ const structuredData = {
         sheet.map((p) => {
           const t = thumb(p);
           return (
-            <li class="frame" data-categories={categoriesByProject[p.slug].join(' ')}>
+            <li class="frame" data-tilt="7" data-categories={categoriesByProject[p.slug].join(' ')}>
               <div class="frame-media">
                 {t ? (
                   <Image src={t.src} alt={t.alt} widths={[360, 720]} sizes="(max-width: 36rem) 100vw, (max-width: 56rem) 50vw, (max-width: 72rem) 33vw, 300px" format="webp" loading="lazy" />
@@ -195,12 +195,12 @@ const structuredData = {
   </section>
 
   <section id="experience" class="section" aria-labelledby="experience-heading">
-    <header class="section-head">
+    <header class="section-head" data-rise>
       <h2 id="experience-heading" class="section-title">Experience</h2>
     </header>
     <ol class="experience">
       {experience.map((item) => (
-        <li>
+        <li data-rise>
           <p class="when"><span>{item.period}</span><span>{item.location}</span></p>
           <div class="experience-main">
             <h3>
@@ -226,13 +226,13 @@ const structuredData = {
   </section>
 
   <section id="education" class="section" aria-labelledby="education-heading">
-    <header class="section-head">
+    <header class="section-head" data-rise>
       <h2 id="education-heading" class="section-title">Education & skills</h2>
     </header>
     <div class="education-grid">
       <ol class="education">
         {education.map((item) => (
-          <li>
+          <li data-rise>
             <p class="when"><span>{item.period}</span></p>
             <h3>{item.degree}</h3>
             <p class="education-school">{item.school}</p>
@@ -242,7 +242,7 @@ const structuredData = {
       </ol>
       <dl class="skills">
         {skills.map((group) => (
-          <div>
+          <div data-rise="late">
             <dt>{group.label}</dt>
             <dd>{group.items}</dd>
           </div>
@@ -252,7 +252,7 @@ const structuredData = {
   </section>
 
   <section class="contact-section" aria-labelledby="contact-heading">
-    <div class="contact-inner">
+    <div class="contact-inner" data-rise>
       <h2 id="contact-heading">Let’s talk</h2>
       <p>Questions about a project, an opportunity, or an idea to build together? Send me an email.</p>
       <div class="contact-actions">
@@ -333,22 +333,60 @@ const structuredData = {
         animation-timeline: scroll(root);
         animation-range: 0 100vh;
       }
-      @keyframes portrait-rise { to { transform: translate3d(0, -9vh, 0); } }
+      @keyframes portrait-rise { to { transform: translate3d(0, -18vh, 0) rotate(-1.5deg); } }
+      /* The text lags behind and fades; the dot name in Hero.astro uses the same keyframes. */
+      .hero-text {
+        animation: hero-text-drift linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 90vh;
+      }
+      @keyframes hero-text-drift { to { transform: translate3d(0, -7vh, 0); opacity: 0.25; } }
     }
   }
   @supports (animation-timeline: view()) and (overflow-clip-margin: content-box) {
     @media (prefers-reduced-motion: no-preference) {
-      .select .frame-media { overflow: clip; overflow-clip-margin: content-box; }
-      .select .frame-media :global(img) {
+      .frame-media { overflow: clip; overflow-clip-margin: content-box; }
+      /* Every project image slides inside its frame as it passes, at different depths, so the page
+         reads in layers. The big picks move most. */
+      .frame-media :global(img) {
         animation: frame-slide linear both;
         animation-timeline: view();
         animation-range: cover;
       }
+      .select .frame-media :global(img) { --drift: 7%; }
+      .frame:nth-child(odd) .frame-media :global(img) { --drift: 3%; }
+      .frame:nth-child(even) .frame-media :global(img) { --drift: 6%; }
       @keyframes frame-slide {
-        from { transform: translate3d(0, -4%, 0) scale(1.1); }
-        to { transform: translate3d(0, 4%, 0) scale(1.1); }
+        from { transform: translate3d(0, calc(-1 * var(--drift, 4%)), 0) scale(1.16); }
+        to { transform: translate3d(0, var(--drift, 4%), 0) scale(1.16); }
       }
+      /* The picks print in: each frame wipes open from the bottom as it enters, like paper coming
+         up in the tray. */
+      .select .frame-media {
+        animation: print-in linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 70%;
+      }
+      @keyframes print-in { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+      /* Cards in the sheet rise in; even columns trail a little so a row arrives as a ripple. */
+      .frame { animation: rise-card linear both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
+      .frame:nth-child(even) { animation-range: entry 12% entry 70%; }
+      @keyframes rise-card { from { opacity: 0; translate: 0 4rem; } }
+      .select-copy { animation: rise-card linear both; animation-timeline: view(); animation-range: entry 0% entry 80%; }
+      /* Section titles slide in from the left as their rule draws across. */
+      .section-head::before { animation: rule-draw linear both; animation-timeline: view(); animation-range: entry 0% entry 100%; }
+      @keyframes rule-draw { from { transform: scaleX(0); } }
+      .section-title { animation: title-slide linear both; animation-timeline: view(); animation-range: entry 0% cover 30%; }
+      @keyframes title-slide { from { translate: -1.5rem 0; opacity: 0; } }
+      /* The closing line grows into place. */
+      .contact-section h2 { animation: talk-grow linear both; animation-timeline: view(); animation-range: entry 10% cover 45%; transform-origin: left bottom; }
+      @keyframes talk-grow { from { scale: 0.82; opacity: 0.2; } }
     }
+  }
+  /* Hero copy settles in on load: movement only, no fade, so text paints at once (no LCP delay). */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-reveal] { animation: settle 0.9s var(--ease) both; animation-delay: calc(var(--reveal-i, 0) * 90ms); }
+    @keyframes settle { from { translate: 0 1.5rem; } }
   }
   /* .name-slot reserves the h1's space while the dot name is drawn there, so it shares the h1's type. */
   .display, .name-slot {
@@ -379,7 +417,8 @@ const structuredData = {
 
   /* Sections */
   .section { margin-top: var(--space-section); scroll-margin-top: 4.5rem; }
-  .section-head { padding-top: 0.875rem; border-top: 2px solid var(--ink); margin-bottom: clamp(1.75rem, 4vw, 3rem); }
+  .section-head { position: relative; padding-top: 0.875rem; margin-bottom: clamp(1.75rem, 4vw, 3rem); }
+  .section-head::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--ink); transform-origin: left; }
   .section-title { font-size: clamp(1.75rem, 1.2rem + 2vw, 2.75rem); font-weight: 800; line-height: 0.95; letter-spacing: -0.04em; text-wrap: balance; }
   .section-title .count { font-size: var(--step-1); font-weight: 700; line-height: 1; letter-spacing: 0; color: var(--muted); font-variant-numeric: tabular-nums; vertical-align: top; margin-left: 0.1em; }
   .stretched::after { content: ''; position: absolute; inset: 0; z-index: 1; }
@@ -388,6 +427,32 @@ const structuredData = {
      both themes, like the film itself. */
   .frame-media { position: relative; aspect-ratio: 3 / 2; padding: 3px; background: #0a0a0a; }
   .frame-media { aspect-ratio: auto; }
+  /* Hover (mouse): the print lifts and tilts toward the pointer (scripts/motion.ts), the picture zooms
+     inside its frame and a soft light follows the cursor. Touch gets a quick press instead. */
+  .frame-media {
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    translate: 0 var(--lift, 0);
+    box-shadow: 0 0 0 transparent;
+    transition: translate 0.45s var(--ease), box-shadow 0.45s var(--ease);
+  }
+  .frame-media :global(img) { transition: scale 0.7s var(--ease), filter 0.5s var(--ease); }
+  .frame-media::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.28), transparent 50%);
+    opacity: 0;
+    transition: opacity 0.4s var(--ease);
+    pointer-events: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    :is(.select, .frame):hover .frame-media { --lift: -8px; box-shadow: 0 28px 50px -24px rgb(0 0 0 / 0.55); }
+    :is(.select, .frame):hover .frame-media :global(img) { scale: 1.07; }
+    :is(.select, .frame):hover .frame-media::after { opacity: 1; }
+    .sheet:has(.frame:hover) .frame:not(:hover) .frame-media :global(img) { filter: saturate(0.6) brightness(0.92); }
+  }
+  :is(.select, .frame):active .frame-media { scale: 0.985; }
+  .frame-media { transition: translate 0.45s var(--ease), box-shadow 0.45s var(--ease), scale 0.2s var(--ease); }
   .frame-media :global(img) { width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; object-position: top center; }
   .frame-blank { display: flex; align-items: flex-end; aspect-ratio: 3 / 2; padding: 1rem; background: var(--accent-soft); color: var(--ink); font-size: var(--step-2); font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
 
@@ -411,10 +476,13 @@ const structuredData = {
 
   /* All projects: the contact sheet, frames edge to edge in colour. */
   .project-filter-controls { margin-bottom: clamp(2rem, 4vw, 2.75rem); }
-  .project-filters { display: flex; flex-wrap: wrap; gap: 0 0.25rem; margin-inline: -0.75rem; }
+  .project-filters { display: flex; flex-wrap: wrap; gap: 0.35rem 0.25rem; margin-inline: -0.75rem; }
   .project-filters button { position: relative; min-height: 2.75rem; padding: 0.35rem 0.75rem; border: 0; background: none; font: inherit; color: var(--muted); cursor: pointer; }
   .project-filters button:hover, .project-filters button[aria-pressed='true'] { color: var(--ink); }
-  .project-filters button[aria-pressed='true'] { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.35em; }
+  .project-filters button { border-radius: 999px; transition: background-color 0.25s var(--ease), color 0.25s var(--ease), scale 0.15s var(--ease); }
+  .project-filters button:hover { background: var(--accent-soft); }
+  .project-filters button[aria-pressed='true'] { background: var(--ink); color: var(--bg); }
+  .project-filters button:active { scale: 0.94; }
   .filter-count { margin-left: 0.15em; font-size: var(--step--1); font-variant-numeric: tabular-nums; }
   .filter-status { margin-top: 0.5rem; color: var(--muted); font-size: var(--step--1); }
 
@@ -461,6 +529,13 @@ const structuredData = {
   .experience-logo { flex: none; width: 2.25rem; height: 2.25rem; overflow: hidden; border-radius: var(--radius); background: #fff; outline: 1px solid var(--rule); }
   .experience-logo :global(img) { width: 100%; height: 100%; object-fit: contain; }
   .experience-role { margin-top: 0.6rem; font-weight: 700; }
+  .experience h3, .experience-logo { transition: translate 0.4s var(--ease), rotate 0.4s var(--ease); }
+  @media (hover: hover) {
+    .experience > li:hover h3 { translate: 0.5rem 0; }
+    .experience > li:hover .experience-logo { rotate: -8deg; }
+    .skills > div:hover dt { translate: 0.35rem 0; }
+  }
+  .skills dt { transition: translate 0.3s var(--ease); }
   .experience-lead { margin-top: 0.75rem; max-width: var(--measure); color: var(--muted); text-wrap: pretty; }
   .more summary { display: inline-flex; align-items: center; min-height: 2.75rem; cursor: pointer; list-style: none; font-size: var(--step--1); font-weight: 700; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.25em; }
   .more summary::-webkit-details-marker { display: none; }

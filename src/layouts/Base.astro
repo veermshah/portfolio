@@ -58,6 +58,10 @@ const navItems = [
   { label: 'Blog', href: 'https://blog.veermickey.com' },
   { label: 'Resume', href: '/resume.pdf' },
 ];
+const footerSite = navItems.filter((item) => ['Work', 'Projects', 'Photos', 'Blog'].includes(item.label));
+const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
+  .map((label) => profile.links.find((link) => link.label === label))
+  .filter((link): link is { label: string; href: string } => Boolean(link?.href));
 ---
 
 <!doctype html>
@@ -118,8 +122,9 @@ const navItems = [
     <a class="skip" href="#main">Skip to content</a>
     <header class="site-header">
       <div class="site-header-inner">
-        <a class="wordmark" href="/"><span class="monogram" aria-hidden="true">VS</span><span class="wordmark-name">{profile.name}</span></a>
+        <a class="wordmark" href="/"><span class="monogram" aria-hidden="true"><span class="mono-v">V</span><span class="mono-s">S</span></span><span class="wordmark-swap"><span class="wordmark-name">{profile.name}</span><span class="wordmark-section" aria-hidden="true"></span></span></a>
         <nav class="site-nav" aria-label="Site">
+          <span class="nav-blob" aria-hidden="true"></span>
           {navItems.map((item) => <a href={item.href} aria-current={item.current ? 'page' : undefined}>{item.label}</a>)}
         </nav>
         <button class="menu-button" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="site-menu" hidden>
@@ -129,6 +134,7 @@ const navItems = [
           <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
           <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
         </button>
+        <span class="scroll-progress" aria-hidden="true"></span>
       </div>
     </header>
     <dialog class="site-menu" id="site-menu" aria-label="Menu">
@@ -140,7 +146,7 @@ const navItems = [
       </div>
       <nav aria-label="Site">
         <ol class="site-menu-list">
-          {navItems.map((item) => <li><a href={item.href} aria-current={item.current ? 'page' : undefined}>{item.label}</a></li>)}
+          {navItems.map((item, i) => <li style={`--i: ${i}`}><a href={item.href} aria-current={item.current ? 'page' : undefined}>{item.label}</a></li>)}
         </ol>
       </nav>
       <button class="menu-theme" type="button">Switch to <span class="menu-theme-dark">dark</span><span class="menu-theme-light">light</span> mode</button>
@@ -150,14 +156,25 @@ const navItems = [
         <slot />
       </main>
       <footer class="site-footer">
-        <span>© {year} {profile.name} ({profile.alternateNames[0]})</span>
-        <a href="https://github.com/veermshah/portfolio">Site source</a>
+        <div class="footer-inner">
+          <p class="footer-mark"><a href="/">{profile.name}</a></p>
+          <nav class="footer-left" aria-label="Footer">
+            <ul class="footer-col">
+              {footerSite.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+            </ul>
+          </nav>
+          <ul class="footer-col footer-right" aria-label="Elsewhere">
+            {footerElsewhere.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
+          </ul>
+          <p class="footer-meta"><span>© {year} {profile.name} ({profile.alternateNames[0]})</span><a href="https://github.com/veermshah/portfolio">Site source</a></p>
+        </div>
+        <div class="footer-glow" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
       </footer>
     </div>
     <script is:inline>
       // The blog subdomain serves only blog pages, so portfolio links in the header go to the main site.
       if (location.hostname === 'blog.veermickey.com') {
-        for (const a of document.querySelectorAll('.site-header a[href^="/"], .site-menu a[href^="/"]')) a.href = 'https://www.veermickey.com' + a.getAttribute('href');
+        for (const a of document.querySelectorAll('.site-header a[href^="/"], .site-menu a[href^="/"], .site-footer a[href^="/"]')) a.href = 'https://www.veermickey.com' + a.getAttribute('href');
       }
       const toggle = document.querySelector('.theme-toggle');
       const root = document.documentElement;
@@ -191,31 +208,49 @@ const navItems = [
       addEventListener('scroll', onScroll, { passive: true });
       onScroll();
 
-      // Home: underline the section link for the part of the page on screen.
-      const spy = [...document.querySelectorAll('.site-nav a[href^="/#"]')].map((a) => [a, document.getElementById(a.getAttribute('href').slice(2))]).filter(([, el]) => el);
+      // The sliding pill under the nav links: follows the pointer, then settles on the section on screen.
+      const nav = document.querySelector('.site-nav');
+      const blob = nav?.querySelector('.nav-blob');
+      const navLinks = nav ? [...nav.querySelectorAll('a')] : [];
+      let current = navLinks.find((a) => a.getAttribute('aria-current') === 'page') || null;
+      const place = (link) => {
+        if (!blob) return;
+        navLinks.forEach((a) => a.classList.toggle('on-blob', a === link));
+        if (!link) { blob.classList.remove('is-on'); return; }
+        blob.style.setProperty('--x', link.offsetLeft + 'px');
+        blob.style.setProperty('--w', link.offsetWidth + 'px');
+        blob.classList.add('is-on');
+      };
+      navLinks.forEach((a) => {
+        a.addEventListener('pointerenter', () => place(a));
+        a.addEventListener('focus', () => place(a));
+      });
+      nav?.addEventListener('pointerleave', () => place(current));
+      nav?.addEventListener('focusout', (e) => { if (!nav.contains(e.relatedTarget)) place(current); });
+      place(current);
+      addEventListener('resize', () => place(current), { passive: true });
+
+      // Home: as each section scrolls through the middle of the screen, the pill moves to its link and
+      // the wordmark swaps the name for the section's name.
+      const wordmark = document.querySelector('.site-header .wordmark');
+      const sectionLabel = wordmark?.querySelector('.wordmark-section');
+      const spy = navLinks.filter((a) => a.getAttribute('href').startsWith('/#')).map((a) => [a, document.getElementById(a.getAttribute('href').slice(2))]).filter(([, el]) => el);
       if (spy.length && 'IntersectionObserver' in window) {
         const io = new IntersectionObserver((entries) => {
           for (const entry of entries) {
             const link = spy.find(([, el]) => el === entry.target)?.[0];
-            if (link) link.classList.toggle('is-here', entry.isIntersecting);
+            if (!link) continue;
+            link.classList.toggle('is-here', entry.isIntersecting);
+            if (entry.isIntersecting) current = link;
+            else if (current === link) current = null;
+          }
+          if (!nav.matches(':hover')) place(current);
+          if (sectionLabel) {
+            if (current) sectionLabel.textContent = current.textContent;
+            wordmark.classList.toggle('has-section', Boolean(current));
           }
         }, { rootMargin: '-45% 0px -50% 0px' });
         spy.forEach(([, el]) => io.observe(el));
-      }
-
-      const revealed = document.querySelectorAll('[data-reveal]');
-      if ('IntersectionObserver' in window) {
-        const io = new IntersectionObserver((entries) => {
-          for (const entry of entries) {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('is-in');
-              io.unobserve(entry.target);
-            }
-          }
-        }, { rootMargin: '0px 0px -40px 0px' });
-        revealed.forEach((el) => io.observe(el));
-      } else {
-        revealed.forEach((el) => el.classList.add('is-in'));
       }
     </script>
     <script is:inline>
@@ -232,6 +267,7 @@ const navItems = [
     </script>
     <script>
       import "../scripts/track";
+      import "../scripts/motion";
     </script>
   </body>
 </html>
