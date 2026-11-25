@@ -8,6 +8,8 @@ import ContactButton from '../components/ContactButton.astro';
 import { notes, formatDate } from '../data/notes';
 import Base from '../layouts/Base.astro';
 import ProjectLinks from '../components/ProjectLinks.astro';
+import Hero from '../components/Hero.astro';
+import HeroPortrait from '../components/HeroPortrait.astro';
 import { profile } from '../data/profile';
 import { projects } from '../data/projects';
 import { projectCategories, categoriesByProject } from '../data/project-categories';
@@ -85,18 +87,21 @@ const structuredData = {
 
 <Base title={`${profile.name} (${profile.alternateNames[0]}), software engineer`} description={profile.description} wide>
   <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(structuredData)} />
-  <section class="hero" aria-labelledby="hero-name">
-    <canvas class="hero-field" aria-hidden="true"></canvas>
+  <Hero>
     <p class="kicker" data-reveal><span class="pulse" aria-hidden="true"></span>Software engineer · M.S. CS, UT Dallas</p>
     <h1 id="hero-name" class="display" data-reveal style="--reveal-i: 1">{profile.name}</h1>
-    <p class="bio" data-reveal style="--reveal-i: 2">{profile.bio}</p>
+    <div class="name-slot" aria-hidden="true" hidden></div>
+    <div class="hero-intro" data-reveal style="--reveal-i: 2">
+      <HeroPortrait />
+      <p class="bio">{profile.bio}</p>
+    </div>
     <div class="hero-actions" data-reveal style="--reveal-i: 3">
       <ContactButton />
       <ul class="contact" aria-label="Elsewhere">
         {links.map((l) => <li><a class="icon-link" href={l.href}><LinkIcon name={l.label} />{l.label}</a></li>)}
       </ul>
     </div>
-  </section>
+  </Hero>
 
   <section id="work" class="section" aria-labelledby="featured-heading">
     <header class="section-head carousel-head" data-reveal>
@@ -250,8 +255,6 @@ const structuredData = {
 </Base>
 
 <script>
-  import { initHeroField } from '../scripts/hero-field';
-
   for (const track of document.querySelectorAll<HTMLElement>('.carousel')) {
     const section = track.closest('section')!;
     const [prev, next] = section.querySelectorAll<HTMLButtonElement>('.carousel-btn');
@@ -300,8 +303,6 @@ const structuredData = {
     });
   }
 
-  initHeroField();
-
   // Printed copies should include every experience highlight.
   let openedForPrint: HTMLDetailsElement[] = [];
   addEventListener('beforeprint', () => {
@@ -348,15 +349,16 @@ const structuredData = {
 </script>
 
 <style>
-  /* Hero */
-  .hero { position: relative; isolation: isolate; padding-bottom: clamp(1rem, 3vw, 2rem); }
-  .hero-field { position: absolute; z-index: -1; top: calc(-1 * clamp(3rem, 1.5rem + 6vw, 7rem)); left: calc(50% - 50vw); width: 100vw; height: calc(100% + clamp(3rem, 1.5rem + 6vw, 7rem) + 2rem); touch-action: pan-y; mask-image: linear-gradient(to bottom, #000 70%, transparent); -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent); }
+  /* Hero (layout, background and dots live in components/Hero.astro) */
   .kicker { display: inline-flex; align-items: center; gap: 0.6rem; font-family: var(--mono); font-size: var(--step--1); color: var(--muted); padding: 0.3rem 0.75rem 0.3rem 0.6rem; border: 1px solid var(--rule); border-radius: 999px; background: color-mix(in srgb, var(--bg) 80%, transparent); }
   @media (max-width: 30rem) { .kicker { font-size: 0.75rem; letter-spacing: -0.02em; white-space: nowrap; } }
+  /* The kicker doesn't fit on one line below about 370px; let it wrap instead of being clipped. */
+  @media (max-width: 23rem) { .kicker { white-space: normal; border-radius: 1rem; } }
   .pulse { flex: none; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); }
   @media (prefers-reduced-motion: no-preference) { .pulse { animation: pulse 2.4s var(--ease) infinite; } }
   @keyframes pulse { 70% { box-shadow: 0 0 0 0.55rem transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
-  .display {
+  /* .name-slot reserves the h1's space while the dot name is drawn there, so it shares the h1's type. */
+  .display, .name-slot {
     margin-top: clamp(1.25rem, 3vw, 2rem);
     font-size: var(--step-display);
     font-weight: 800;
@@ -364,11 +366,27 @@ const structuredData = {
     letter-spacing: -0.055em;
   }
   .display::after { content: '.'; color: var(--accent); }
-  .bio { margin-top: clamp(1.25rem, 2.5vw, 1.75rem); font-size: var(--step-1); line-height: 1.55; color: var(--muted); max-width: 38rem; text-wrap: pretty; }
+  .hero-intro { margin-top: clamp(1.25rem, 2.5vw, 1.75rem); display: flex; align-items: flex-start; gap: clamp(0.875rem, 0.6rem + 1vw, 1.25rem); max-width: 44rem; }
+  .bio { font-size: var(--step-1); line-height: 1.55; color: var(--muted); max-width: 38rem; text-wrap: pretty; }
   .hero-actions { margin-top: clamp(1.75rem, 3vw, 2.25rem); display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.75rem; }
   .contact { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.35rem 1.25rem; font-size: 0.9375rem; }
   .contact a { color: var(--muted); text-decoration: none; }
   .contact a:hover { color: var(--ink); }
+
+  /* Hero over a photo: light text on the dark scrim in both themes. */
+  :global(.hero:not([data-hero='dots'])) :is(.kicker, .display, .bio, .contact) { text-shadow: 0 1px 14px rgb(0 0 0 / 0.35); }
+  :global(.hero:not([data-hero='dots'])) .kicker { color: rgb(255 255 255 / 0.92); border-color: rgb(255 255 255 / 0.3); background: rgb(10 11 13 / 0.45); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  :global(.hero:not([data-hero='dots'])) .pulse { background: #ff8a4c; }
+  :global(.hero:not([data-hero='dots'])) .display { color: #fff; }
+  :global(.hero:not([data-hero='dots'])) .display::after { color: #ff9a62; }
+  :global(.hero:not([data-hero='dots'])) .bio { color: rgb(255 255 255 / 0.92); }
+  :global(.hero:not([data-hero='dots'])) .contact a { color: rgb(255 255 255 / 0.88); }
+  :global(.hero:not([data-hero='dots'])) .contact a:hover { color: #fff; }
+  :global(.hero:not([data-hero='dots'])) a:focus-visible { outline-color: #fff; }
+  :global(.hero:not([data-hero='dots']) .contact-button) { background: #fff; color: #17191c; }
+  :global(.hero:not([data-hero='dots']) .contact-button:hover) { background: #ff9a62; color: #17191c; }
+  /* Comes last to win over the colours above. Until the dots take over, the h1 is transparent but still in the accessibility tree. */
+  :global(.hero.dot-pending) .display, :global(.hero.dot-pending) .display::after { color: transparent; text-shadow: none; }
 
   /* Sections */
   .section { margin-top: var(--space-section); scroll-margin-top: 4.5rem; }
