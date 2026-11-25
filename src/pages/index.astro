@@ -8,7 +8,6 @@ import ContactButton from '../components/ContactButton.astro';
 import Base from '../layouts/Base.astro';
 import ProjectLinks from '../components/ProjectLinks.astro';
 import Hero from '../components/Hero.astro';
-import GreaseLoop from '../components/GreaseLoop.astro';
 import HeroPortrait from '../components/HeroPortrait.astro';
 import { profile } from '../data/profile';
 import { getImage } from 'astro:assets';
@@ -54,7 +53,7 @@ const featured = [
 const links = profile.links.filter((l) => l.href && l.label !== 'Email');
 
 const siteUrl = new URL('/', Astro.site).href;
-const portrait = await getImage({ src: portraitSrc, width: 600, format: 'jpg' });
+const portrait = await getImage({ src: portraitSrc, width: 640, format: 'jpg' });
 const portraitUrl = new URL(portrait.src, Astro.site).href;
 const structuredData = {
   '@context': 'https://schema.org',
@@ -84,7 +83,7 @@ const structuredData = {
       alternateName: profile.alternateNames,
       url: siteUrl,
       jobTitle: 'Software Engineer',
-      image: { '@type': 'ImageObject', url: portraitUrl, width: 600, height: 600, caption: `${profile.name} at his UT Dallas graduation` },
+      image: { '@type': 'ImageObject', url: portraitUrl, width: 640, height: 800, caption: `${profile.name} at his UT Dallas graduation` },
       description: profile.description,
       email: profile.links.find((l) => l.label === 'Email')?.href?.replace(/^mailto:/, ''),
       alumniOf: { '@id': `${siteUrl}#utd` },
@@ -134,7 +133,6 @@ const structuredData = {
               ) : (
                 <span class="frame-blank" aria-hidden="true">{project.title}</span>
               )}
-              <GreaseLoop selected variant={i} />
             </div>
             <div class="select-copy">
               <h3><a class="stretched" href={`/projects/${project.slug}/`}>{project.title}</a></h3>
@@ -153,10 +151,9 @@ const structuredData = {
     </header>
     <div class="project-filter-controls" hidden>
       <div class="project-filters" role="group" aria-label="Filter projects by type">
-        {filters.map((filter, i) => (
+        {filters.map((filter) => (
           <button type="button" data-project-filter={filter.id} aria-pressed={filter.id === 'all' ? 'true' : 'false'} aria-controls="project-list">
             {filter.label} <span class="filter-count">{filter.count}</span>
-            <GreaseLoop variant={i} />
           </button>
         ))}
       </div>
@@ -164,18 +161,17 @@ const structuredData = {
     </div>
     <ol class="sheet" id="project-list">
       {
-        projects.map((p, i) => {
+        projects.map((p) => {
           const t = thumb(p);
           const types = categoriesByProject[p.slug].map((id) => categoryLabel[id]).join(', ');
           return (
-            <li class="frame loop-host" data-categories={categoriesByProject[p.slug].join(' ')}>
+            <li class="frame" data-categories={categoriesByProject[p.slug].join(' ')}>
               <div class="frame-media">
                 {t ? (
                   <Image src={t.src} alt={t.alt} widths={[360, 720]} sizes="(max-width: 36rem) 100vw, (max-width: 56rem) 50vw, (max-width: 72rem) 33vw, 300px" format="webp" loading="lazy" />
                 ) : (
                   <span class="frame-blank" aria-hidden="true">{p.title}</span>
                 )}
-                <GreaseLoop variant={i} />
               </div>
               <div class="frame-copy">
                 <h3><a class="stretched" href={`/projects/${p.slug}/`}>{p.title}</a></h3>
@@ -308,15 +304,6 @@ const structuredData = {
   selectFilter(new URLSearchParams(window.location.search).get('type'));
   if (controls) controls.hidden = false;
 
-  // Touch screens have no hover, so the frame passing through the middle of the screen is the one
-  // that comes back to colour and gets circled.
-  if (matchMedia('(hover: none)').matches && 'IntersectionObserver' in window) {
-    const io = new IntersectionObserver(
-      (entries) => { for (const e of entries) e.target.classList.toggle('is-picked', e.isIntersecting); },
-      { rootMargin: '-42% 0px -42% 0px' },
-    );
-    cards.forEach((card) => io.observe(card));
-  }
 </script>
 
 <style>
@@ -364,7 +351,7 @@ const structuredData = {
   .frame-media :global(img) { width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; object-position: top center; }
   .frame-blank { display: flex; align-items: flex-end; aspect-ratio: 3 / 2; padding: 1rem; background: var(--accent-soft); color: var(--ink); font-size: var(--step-2); font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
 
-  /* Selected work: big frames, in colour, circled. */
+  /* Selected work: big frames. Size alone marks them as picks. */
   .selects { list-style: none; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(3rem, 6vw, 4.5rem) clamp(2rem, 4.5vw, 3.75rem); }
   @media (min-width: 40rem) { .selects { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .select { position: relative; display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
@@ -375,13 +362,12 @@ const structuredData = {
   .select-detail { color: var(--muted); text-wrap: pretty; }
   .select-label { font-size: var(--step--1); font-weight: 700; }
 
-  /* All projects: the contact sheet. Greyscale proofs that come back to colour and get circled
-     when picked (hover or keyboard focus; on touch screens, while passing mid-screen). */
+  /* All projects: the contact sheet, frames edge to edge in colour. */
   .project-filter-controls { margin-bottom: clamp(2rem, 4vw, 2.75rem); }
   .project-filters { display: flex; flex-wrap: wrap; gap: 0 0.25rem; margin-inline: -0.75rem; }
   .project-filters button { position: relative; min-height: 2.75rem; padding: 0.35rem 0.75rem; border: 0; background: none; font: inherit; color: var(--muted); cursor: pointer; }
   .project-filters button:hover, .project-filters button[aria-pressed='true'] { color: var(--ink); }
-  .project-filters button[aria-pressed='true'] :global(.grease-loop path) { stroke-dashoffset: 0; opacity: 1; }
+  .project-filters button[aria-pressed='true'] { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.35em; }
   .filter-count { margin-left: 0.15em; font-size: var(--step--1); font-variant-numeric: tabular-nums; }
   .filter-status { margin-top: 0.5rem; color: var(--muted); font-size: var(--step--1); }
 
@@ -399,10 +385,6 @@ const structuredData = {
   @media (min-width: 72rem) { .sheet { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
   .frame { position: relative; display: flex; flex-direction: column; min-width: 0; }
   .frame[hidden] { display: none; }
-  .frame .frame-media :global(img) { filter: grayscale(1); }
-  .frame:is(:hover, :focus-within, .is-picked) .frame-media :global(img) { filter: none; }
-  .frame.is-picked .frame-media :global(.grease-loop path) { stroke-dashoffset: 0; opacity: 1; }
-  @media (prefers-reduced-motion: no-preference) { .frame .frame-media :global(img) { transition: filter 0.35s var(--ease); } }
   .frame-copy { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.9rem 1.25rem 0 3px; }
   .frame h3 { font-size: var(--step-1); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; }
   .frame h3 a { text-decoration: none; }
@@ -426,7 +408,7 @@ const structuredData = {
   }
   .experience h3 { display: flex; align-items: center; gap: 0.75rem; font-size: clamp(1.5rem, 1.2rem + 1.3vw, 2.25rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; }
   .experience-logo { flex: none; width: 2.25rem; height: 2.25rem; overflow: hidden; border-radius: var(--radius); background: #fff; outline: 1px solid var(--rule); }
-  .experience-logo :global(img) { width: 100%; height: 100%; object-fit: contain; filter: grayscale(1); }
+  .experience-logo :global(img) { width: 100%; height: 100%; object-fit: contain; }
   .experience-role { margin-top: 0.6rem; font-weight: 700; }
   .experience-lead { margin-top: 0.75rem; max-width: var(--measure); color: var(--muted); text-wrap: pretty; }
   .more summary { display: inline-flex; align-items: center; min-height: 2.75rem; cursor: pointer; list-style: none; font-size: var(--step--1); font-weight: 700; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.25em; }

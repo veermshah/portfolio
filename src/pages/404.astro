@@ -1,6 +1,5 @@
 ---
 import Base from '../layouts/Base.astro';
-import GreaseLoop from '../components/GreaseLoop.astro';
 ---
 
 <Base title="Page not found | Veer Shah" description="This page doesn’t exist." noindex>
@@ -9,7 +8,7 @@ import GreaseLoop from '../components/GreaseLoop.astro';
     <h1>Page not found</h1>
     <p class="nf-body">This address doesn’t match anything here.</p>
     <p class="nf-home">
-      <a class="nf-link loop-host" href="/">Go to the project list<GreaseLoop variant={2} /></a>
+      <a class="nf-link" href="/">Go to the project list</a>
     </p>
   </div>
 </Base>
@@ -66,13 +65,5 @@ import GreaseLoop from '../components/GreaseLoop.astro';
   .nf-link:hover {
     background: var(--bg);
     color: var(--ink);
-  }
-
-  /* The loop draws in ink even while the button is filled. */
-  .nf-link :global(.grease-loop) {
-    color: var(--ink);
-    inset: -30% -9%;
-    width: 118%;
-    height: 160%;
   }
 </style>

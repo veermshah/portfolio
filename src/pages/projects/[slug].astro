@@ -3,7 +3,6 @@ import type { GetStaticPaths, ImageMetadata } from 'astro';
 import { Image, getImage } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import ProjectLinks from '../../components/ProjectLinks.astro';
-import GreaseLoop from '../../components/GreaseLoop.astro';
 import { projects, type Project } from '../../data/projects';
 import { roleSummary, myPart } from '../../lib/format';
 import { categoriesByProject } from '../../data/project-categories';
@@ -130,7 +129,6 @@ const structuredData = {
           <p class="award-line">
             <span class="award-mark">
               {p.award}
-              <GreaseLoop selected variant={1} />
             </span>
           </p>
         )
@@ -248,12 +246,11 @@ const structuredData = {
   <nav class="strip" aria-label="More projects">
     {
       prev ? (
-        <a class="frame loop-host" href={`/projects/${prev.slug}/`} rel="prev">
+        <a class="frame" href={`/projects/${prev.slug}/`} rel="prev">
           <span class="frame-pic">
             <span class="frame-img">
               {prevFrame && <Image src={prevFrame} alt="" widths={[240, 480]} sizes="(max-width: 40rem) 31vw, 15rem" format="webp" loading="lazy" />}
             </span>
-            <GreaseLoop variant={0} />
           </span>
           <span class="frame-label">
             <span class="frame-dir">Previous<span class="visually-hidden">:</span></span> <span class="frame-title">{prev.title}</span>
@@ -270,7 +267,6 @@ const structuredData = {
         <span class="frame-img">
           {lead && <Image src={lead.src} alt="" widths={[240, 480]} sizes="(max-width: 40rem) 31vw, 15rem" format="webp" loading="lazy" />}
         </span>
-        <GreaseLoop selected variant={2} />
       </span>
       <span class="frame-label">
         <span class="frame-dir">This project</span> <span class="frame-title">{p.title}</span>
@@ -278,22 +274,20 @@ const structuredData = {
     </span>
     {
       next ? (
-        <a class="frame loop-host" href={`/projects/${next.slug}/`} rel="next">
+        <a class="frame" href={`/projects/${next.slug}/`} rel="next">
           <span class="frame-pic">
             <span class="frame-img">
               {nextFrame && <Image src={nextFrame} alt="" widths={[240, 480]} sizes="(max-width: 40rem) 31vw, 15rem" format="webp" loading="lazy" />}
             </span>
-            <GreaseLoop variant={1} />
           </span>
           <span class="frame-label">
             <span class="frame-dir">Next<span class="visually-hidden">:</span></span> <span class="frame-title">{next.title}</span>
           </span>
         </a>
       ) : (
-        <a class="frame loop-host" href="/">
+        <a class="frame" href="/">
           <span class="frame-pic">
             <span class="frame-img frame-type"><span>All projects</span></span>
-            <GreaseLoop variant={1} />
           </span>
         </a>
       )
@@ -616,8 +610,7 @@ const structuredData = {
     }
   }
 
-  /* The contact strip: previous, this frame circled, next. Neighbours sit in greyscale until you
-     reach for them, then print in colour and get circled. */
+  /* The pager strip: previous, this project (outlined in ink), next. */
 
   .strip {
     margin-top: clamp(3.5rem, 2.5rem + 3vw, 5.5rem);
@@ -655,14 +648,16 @@ const structuredData = {
     height: 100%;
     object-fit: cover;
     object-position: top center;
-    filter: grayscale(1) contrast(1.05);
-    transition: filter 0.45s var(--ease);
   }
 
-  .frame:hover .frame-img :global(img),
-  .frame:focus-visible .frame-img :global(img),
-  .is-current .frame-img :global(img) {
-    filter: none;
+  .frame:hover .frame-title,
+  .frame:focus-visible .frame-title {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+
+  .is-current .frame-img {
+    border: 2px solid var(--ink);
   }
 
   .is-blank .frame-img {

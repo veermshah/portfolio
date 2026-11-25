@@ -88,7 +88,7 @@ The `featured` list in `src/pages/index.astro` selects the home-page highlights 
 
 ## Home hero
 
-The hero (`src/components/Hero.astro`) shows up to five of my most popular landscape photos from Unsplash full-bleed behind my name, crossfading every 7 seconds in black and white, with the dot field (`src/scripts/hero-field.ts`) gathering into the name on top. It uses the same build-time fetch as the photography page; without `UNSPLASH_ACCESS_KEY` it uses the landscape photos in `src/assets/photos/`. Only the first photo loads with the page; the rest load after it, and not at all with Save-Data or on 2G/3G. Dots scatter from the mouse or a finger and spring back. With reduced motion, no JavaScript or no canvas, the hero is the first photo with the plain `<h1>`. The real `<h1>` is always in the HTML.
+The hero (`src/components/Hero.astro`) shows up to five of my most popular landscape photos from Unsplash full-bleed behind my name, crossfading every 7 seconds, with the dot field (`src/scripts/hero-field.ts`) gathering into the name on top. It uses the same build-time fetch as the photography page; without `UNSPLASH_ACCESS_KEY` it uses the landscape photos in `src/assets/photos/`. Only the first photo loads with the page; the rest load after it, and not at all with Save-Data or on 2G/3G. Dots scatter from the mouse or a finger and spring back. With reduced motion, no JavaScript or no canvas, the hero is the first photo with the plain `<h1>`. The real `<h1>` is always in the HTML.
 
 ### Portrait
 
