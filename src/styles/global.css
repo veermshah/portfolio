@@ -299,7 +299,7 @@ html { overflow-x: clip; }
   height: 2.25rem;
   margin-right: -0.5rem;
   border: 0;
-  border-radius: 999px;
+  border-radius: 0;
   background: none;
   color: var(--muted);
   cursor: pointer;
