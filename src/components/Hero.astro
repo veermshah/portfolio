@@ -184,8 +184,8 @@ const [lead, ...rest] = frames;
   .hero-strip button:hover img,
   .hero-strip button:focus-visible img,
   .hero-strip .is-current img { opacity: 1; }
-  .hero-strip .is-current button { box-shadow: inset 0 -3px 0 #fff; }
-  .hero-strip .is-current img { position: relative; z-index: -1; }
+  .hero-strip button { position: relative; }
+  .hero-strip .is-current button::after { content: ''; position: absolute; inset: auto 0 0; height: 3px; background: #fff; }
   .hero-strip button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   .hero-credit {
     position: absolute;
