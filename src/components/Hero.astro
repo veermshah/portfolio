@@ -103,6 +103,11 @@ const [lead, ...rest] = frames;
     color: var(--hero-ink);
   }
   @media (max-width: 40rem) { .hero { min-height: 0; padding-bottom: 4rem; } }
+  /* Desktop: the same 3rem above (page padding) and below, and the hero runs to the bottom of the
+     screen, so the portrait and text sit in its vertical middle. */
+  @media (min-width: 64rem) {
+    .hero { --hero-pad: 3rem; --hero-min: calc(100svh - 3.5rem - var(--hero-pad)); padding-bottom: 3rem; display: grid; align-content: center; }
+  }
   .hero-bg {
     position: absolute;
     z-index: -1;

@@ -107,6 +107,8 @@ body {
 }
 /* Wide pages without a hero (project pages, photos) start closer to the header. */
 .page.is-wide:not(:has(.hero)) { padding-top: clamp(2rem, 1rem + 3vw, 4rem); }
+/* Desktop home: the hero fills the screen under the header with equal space above and below. */
+@media (min-width: 64rem) { .page.is-wide:has(.hero) { padding-top: 3rem; } }
 
 @media (max-width: 30rem) {
   .page {
