@@ -140,8 +140,8 @@ export function mountFlightGlobe(canvas: HTMLCanvasElement) {
       let pen = false;
       for (let j = 0; j <= end; j++) {
         const v = view(pts[j], cl, sl, ct, st);
-        // In front of the globe, or lifted past its edge; never the far side of a long arc.
-        const shown = v[2] > 0 || (v[2] > -0.2 && v[0] * v[0] + v[1] * v[1] > 1);
+        // Only the half facing the viewer, so long routes fade out at the edge instead of hooking past it.
+        const shown = v[2] > 0;
         if (!shown) { pen = false; continue; }
         const x = c + v[0] * R, y = c - v[1] * R;
         if (pen) ctx!.lineTo(x, y); else { ctx!.moveTo(x, y); pen = true; }
