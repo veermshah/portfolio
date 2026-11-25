@@ -21,4 +21,18 @@ export const profile = {
     { label: 'Unsplash', href: 'https://unsplash.com/@veermickey' },
     { label: 'Resume', href: '/resume.pdf' },
   ] satisfies ProfileLink[],
+  /**
+   * Every public profile that belongs to me, plus the blog. Used for Person `sameAs` in structured
+   * data and `rel="me"` links on the home page, so search engines can tie the accounts together.
+   */
+  sameAs: [
+    'https://github.com/veermshah',
+    'https://www.linkedin.com/in/veermickeyshah/',
+    'https://devpost.com/veermickey',
+    'https://unsplash.com/@veermickey',
+    'https://medium.com/@veermickey',
+    'https://blog.veermickey.com',
+  ],
+  /** City and region only, as stated by the UT Dallas and HackUTD experience entries. */
+  locality: { city: 'Richardson', region: 'TX', country: 'US' },
 };

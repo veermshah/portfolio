@@ -22,3 +22,21 @@ export const skills = [
   { label: 'AI / ML', items: 'PyTorch, TensorFlow, scikit-learn, pandas, NumPy, Spark, Hugging Face, LangChain, LangGraph, RAG, embeddings, FAISS, HNSW, vector search, fine-tuning, Ollama' },
   { label: 'Certifications', items: 'AWS Certified Cloud Practitioner; Stanford Advanced Learning Algorithms and Unsupervised Learning' },
 ];
+
+/** A short list for Person `knowsAbout` in structured data. Every item appears in the skills or coursework above. */
+export const knowsAbout = [
+  'Python',
+  'Java',
+  'Go',
+  'TypeScript',
+  'AWS',
+  'Kubernetes',
+  'Distributed systems',
+  'PostgreSQL',
+  'React',
+  'Machine learning',
+  'Deep learning',
+  'PyTorch',
+  'Retrieval-augmented generation',
+  'Compiler construction',
+];
