@@ -122,7 +122,7 @@ const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
     <a class="skip" href="#main">Skip to content</a>
     <header class="site-header">
       <div class="site-header-inner">
-        <a class="wordmark" href="/"><span class="monogram" aria-hidden="true"><span class="mono-v">V</span><span class="mono-s">S</span></span><span class="wordmark-swap"><span class="wordmark-name">{profile.shortName}</span><span class="wordmark-section" aria-hidden="true"></span></span></a>
+        <a class="wordmark" href="/"><span class="monogram" aria-hidden="true"><span class="mono-v">V</span><span class="mono-s">S</span></span><span class="wordmark-swap"><span class="wordmark-name">{profile.name}</span><span class="wordmark-section" aria-hidden="true"></span></span></a>
         <nav class="site-nav" aria-label="Site">
           <span class="nav-blob" aria-hidden="true"></span>
           {navItems.map((item) => <a href={item.href} aria-current={item.current ? 'page' : undefined}>{item.label}</a>)}
@@ -138,7 +138,7 @@ const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
     </header>
     <dialog class="site-menu" id="site-menu" aria-label="Menu">
       <div class="site-menu-bar">
-        <a class="wordmark" href="/"><span class="monogram" aria-hidden="true">VS</span><span class="wordmark-name">{profile.shortName}</span></a>
+        <a class="wordmark" href="/"><span class="monogram" aria-hidden="true">VS</span><span class="wordmark-name">{profile.name}</span></a>
         <button class="menu-close" type="button" aria-label="Close menu">
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg>
         </button>
