@@ -308,3 +308,6 @@ html { overflow-x: clip; }
 .theme-toggle .icon-sun { display: none; }
 :root[data-theme='dark'] .theme-toggle .icon-sun { display: block; }
 :root[data-theme='dark'] .theme-toggle .icon-moon { display: none; }
+
+/* The home page ends on the full-width contact block; the footer sits right under it. */
+main:has(> .contact-section:last-child) + .site-footer { margin-top: 0; border-top: 0; }
