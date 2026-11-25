@@ -2,11 +2,40 @@
 import Base from '../../layouts/Base.astro';
 import ContactButton from '../../components/ContactButton.astro';
 import { notes, formatDate } from '../../data/notes';
+import { breadcrumbs, jsonLd, personRef, schemaIds } from '../../lib/seo';
 export const getStaticPaths = () => notes.map((note) => ({ params: { slug: note.slug }, props: { note } }));
 const { note } = Astro.props;
 const { Content, frontmatter } = note;
+
+const pageUrl = new URL(`/notes/${note.slug}/`, Astro.site).href;
+const ids = schemaIds(Astro.site);
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'BlogPosting',
+      '@id': `${pageUrl}#article`,
+      headline: frontmatter.title,
+      description: frontmatter.description,
+      datePublished: frontmatter.date,
+      url: pageUrl,
+      mainEntityOfPage: pageUrl,
+      inLanguage: 'en',
+      image: new URL('/og.png', Astro.site).href,
+      author: personRef(Astro.site),
+      publisher: personRef(Astro.site),
+      isPartOf: { '@id': ids.website },
+    },
+    breadcrumbs(`${pageUrl}#breadcrumb`, [
+      ['Home', ids.home],
+      ['Notes', new URL('/notes/', Astro.site).href],
+      [frontmatter.title, pageUrl],
+    ]),
+  ],
+};
 ---
-<Base title={`${frontmatter.title} | Veer Shah`} description={frontmatter.description}>
+<Base title={`${frontmatter.title} | Veer Shah`} description={frontmatter.description} ogType="article" publishedTime={frontmatter.date}>
+  <script is:inline slot="head" type="application/ld+json" set:html={jsonLd(structuredData)} />
   <a href="/notes/">← All notes</a>
   <article data-track="article">
     <header>

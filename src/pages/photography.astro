@@ -8,6 +8,7 @@ import bridge from '../assets/photos/bridge.jpg';
 import bokeh from '../assets/photos/bokeh.jpg';
 import netSculpture from '../assets/photos/net-sculpture.jpg';
 import { getUnsplashPhotos, sized, UTM } from '../lib/unsplash';
+import { breadcrumbs, jsonLd, personRef, schemaIds } from '../lib/seo';
 
 const unsplash = profile.links.find((l) => l.label === 'Unsplash')?.href ?? 'https://unsplash.com/@veermickey';
 
@@ -25,9 +26,62 @@ const photos = await Promise.all(
 const shots = await getUnsplashPhotos();
 const profileUrl = `${unsplash}?${UTM}`;
 const unsplashHome = `https://unsplash.com/?${UTM}`;
+
+// SEO: the top photo as the share card, and an ImageGallery with the photos as ImageObjects.
+const pageUrl = new URL('/photography/', Astro.site).href;
+const ids = schemaIds(Astro.site);
+const title = `Photography by ${profile.name}: cities, architecture and light`;
+const description = `Photography by ${profile.name} (${profile.alternateNames[0]}): cities, architecture, museums and night scenes, also published on Unsplash.`;
+const top = shots[0];
+const localCard = top ? undefined : await getImage({ src: photos[0].src, width: 1200, format: 'jpg', quality: 80 });
+const og = top
+  ? { src: `${top.raw}&w=1200&fm=jpg&fit=max&q=80`, width: 1200, height: Math.round((1200 * top.height) / top.width), alt: top.alt }
+  : { src: new URL(localCard!.src, Astro.site).href, width: Number(localCard!.attributes.width), height: Number(localCard!.attributes.height), alt: photos[0].alt };
+const images = top
+  ? shots.slice(0, 30).map((photo) => ({
+      '@type': 'ImageObject',
+      contentUrl: sized(photo, 1200),
+      url: photo.page,
+      caption: photo.alt,
+      width: photo.width,
+      height: photo.height,
+      creator: personRef(Astro.site),
+      creditText: `${profile.name} on Unsplash`,
+      license: 'https://unsplash.com/license',
+      acquireLicensePage: photo.page,
+    }))
+  : photos.map((photo) => ({
+      '@type': 'ImageObject',
+      contentUrl: new URL(photo.full, Astro.site).href,
+      caption: photo.alt,
+      creator: personRef(Astro.site),
+      creditText: profile.name,
+    }));
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'ImageGallery',
+      '@id': `${pageUrl}#gallery`,
+      url: pageUrl,
+      name: title,
+      description,
+      inLanguage: 'en',
+      isPartOf: { '@id': ids.website },
+      author: personRef(Astro.site),
+      breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
+      associatedMedia: images,
+    },
+    breadcrumbs(`${pageUrl}#breadcrumb`, [
+      ['Home', ids.home],
+      ['Photography', pageUrl],
+    ]),
+  ],
+};
 ---
 
-<Base title={`Photography | ${profile.name}`} description={`Photos by ${profile.name}: cities, architecture, museums and night scenes.`} wide>
+<Base title={title} description={description} ogImage={og.src} ogImageAlt={og.alt} ogImageWidth={og.width} ogImageHeight={og.height} wide>
+  <script is:inline slot="head" type="application/ld+json" set:html={jsonLd(structuredData)} />
   <section id="photography" class="intro" aria-labelledby="photography-heading">
     <h1 id="photography-heading" class="display">Photography</h1>
     <p class="lede">Cities, architecture and light.{shots.length > 0 && ` ${shots.length} photos.`}</p>

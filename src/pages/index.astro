@@ -11,6 +11,7 @@ import ProjectLinks from '../components/ProjectLinks.astro';
 import { profile } from '../data/profile';
 import { projects } from '../data/projects';
 import { projectCategories, categoriesByProject } from '../data/project-categories';
+import { jsonLd } from '../lib/seo';
 
 const assets = import.meta.glob<{ default: ImageMetadata }>('../assets/projects/*/*.{png,jpg,jpeg,webp}', { eager: true });
 const thumbnail = (p: (typeof projects)[number]) => {
@@ -84,7 +85,7 @@ const structuredData = {
 ---
 
 <Base title={`${profile.name} (${profile.alternateNames[0]}), software engineer`} description={profile.description} wide>
-  <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+  <script is:inline slot="head" type="application/ld+json" set:html={jsonLd(structuredData)} />
   <section class="hero" aria-labelledby="hero-name">
     <canvas class="hero-field" aria-hidden="true"></canvas>
     <p class="kicker" data-reveal><span class="pulse" aria-hidden="true"></span>Software engineer · M.S. CS, UT Dallas</p>
