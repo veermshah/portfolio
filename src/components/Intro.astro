@@ -89,17 +89,17 @@ const first = stops[0];
       i++;
       flip(stops[i]);
       if (i < n) {
-        // Fast through the world, slowing as it comes home (about 1.6 s in all).
-        timer = setTimeout(step, 25 + 120 * Math.pow(i / n, 3));
+        // Fast through the world, slowing as it comes home (about 1.1 s in all).
+        timer = setTimeout(step, 18 + 80 * Math.pow(i / n, 3));
       } else {
         intro.classList.add('is-home');
-        timer = setTimeout(open, 420);
+        timer = setTimeout(open, 300);
       }
     }
     function open() {
       if (done) return;
       intro.classList.add('is-open');
-      timer = setTimeout(finish, 800);
+      timer = setTimeout(finish, 650);
     }
     function finish() {
       if (done) return;
@@ -109,7 +109,7 @@ const first = stops[0];
       root.classList.remove('intro-on');
       intro.remove();
     }
-    timer = setTimeout(step, 260);
+    timer = setTimeout(step, 120);
     addEventListener('pointerdown', finish, { once: true });
     addEventListener('keydown', finish, { once: true });
   })();
@@ -139,7 +139,7 @@ const first = stops[0];
     height: 50.5%;
     /* The board follows the theme the visitor is about to see, so there is no flash of the other one. */
     background: var(--bg);
-    transition: transform 0.75s cubic-bezier(0.76, 0, 0.24, 1);
+    transition: transform 0.6s cubic-bezier(0.76, 0, 0.24, 1);
   }
   .intro::before { top: 0; }
   .intro::after { bottom: 0; }
@@ -209,5 +209,5 @@ const first = stops[0];
     text-transform: uppercase;
   }
   /* The hero settles in as the board opens, instead of under it. */
-  :global(html.intro-on [data-reveal]) { animation-delay: calc(2.4s + var(--reveal-i, 0) * 90ms) !important; }
+  :global(html.intro-on [data-reveal]) { animation-delay: calc(1.6s + var(--reveal-i, 0) * 90ms) !important; }
 </style>
