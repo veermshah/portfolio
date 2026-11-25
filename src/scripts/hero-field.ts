@@ -37,9 +37,9 @@ export function initHeroField() {
   let ty = new Float32Array(0);
   let k = new Float32Array(0);
   let accent = new Uint8Array(0);
-  // White dots read on the dark photo scrim in both themes. The site is black and white only.
-  const ink = '#fff';
-  const hot = '#fff';
+  // Dots take the hero's text colour, which follows the theme (ink by day, white at night).
+  let ink = '#fff';
+  let hot = '#fff';
   let pointer = { x: 0, y: 0, active: false };
   let pushRadius = 120;
   let visible = true;
@@ -50,7 +50,11 @@ export function initHeroField() {
   let introAt = 0;
   let alive = true;
 
-  const colors = () => {};
+  const colors = () => {
+    const c = getComputedStyle(hero!).getPropertyValue('--hero-ink').trim() || '#fff';
+    ink = c;
+    hot = c;
+  };
 
   // Lay the name out like the h1 (same font, size, spacing and wrapping), draw it on an offscreen
   // canvas and pick dot targets from its filled pixels.

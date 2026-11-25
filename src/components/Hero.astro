@@ -100,7 +100,7 @@ const [lead, ...rest] = frames;
     --hero-min: min(calc(100svh - 3.5rem - var(--hero-pad)), 48rem);
     min-height: var(--hero-min);
     padding-bottom: clamp(5.5rem, 4.5rem + 3vw, 7rem);
-    color: #fff;
+    color: var(--hero-ink);
   }
   @media (max-width: 40rem) { .hero { min-height: 0; padding-bottom: 4rem; } }
   .hero-bg {
@@ -153,12 +153,26 @@ const [lead, ...rest] = frames;
   }
   /* At least 60% black behind text on phones, and behind the left (text) half on wide screens,
      so white text keeps 4.5:1 even over a white sky. */
-  .hero-scrim { background: linear-gradient(to bottom, rgb(8 9 11 / 0.62), rgb(8 9 11 / 0.6) 40%, rgb(8 9 11 / 0.74)); }
+  /* The wash follows the theme: a pale wash with ink text by day, a dark wash with white text at
+     night. Both keep text at 4.5:1 or better over the brightest photo. */
+  .hero-scrim {
+    --wash: 248 248 247;
+    background: linear-gradient(to bottom, rgb(var(--wash) / 0.8), rgb(var(--wash) / 0.76) 40%, rgb(var(--wash) / 0.9));
+    transition: background 0.4s ease;
+  }
   @media (min-width: 64rem) {
     .hero-scrim {
       background:
-        linear-gradient(90deg, rgb(8 9 11 / 0.7), rgb(8 9 11 / 0.58) 55%, rgb(8 9 11 / 0.3)),
-        linear-gradient(to bottom, rgb(8 9 11 / 0.2), rgb(8 9 11 / 0.4));
+        linear-gradient(90deg, rgb(var(--wash) / 0.88), rgb(var(--wash) / 0.76) 55%, rgb(var(--wash) / 0.4)),
+        linear-gradient(to bottom, rgb(var(--wash) / 0.2), rgb(var(--wash) / 0.45));
+    }
+  }
+  :global(:root[data-theme='dark']) .hero-scrim { --wash: 8 9 11; background: linear-gradient(to bottom, rgb(var(--wash) / 0.62), rgb(var(--wash) / 0.6) 40%, rgb(var(--wash) / 0.74)); }
+  @media (min-width: 64rem) {
+    :global(:root[data-theme='dark']) .hero-scrim {
+      background:
+        linear-gradient(90deg, rgb(var(--wash) / 0.7), rgb(var(--wash) / 0.58) 55%, rgb(var(--wash) / 0.3)),
+        linear-gradient(to bottom, rgb(var(--wash) / 0.2), rgb(var(--wash) / 0.4));
     }
   }
   .hero-field { display: none; }
@@ -170,14 +184,13 @@ const [lead, ...rest] = frames;
     right: 0;
     bottom: clamp(0.9rem, 2vw, 1.4rem);
     padding: 0.3rem 0.75rem;
-    border: 1px solid rgb(255 255 255 / 0.18);
+    border: 1px solid color-mix(in srgb, var(--hero-ink) 18%, transparent);
     border-radius: 999px;
-    background: rgb(255 255 255 / 0.1);
+    background: color-mix(in srgb, var(--hero-on-ink) 35%, transparent);
     -webkit-backdrop-filter: blur(12px) saturate(150%);
     backdrop-filter: blur(12px) saturate(150%);
     font-size: 0.75rem;
-    color: rgb(255 255 255 / 0.9);
-    text-shadow: 0 1px 6px rgb(0 0 0 / 0.4);
+    color: var(--hero-ink);
   }
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .hero-credit { background: rgb(10 10 10 / 0.6); } }
   /* Phones: the credit sits on the left. */
@@ -186,6 +199,6 @@ const [lead, ...rest] = frames;
   }
   .hero-credit a { color: inherit; }
   .hero-credit .sep { margin: 0 0.45em; }
-  .hero-credit a:hover { color: #fff; }
-  .hero-credit a:focus-visible { outline-color: #fff; }
+  .hero-credit a:hover { color: var(--hero-ink); }
+  .hero-credit a:focus-visible { outline-color: var(--hero-ink); }
 </style>

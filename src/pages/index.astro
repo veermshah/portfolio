@@ -404,14 +404,14 @@ const structuredData = {
   .contact a:hover { color: var(--ink); }
 
   /* Hero over a photo: light text on the dark scrim in both themes. */
-  :global(.hero) :is(.display, .bio, .contact) { text-shadow: 0 1px 14px rgb(0 0 0 / 0.35); }
-  :global(.hero) .display { color: #fff; }
-  :global(.hero) .bio { color: rgb(255 255 255 / 0.92); }
-  :global(.hero) .contact a { color: rgb(255 255 255 / 0.88); }
-  :global(.hero) .contact a:hover { color: #fff; }
-  :global(.hero) a:focus-visible { outline-color: #fff; }
-  :global(.hero .contact-button) { background: #fff; border-color: #fff; color: #0a0a0a; }
-  :global(.hero .contact-button:hover) { background: transparent; color: #fff; }
+  :global(:root[data-theme='dark'] .hero) :is(.display, .bio, .contact) { text-shadow: 0 1px 14px rgb(0 0 0 / 0.35); }
+  :global(.hero) .display { color: var(--hero-ink); }
+  :global(.hero) .bio { color: color-mix(in srgb, var(--hero-ink) 88%, transparent); }
+  :global(.hero) .contact a { color: color-mix(in srgb, var(--hero-ink) 82%, transparent); }
+  :global(.hero) .contact a:hover { color: var(--hero-ink); }
+  :global(.hero) a:focus-visible { outline-color: var(--hero-ink); }
+  :global(.hero .contact-button) { background: var(--hero-ink); border-color: var(--hero-ink); color: var(--hero-on-ink); }
+  :global(.hero .contact-button:hover) { background: transparent; color: var(--hero-ink); }
   /* Comes last to win over the colours above. Until the dots take over, the h1 is transparent but still in the accessibility tree. */
   :global(.hero.dot-pending) .display { color: transparent; text-shadow: none; }
 

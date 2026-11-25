@@ -6,6 +6,10 @@
   --rule: #e5e5e5;
   --accent: var(--ink);
   --accent-soft: #f2f2f2;
+  /* Text on the home hero photo: ink on a pale wash by day, white on a dark wash at night. */
+  --hero-ink: #0a0a0a;
+  --hero-on-ink: #ffffff;
+  --hero-ink-soft: rgb(10 10 10 / 0.72);
 
   --sans: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: 'Atkinson Hyperlegible Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
@@ -48,6 +52,9 @@
     --rule: #262626;
     --accent: var(--ink);
     --accent-soft: #1a1a1a;
+    --hero-ink: #ffffff;
+    --hero-on-ink: #0a0a0a;
+    --hero-ink-soft: rgb(255 255 255 / 0.82);
   }
 }
 
@@ -58,6 +65,9 @@
   --rule: #262626;
   --accent: var(--ink);
   --accent-soft: #1a1a1a;
+  --hero-ink: #ffffff;
+  --hero-on-ink: #0a0a0a;
+  --hero-ink-soft: rgb(255 255 255 / 0.82);
 }
 
 *,
@@ -312,7 +322,7 @@ html { overflow-x: clip; }
   color: var(--ink);
   transition: background-color 0.35s var(--ease), color 0.35s var(--ease);
 }
-body:has(.hero) .site-header:not(.is-scrolled) { background: transparent; color: #fff; }
+body:has(.hero) .site-header:not(.is-scrolled) { background: transparent; color: var(--hero-ink); }
 .site-header.is-scrolled { background: transparent; pointer-events: none; }
 .site-header-inner {
   position: relative;
@@ -371,7 +381,7 @@ body:has(.hero) .site-header:not(.is-scrolled) { background: transparent; color:
   transition: background-color 0.3s var(--ease), color 0.3s var(--ease), rotate 0.7s cubic-bezier(0.5, 1.6, 0.4, 1), border-radius 0.4s var(--ease);
 }
 .monogram span { display: inline-block; transition: translate 0.35s var(--ease); }
-body:has(.hero) .site-header:not(.is-scrolled) .monogram { background: #fff; color: #0a0a0a; }
+body:has(.hero) .site-header:not(.is-scrolled) .monogram { background: var(--hero-ink); color: var(--hero-on-ink); }
 .is-scrolled .monogram { rotate: 1turn; border-radius: 50%; }
 .wordmark:hover .monogram .mono-v { translate: -1px -2px; }
 .wordmark:hover .monogram .mono-s { translate: 1px 2px; }
@@ -396,8 +406,8 @@ body:has(.hero) .site-header:not(.is-scrolled) .monogram { background: #fff; col
 }
 .site-nav::-webkit-scrollbar { display: none; }
 body:has(.hero) .site-header:not(.is-scrolled) .site-nav {
-  background: rgb(255 255 255 / 0.1);
-  border-color: rgb(255 255 255 / 0.16);
+  background: color-mix(in srgb, var(--hero-ink) 9%, transparent);
+  border-color: color-mix(in srgb, var(--hero-ink) 15%, transparent);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
@@ -417,8 +427,8 @@ body:has(.hero) .site-header:not(.is-scrolled) .site-nav {
 }
 .site-nav a:hover, .site-nav a.is-here, .site-nav a[aria-current='page'] { color: var(--ink); }
 @media (max-width: 79.99rem) { .site-nav a { padding: 0 0.65rem; } .is-scrolled .site-header-inner { gap: 0.75rem; } }
-body:has(.hero) .site-header:not(.is-scrolled) .site-nav a { color: rgb(255 255 255 / 0.82); }
-body:has(.hero) .site-header:not(.is-scrolled) .site-nav a:hover { color: #fff; }
+body:has(.hero) .site-header:not(.is-scrolled) .site-nav a { color: var(--hero-ink-soft); }
+body:has(.hero) .site-header:not(.is-scrolled) .site-nav a:hover { color: var(--hero-ink); }
 /* The sliding pill. Placed by the script; without JavaScript the current link is filled instead. */
 .nav-blob {
   position: absolute;
@@ -436,8 +446,8 @@ body:has(.hero) .site-header:not(.is-scrolled) .site-nav a:hover { color: #fff; 
 }
 .nav-blob.is-on { opacity: 1; }
 .site-nav a.on-blob { color: var(--bg); }
-body:has(.hero) .site-header:not(.is-scrolled) .nav-blob { background: #fff; }
-body:has(.hero) .site-header:not(.is-scrolled) .site-nav a.on-blob { color: #0a0a0a; }
+body:has(.hero) .site-header:not(.is-scrolled) .nav-blob { background: var(--hero-ink); }
+body:has(.hero) .site-header:not(.is-scrolled) .site-nav a.on-blob { color: var(--hero-on-ink); }
 html:not(.js) .site-nav a[aria-current='page'] { background: var(--ink); color: var(--bg); }
 .site-nav a:active { scale: 0.96; }
 
@@ -458,12 +468,14 @@ html:not(.js) .site-nav a[aria-current='page'] { background: var(--ink); color: 
 .theme-toggle:hover { color: var(--ink); background: var(--accent-soft); }
 .theme-toggle:hover svg { rotate: 40deg; }
 .theme-toggle:active { scale: 0.9; }
+/* The whole page eases between themes instead of snapping. */
+html.theme-switching, html.theme-switching * { transition: background-color 0.4s var(--ease), color 0.4s var(--ease), border-color 0.4s var(--ease), fill 0.4s var(--ease) !important; }
 .theme-toggle .icon-sun { display: none; }
 :root[data-theme='dark'] .theme-toggle .icon-sun { display: block; }
 :root[data-theme='dark'] .theme-toggle .icon-moon { display: none; }
-body:has(.hero) .site-header:not(.is-scrolled) :is(.theme-toggle, .menu-button) { color: #fff; }
-body:has(.hero) .site-header:not(.is-scrolled) .theme-toggle:hover { background: rgb(255 255 255 / 0.14); }
-body:has(.hero) .site-header:not(.is-scrolled) :focus-visible { outline-color: #fff; }
+body:has(.hero) .site-header:not(.is-scrolled) :is(.theme-toggle, .menu-button) { color: var(--hero-ink); }
+body:has(.hero) .site-header:not(.is-scrolled) .theme-toggle:hover { background: color-mix(in srgb, var(--hero-ink) 12%, transparent); }
+body:has(.hero) .site-header:not(.is-scrolled) :focus-visible { outline-color: var(--hero-ink); }
 .is-scrolled .menu-button { margin-right: 0; }
 
 /* Phones: the island holds the wordmark and the menu button; the links live in the menu sheet.
