@@ -4,17 +4,24 @@ import '@fontsource/atkinson-hyperlegible-next/latin-700.css';
 import '@fontsource/atkinson-hyperlegible-next/latin-800.css';
 import '@fontsource/atkinson-hyperlegible-mono/latin-400.css';
 import '../styles/global.css';
+// Same file the 400 @font-face above points at, so the preload and the stylesheet share one hashed URL.
+import bodyFont from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff2?url';
 import { profile } from '../data/profile';
 
 interface Props {
   title: string;
   description: string;
-  /** Path to an OG image under public/, defaults to the site card. */
+  /** Path to an OG image under public/ or an absolute URL, defaults to the site card. */
   ogImage?: string;
   ogImageAlt?: string;
+  /** Pixel size of a non-default OG image, when known. */
+  ogImageWidth?: number;
+  ogImageHeight?: number;
   /** Absolute canonical URL; defaults to this path on the main site. */
   canonical?: string;
   ogType?: 'website' | 'article';
+  /** ISO date for article:published_time (ogType article only). */
+  publishedTime?: string;
   sitemap?: string;
   noindex?: boolean;
   /** Use the wide container (home page grids). */
@@ -27,12 +34,17 @@ const {
   ogImage = '/og.png',
   ogImageAlt = `${profile.name}, selected projects`,
   ogType = 'website',
+  publishedTime,
   sitemap = '/sitemap-index.xml',
   noindex = false,
   wide = false,
 } = Astro.props;
-const canonical = Astro.props.canonical ?? new URL(Astro.url.pathname, Astro.site);
+// A noindex page with no explicit canonical (the 404 page) gets no canonical link rather than one to its own error path.
+const canonical = Astro.props.canonical ?? (noindex ? undefined : new URL(Astro.url.pathname, Astro.site));
 const ogUrl = new URL(ogImage, Astro.site);
+const isSiteCard = ogImage.endsWith('/og.png');
+const ogWidth = Astro.props.ogImageWidth ?? (isSiteCard ? 1200 : undefined);
+const ogHeight = Astro.props.ogImageHeight ?? (isSiteCard ? 630 : undefined);
 const year = new Date().getFullYear();
 ---
 
@@ -53,7 +65,8 @@ const year = new Date().getFullYear();
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <link rel="preload" href={bodyFont} as="font" type="font/woff2" crossorigin />
     <meta name="author" content={profile.name} />
     <meta name="theme-color" content="#fcfcfc" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#141517" media="(prefers-color-scheme: dark)" />
@@ -67,22 +80,25 @@ const year = new Date().getFullYear();
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="sitemap" href={sitemap} />
-    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'} />
 
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={profile.name} />
     <meta property="og:locale" content="en_US" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
+    {canonical && <meta property="og:url" content={canonical} />}
     <meta property="og:image" content={ogUrl} />
-    {ogImage.endsWith('/og.png') && <meta property="og:image:width" content="1200" />}
-    {ogImage.endsWith('/og.png') && <meta property="og:image:height" content="630" />}
+    {ogWidth && <meta property="og:image:width" content={String(ogWidth)} />}
+    {ogHeight && <meta property="og:image:height" content={String(ogHeight)} />}
     <meta property="og:image:alt" content={ogImageAlt} />
+    {ogType === 'article' && publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {ogType === 'article' && <meta property="article:author" content={new URL('/', Astro.site).href} />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogUrl} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
     <slot name="head" />
   </head>
   <body>
