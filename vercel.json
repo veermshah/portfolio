@@ -16,7 +16,29 @@
       ]
     },
     {
-      "source": "/notes/:path*",
+      "source": "/notes/",
+      "destination": "https://blog.veermickey.com/",
+      "permanent": true,
+      "missing": [
+        {
+          "type": "host",
+          "value": "blog.veermickey.com"
+        }
+      ]
+    },
+    {
+      "source": "/notes/:path+",
+      "destination": "https://blog.veermickey.com/",
+      "permanent": true,
+      "missing": [
+        {
+          "type": "host",
+          "value": "blog.veermickey.com"
+        }
+      ]
+    },
+    {
+      "source": "/notes/:path+/",
       "destination": "https://blog.veermickey.com/",
       "permanent": true,
       "missing": [
