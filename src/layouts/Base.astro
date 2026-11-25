@@ -186,13 +186,9 @@ const navItems = [
         addEventListener('resize', () => { if (menu.open && matchMedia('(min-width: 48rem)').matches) menu.close(); }, { passive: true });
       }
 
+      // At the top of the home page the header is clear over the hero; it turns solid as soon as you scroll.
       const header = document.querySelector('.site-header');
-      const hero = document.querySelector('.hero');
-      let solidAt = 8;
-      const measure = () => { solidAt = hero ? Math.max(8, hero.getBoundingClientRect().bottom + scrollY - header.offsetHeight * 2) : 8; };
-      const onScroll = () => header?.classList.toggle('is-scrolled', scrollY > solidAt);
-      measure();
-      addEventListener('resize', () => { measure(); onScroll(); }, { passive: true });
+      const onScroll = () => header?.classList.toggle('is-scrolled', scrollY > 24);
       addEventListener('scroll', onScroll, { passive: true });
       onScroll();
 
