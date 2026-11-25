@@ -1,6 +1,7 @@
 ---
 import { Image, getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
+import FlightGlobe from '../components/FlightGlobe.astro';
 import { profile } from '../data/profile';
 import marinaBay from '../assets/photos/marina-bay.jpg';
 import skylineNight from '../assets/photos/skyline-night.jpg';
@@ -142,6 +143,8 @@ const structuredData = {
     )}
     {shots.length > 0 && <p class="credit">Photos by <a href={profileUrl}>Veer Mickey Shah</a> on <a href={unsplashHome}>Unsplash</a>.</p>}
   </section>
+
+  <FlightGlobe />
 
   <dialog class="viewer" data-viewer aria-label="Photo viewer">
     <img data-viewer-img alt="" />
