@@ -217,8 +217,10 @@ const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
       const blob = nav?.querySelector('.nav-blob');
       const navLinks = nav ? [...nav.querySelectorAll('a')] : [];
       let current = navLinks.find((a) => a.getAttribute('aria-current') === 'page') || null;
+      let shown = null;
       const place = (link) => {
         if (!blob) return;
+        shown = link;
         navLinks.forEach((a) => a.classList.toggle('on-blob', a === link));
         if (!link) { blob.classList.remove('is-on'); return; }
         blob.style.setProperty('--x', link.offsetLeft + 'px');
@@ -232,7 +234,11 @@ const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
       nav?.addEventListener('pointerleave', () => place(current));
       nav?.addEventListener('focusout', (e) => { if (!nav.contains(e.relatedTarget)) place(current); });
       place(current);
-      addEventListener('resize', () => place(current), { passive: true });
+      // Re-measure once the web font has loaded or the header changes shape (fallback text is wider).
+      const remeasure = () => place(shown);
+      document.fonts?.ready.then(remeasure);
+      if (nav && 'ResizeObserver' in window) new ResizeObserver(remeasure).observe(nav);
+      addEventListener('resize', remeasure, { passive: true });
 
       // Home: as each section scrolls through the middle of the screen, the pill moves to its link and
       // the wordmark swaps the name for the section's name.
