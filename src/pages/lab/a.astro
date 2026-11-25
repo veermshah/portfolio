@@ -20,7 +20,7 @@ const assets = import.meta.glob<{ default: ImageMetadata }>('../../assets/projec
 /** The project's lead image and its alt text, or undefined when it has none. */
 const thumb = (p: (typeof projects)[number]) => {
   const first = p.images[0];
-  const src = first ? assets[`../assets/projects/${p.slug}/${first.file}`]?.default : undefined;
+  const src = first ? assets[`../../assets/projects/${p.slug}/${first.file}`]?.default : undefined;
   return first && src ? { src, alt: first.alt } : undefined;
 };
 
@@ -229,8 +229,8 @@ const roll = featured.length + sheet.length;
           <p class="log-when"><span>{item.period}</span><span>{item.location}</span></p>
           <div class="log-main">
             <h3>
-              {item.logo && logos[`../assets/experience/${item.logo}`] && (
-                <span class="log-logo"><Image src={logos[`../assets/experience/${item.logo}`].default} alt="" width={52} height={52} format="webp" loading="lazy" /></span>
+              {item.logo && logos[`../../assets/experience/${item.logo}`] && (
+                <span class="log-logo"><Image src={logos[`../../assets/experience/${item.logo}`].default} alt="" width={52} height={52} format="webp" loading="lazy" /></span>
               )}
               {item.company}
             </h3>

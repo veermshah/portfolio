@@ -20,7 +20,7 @@ const assets = import.meta.glob<{ default: ImageMetadata }>('../../assets/projec
 /** The project's lead image and its alt text, or undefined when it has none. */
 const thumb = (p: (typeof projects)[number]) => {
   const first = p.images[0];
-  const src = first ? assets[`../assets/projects/${p.slug}/${first.file}`]?.default : undefined;
+  const src = first ? assets[`../../assets/projects/${p.slug}/${first.file}`]?.default : undefined;
   return first && src ? { src, alt: first.alt } : undefined;
 };
 
@@ -222,8 +222,8 @@ const now = education[0];
       {experience.map((item) => (
         <li class="tile exp" data-rise>
           <div class="exp-top">
-            {item.logo && logos[`../assets/experience/${item.logo}`] && (
-              <span class="exp-logo"><Image src={logos[`../assets/experience/${item.logo}`].default} alt="" width={52} height={52} format="webp" loading="lazy" /></span>
+            {item.logo && logos[`../../assets/experience/${item.logo}`] && (
+              <span class="exp-logo"><Image src={logos[`../../assets/experience/${item.logo}`].default} alt="" width={52} height={52} format="webp" loading="lazy" /></span>
             )}
             <p class="sub">{item.period}<br />{item.location}</p>
           </div>

@@ -20,7 +20,7 @@ const assets = import.meta.glob<{ default: ImageMetadata }>('../../assets/projec
 /** The project's lead image and its alt text, or undefined when it has none. */
 const thumb = (p: (typeof projects)[number]) => {
   const first = p.images[0];
-  const src = first ? assets[`../assets/projects/${p.slug}/${first.file}`]?.default : undefined;
+  const src = first ? assets[`../../assets/projects/${p.slug}/${first.file}`]?.default : undefined;
   return first && src ? { src, alt: first.alt } : undefined;
 };
 
@@ -112,7 +112,7 @@ const sections = [
   { id: 'education', label: 'Education' },
   { id: 'contact', label: 'Contact' },
 ];
-const tags = [...new Set(skills.flatMap((g) => g.items.split(/,\s*/)))].slice(0, 14);
+const tags = [...new Set(skills.flatMap((g) => g.items.replace(/\s*\([^)]*\)/g, '').split(/[,;]\s*/)))].filter((t) => t.length < 22).slice(0, 16);
 ---
 
 <Base title="Redesign C: Editorial | Veer Mickey Shah" description="A design preview for veermickey.com. Not the live site." noindex wide>
@@ -166,7 +166,7 @@ const tags = [...new Set(skills.flatMap((g) => g.items.split(/,\s*/)))].slice(0,
         const t = thumb(project);
         return (
           <li class="panel" data-rise>
-            <div class="panel-bar mono"><span>{num(i + 1)} / {num(featured.length)}</span><span>{label || 'Project'}</span></div>
+            <div class="panel-bar mono"><span>{num(i + 1)} / {num(featured.length)}</span><span>{label || project.context || 'Selected work'}</span></div>
             <div class="panel-body">
               <div class="panel-media">
                 {t ? <Image src={t.src} alt={t.alt} widths={[480, 800, 1200]} sizes="(min-width: 64rem) 40rem, 100vw" format="webp" loading={i < 1 ? 'eager' : 'lazy'} />
