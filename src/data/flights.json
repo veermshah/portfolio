@@ -1,6 +1,12 @@
 {
   "_note": "Airport routes for the flight globe. Pairs are unordered; count is flights flown on that route in either direction. Append new routes or bump counts; add any new airport to airports.",
   "airports": {
+    "BOM": {
+      "lat": 19.089,
+      "lon": 72.868,
+      "city": "Mumbai",
+      "country": "IN"
+    },
     "BUD": {
       "lat": 47.43,
       "lon": 19.262,
@@ -19,6 +25,12 @@
       "city": "Cancún",
       "country": "MX"
     },
+    "DAL": {
+      "lat": 32.845,
+      "lon": -96.848,
+      "city": "Dallas",
+      "country": "US"
+    },
     "DEN": {
       "lat": 39.86,
       "lon": -104.674,
@@ -30,6 +42,12 @@
       "lon": -97.038,
       "city": "Dallas",
       "country": "US"
+    },
+    "DXB": {
+      "lat": 25.25,
+      "lon": 55.371,
+      "city": "Dubai",
+      "country": "AE"
     },
     "FCO": {
       "lat": 41.805,
@@ -60,6 +78,18 @@
       "lon": 126.451,
       "city": "Seoul",
       "country": "KR"
+    },
+    "LGA": {
+      "lat": 40.777,
+      "lon": -73.873,
+      "city": "New York",
+      "country": "US"
+    },
+    "LHR": {
+      "lat": 51.471,
+      "lon": -0.46,
+      "city": "London",
+      "country": "GB"
     },
     "LIS": {
       "lat": 38.781,
@@ -127,6 +157,12 @@
       "city": "Tenerife",
       "country": "ES"
     },
+    "VCE": {
+      "lat": 45.505,
+      "lon": 12.352,
+      "city": "Venice",
+      "country": "IT"
+    },
     "VIE": {
       "lat": 48.11,
       "lon": 16.57,
@@ -154,6 +190,16 @@
   },
   "routes": [
     {
+      "a": "BOM",
+      "b": "DXB",
+      "count": 1
+    },
+    {
+      "a": "BOM",
+      "b": "NRT",
+      "count": 1
+    },
+    {
       "a": "BUD",
       "b": "MAD",
       "count": 1
@@ -169,6 +215,11 @@
       "count": 2
     },
     {
+      "a": "DAL",
+      "b": "LGA",
+      "count": 1
+    },
+    {
       "a": "DEN",
       "b": "DFW",
       "count": 1
@@ -176,6 +227,11 @@
     {
       "a": "DEN",
       "b": "RIC",
+      "count": 1
+    },
+    {
+      "a": "DFW",
+      "b": "DXB",
       "count": 1
     },
     {
@@ -196,6 +252,11 @@
     {
       "a": "DFW",
       "b": "ICN",
+      "count": 1
+    },
+    {
+      "a": "DFW",
+      "b": "LHR",
       "count": 1
     },
     {
@@ -246,6 +307,11 @@
     {
       "a": "IAH",
       "b": "NRT",
+      "count": 1
+    },
+    {
+      "a": "LHR",
+      "b": "VCE",
       "count": 1
     },
     {
