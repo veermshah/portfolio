@@ -18,8 +18,12 @@ const unsplashUrl = (raw: string, width: number) => `${raw}&w=${width}&auto=form
 
 type Frame = { src: string; srcset: string; width: number; height: number; page?: string; color: string };
 
-// Most popular landscape photos from Unsplash (already sorted by popularity), else the local ones.
-const shots = (await getUnsplashPhotos()).filter((p) => p.width >= p.height * 1.25).slice(0, COUNT);
+// Hand-picked city shots first (Unsplash photo IDs), topped up with the most popular landscape
+// photos if fewer than three picks come back. Without Unsplash, the local photos below.
+const PICKS = ['_NuB9bPqoKM', 'lbBv6o6sfcE', 'vEGdsT_Pca8', 'XBIoPstW5mY', 'xoE0k7kg2mI'];
+const landscape = (await getUnsplashPhotos()).filter((p) => p.width >= p.height * 1.25);
+const picked = PICKS.map((id) => landscape.find((p) => p.id === id)).filter((p) => p !== undefined);
+const shots = (picked.length >= 3 ? picked : [...picked, ...landscape.filter((p) => !picked.includes(p))]).slice(0, COUNT);
 const frames: Frame[] = shots.length
   ? shots.map((p) => ({
       src: unsplashUrl(p.raw, 1920),
