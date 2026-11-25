@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import PostList from './PostList.astro';
+import BackLink from './BackLink.astro';
 import { publishedPosts } from '../../lib/blog/posts';
 import { BLOG_DESCRIPTION, BLOG_ORIGIN, blogBase } from '../../lib/blog/config';
 import { CDN_CACHE, canonicalFor } from '../../lib/blog/http';
@@ -18,9 +19,9 @@ const title = tag ? `Posts tagged “${tag}” | Veer Shah` : 'Blog | Veer Shah'
 const canonical = canonicalFor(tag ? `/tags/${encodeURIComponent(tag)}` : '/');
 ---
 <Base title={title} description={BLOG_DESCRIPTION} canonical={canonical} sitemap="/sitemap.xml" ogImage={`${BLOG_ORIGIN}/og.png`} ogImageAlt="Veer Shah">
-  <a class="blog-back" href="https://veermickey.com/">← Veer Shah</a>
+  <BackLink href="https://veermickey.com/" label="Veer Shah" />
   <h1 class="blog-title">Blog</h1>
   {tag && <p class="blog-filter">Posts tagged <strong>{tag}</strong> · <a href={`${base}/`}>All posts</a></p>}
   <PostList posts={posts} base={base} />
-  <p class="blog-filter"><a href={`${base}/rss.xml`}>RSS feed</a></p>
+  <p class="blog-feed"><a href={`${base}/rss.xml`}>RSS feed</a></p>
 </Base>

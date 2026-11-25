@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ContactButton from '../../components/ContactButton.astro';
+import BackLink from '../../components/blog/BackLink.astro';
 import { publishedPost, type Post } from '../../lib/blog/posts';
 import { formatPostDate, readingMinutes, renderMarkdown, tagSlug } from '../../lib/blog/text';
 import { BLOG_ORIGIN, blogBase } from '../../lib/blog/config';
@@ -34,7 +35,7 @@ const jsonLd = {
 ---
 {!found ? (
 <Base title="Post not found | Veer Shah" description="This post doesn’t exist." canonical={canonicalFor(`/${slug}`)} sitemap="/sitemap.xml" noindex>
-  <a class="blog-back" href={`${base}/`}>← All posts</a>
+  <BackLink href={`${base}/`} label="All posts" />
   <h1 class="blog-title">Post not found</h1>
   <p class="blog-lede">There’s no published post at this address.</p>
 </Base>
@@ -54,7 +55,7 @@ const jsonLd = {
     {post.tags.map((tag) => <meta property="article:tag" content={tag} />)}
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </Fragment>
-  <a class="blog-back" href={`${base}/`}>← All posts</a>
+  <BackLink href={`${base}/`} label="All posts" />
   <article data-track="article">
     <header class="post-header">
       <p class="blog-meta"><time datetime={post.published_at}>{formatPostDate(post.published_at!)}</time> · {readingMinutes(post.content)} min read</p>
@@ -73,6 +74,6 @@ const jsonLd = {
 </Base>
 )}
 <style>
-  .post-aside { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); }
-  .post-aside p { margin-bottom: 1rem; }
+  .post-aside { margin-top: clamp(3rem, 2rem + 4vw, 5rem); padding-top: 1.5rem; border-top: 1px solid var(--ink); }
+  .post-aside p { margin-bottom: 1rem; font-size: var(--step-1); font-weight: 700; letter-spacing: -0.01em; }
 </style>
