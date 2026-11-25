@@ -16,12 +16,12 @@ const portrait = Object.values(found)[0]?.default;
       formats={['avif', 'webp']}
       fallbackFormat={portrait.format === 'png' ? 'png' : 'jpg'}
       widths={[400, 640, 960, 1280, 1520]}
-      sizes="(min-width: 64rem) 32rem, (min-width: 40rem) 24rem, calc(100vw - 2.5rem)"
+      sizes="(min-width: 64rem) 32rem, (min-width: 40rem) 24rem, min(calc(100vw - 2.5rem), 20rem)"
       width={1520}
       height={1900}
       alt="Veer Mickey Shah at his UT Dallas graduation"
       loading="eager"
-      fetchpriority="low"
+      fetchpriority="high"
       decoding="async"
     />
   </span>

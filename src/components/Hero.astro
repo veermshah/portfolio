@@ -39,6 +39,7 @@ const frames: Frame[] = shots.length
       }),
     );
 const [lead, ...rest] = frames;
+import RouteFlourish from './RouteFlourish.astro';
 ---
 
 <section class="hero" aria-labelledby="hero-name">
@@ -69,6 +70,7 @@ const [lead, ...rest] = frames;
       />
     </div>
     <div class="hero-scrim"></div>
+    <RouteFlourish />
     <canvas class="hero-field"></canvas>
   </div>
   <slot />

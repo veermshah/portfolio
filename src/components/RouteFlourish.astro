@@ -1,0 +1,72 @@
+---
+// A light first-visit flourish over the home hero, drawn from Veer's own flights
+// (src/data/flights.json): every route he has flown traces itself once across the hero photo,
+// faintly, landing on Dallas, then fades. It never covers the page: the hero copy, portrait and
+// links are readable and clickable from the first frame. Once per browser session, and not at all
+// with prefers-reduced-motion or without JavaScript. Inline SVG only, no images or extra requests.
+import flights from '../data/flights.json';
+
+type Airport = { lat: number; lon: number };
+const airports = flights.airports as Record<string, Airport>;
+const LON0 = -130, LON1 = 150, LAT0 = 64, W = 1000;
+const k = W / (LON1 - LON0);
+const H = Math.round((LAT0 + 6) * k);
+const at = (a: Airport) => [+((a.lon - LON0) * k).toFixed(1), +((LAT0 - a.lat) * k).toFixed(1)] as const;
+// Routes that touch Dallas draw last, so the sweep comes home.
+const home = (r: { a: string; b: string }) => r.a === 'DFW' || r.b === 'DFW';
+const routes = [...flights.routes].sort((x, y) => Number(home(x)) - Number(home(y)));
+const arcs = routes.map((r) => {
+  const [x1, y1] = at(airports[r.a]);
+  const [x2, y2] = at(airports[r.b]);
+  const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
+  const lift = Math.min(90, len * 0.22);
+  let nx = -dy / len, ny = dx / len;
+  if (ny > 0) { nx = -nx; ny = -ny; }
+  return `M${x1} ${y1}Q${((x1 + x2) / 2 + nx * lift).toFixed(1)} ${((y1 + y2) / 2 + ny * lift).toFixed(1)} ${x2} ${y2}`;
+});
+const dfw = at(airports.DFW);
+---
+
+<script is:inline>
+  (function () {
+    var seen = false;
+    try { seen = sessionStorage.getItem('flourish') === '1'; } catch (e) {}
+    if (!seen && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('flourish-on');
+    try { sessionStorage.setItem('flourish', '1'); } catch (e) {}
+  })();
+</script>
+<svg class="flourish" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  {arcs.map((d, i) => <path d={d} pathLength="1" style={`--i: ${i}`} />)}
+  <circle class="flourish-home" cx={dfw[0]} cy={dfw[1]} r="5" />
+</svg>
+
+<style>
+  .flourish { display: none; }
+  :global(html.flourish-on) .flourish {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    color: var(--hero-ink);
+    /* Draws for about a second, then fades away, leaving the hero as it always is. */
+    animation: flourish-out 0.7s ease 1.5s forwards;
+  }
+  @keyframes flourish-out { to { opacity: 0; visibility: hidden; } }
+  .flourish path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    opacity: 0.45;
+    vector-effect: non-scaling-stroke;
+    animation: flourish-draw 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation-delay: calc(0.1s + var(--i) * 14ms);
+  }
+  @keyframes flourish-draw { to { stroke-dashoffset: 0; } }
+  .flourish-home { fill: none; stroke: currentColor; stroke-width: 1; opacity: 0; transform-box: fill-box; transform-origin: center; animation: flourish-pulse 0.8s ease-out 0.9s forwards; vector-effect: non-scaling-stroke; }
+  @keyframes flourish-pulse { 0% { opacity: 0.8; scale: 0.5; } 100% { opacity: 0; scale: 3; } }
+</style>
