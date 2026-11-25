@@ -118,6 +118,7 @@ export const projects: Project[] = [
   "role": {
     "kind": "Solo"
   },
+  "live": "https://fog-map-pi.vercel.app/",
   "code": "https://github.com/veermshah/fog-map",
   "images": [{"file": "report.png", "alt": "Fog Map HTML report ranking ambiguous spec decisions, with backend, frontend and QA interpretations side by side", "caption": "The generated report from the live Qwen3 run"}],
   "extra": [
@@ -152,6 +153,7 @@ export const projects: Project[] = [
   "role": {
     "kind": "Solo"
   },
+  "live": "https://veermshah.github.io/dynaflow-orchestrator/",
   "code": "https://github.com/veermshah/dynaflow-orchestrator",
   "images": [{"file": "tokens-per-solved.png", "alt": "Bar chart of actual tokens per solved task for solo, fixed and generated workflows on math and multi-hop calibration tasks", "caption": "Tokens per solved task on the easy calibration set, from RESULTS.md"}],
   "extra": [
@@ -188,6 +190,7 @@ export const projects: Project[] = [
   "role": {
     "kind": "Solo"
   },
+  "live": "https://veermshah.github.io/popup-optimizer/",
   "code": "https://github.com/veermshah/popup-optimizer",
   "images": [{"file": "map.png", "alt": "Pop-Up Optimizer page: Dallas map with five ranked health-van stops and their estimated reach", "caption": "Default saved placement: five health-van stops, synthetic data"}],
   "extra": [
@@ -222,6 +225,7 @@ export const projects: Project[] = [
   "role": {
     "kind": "Solo"
   },
+  "live": "https://veermshah.github.io/statebench-harness/",
   "code": "https://github.com/veermshah/statebench-harness",
   "images": [
     {
@@ -503,7 +507,7 @@ export const projects: Project[] = [
     context: 'HackFin 2024',
     role: { kind: 'Team', size: 3, mine: 'Landing, Lend, Borrow and Crypto Health pages, the AI risk chat, most of the UI' },
     stack: ['React', 'Vite', 'Tailwind', 'Flask', 'Solidity', 'Hardhat', 'MetaMask SDK'],
-    live: 'https://quantumloans.vercel.app',
+    live: 'https://quantumloans.vercel.app/dashboard',
     code: 'https://github.com/veermshah/QuantumLoans',
     extra: [
       { label: 'Devpost', href: 'https://devpost.com/software/quantumloans' },
