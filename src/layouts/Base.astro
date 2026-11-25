@@ -150,7 +150,7 @@ const footerElsewhere = elsewhereOrder
                 <a href={item.href} aria-current={item.current ? 'page' : undefined}>
                   <span class="menu-no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
                   <span class="menu-label">{item.label}</span>
-                  <span class="menu-arrow" aria-hidden="true">{item.href.startsWith('/#') ? '→' : '↗'}</span>
+                  <span class="menu-arrow" aria-hidden="true">{/^https?:|\.pdf$/.test(item.href) ? '↗' : '→'}</span>
                 </a>
               </li>
             ))}

@@ -503,7 +503,7 @@ main:has(> .contact-section:last-child) + .site-footer { margin-top: 0; border-t
   grid-template-columns: 1fr 1fr;
   grid-template-areas: 'mark mark' 'left right' 'meta meta';
   gap: 2rem 1.5rem;
-  align-items: center;
+  align-items: start;
   text-align: center;
 }
 @media (min-width: 52rem) {
