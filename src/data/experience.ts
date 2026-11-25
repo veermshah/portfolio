@@ -27,6 +27,7 @@ export const experience = [
   },
   {
     company: 'Major League Hacking (MLH)',
+    logo: 'mlh.png',
     role: 'MLH Coach',
     period: 'September 2026 – present',
     location: 'Travel to MLH events',
