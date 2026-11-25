@@ -8,6 +8,7 @@ import ContactButton from '../components/ContactButton.astro';
 import Base from '../layouts/Base.astro';
 import ProjectLinks from '../components/ProjectLinks.astro';
 import Hero from '../components/Hero.astro';
+import GreaseLoop from '../components/GreaseLoop.astro';
 import HeroPortrait from '../components/HeroPortrait.astro';
 import { profile } from '../data/profile';
 import { getImage } from 'astro:assets';
@@ -17,10 +18,13 @@ import { projectCategories, categoriesByProject } from '../data/project-categori
 import { jsonLd } from '../lib/seo';
 
 const assets = import.meta.glob<{ default: ImageMetadata }>('../assets/projects/*/*.{png,jpg,jpeg,webp}', { eager: true });
-const thumbnail = (p: (typeof projects)[number]) => {
+/** The project's lead image and its alt text, or undefined when it has none. */
+const thumb = (p: (typeof projects)[number]) => {
   const first = p.images[0];
-  return first ? assets[`../assets/projects/${p.slug}/${first.file}`]?.default : undefined;
+  const src = first ? assets[`../assets/projects/${p.slug}/${first.file}`]?.default : undefined;
+  return first && src ? { src, alt: first.alt } : undefined;
 };
+const categoryLabel: Record<string, string> = Object.fromEntries(projectCategories.map((c) => [c.id, c.label]));
 
 const logos = import.meta.glob<{ default: ImageMetadata }>('../assets/experience/*.{jpg,png}', { eager: true });
 
@@ -116,50 +120,100 @@ const structuredData = {
   </Hero>
 
   <section id="work" class="section" aria-labelledby="featured-heading">
-    <header class="section-head carousel-head" data-reveal>
-      <h2 id="featured-heading" class="section-title">Featured work</h2>
-      <div class="carousel-controls">
-        <span class="carousel-count" aria-hidden="true"><span data-current>1</span> / {featured.length}</span>
-        <button class="carousel-btn" type="button" data-dir="-1" aria-label="Previous project" disabled>←</button>
-        <button class="carousel-btn" type="button" data-dir="1" aria-label="Next project">→</button>
-      </div>
+    <header class="section-head">
+      <h2 id="featured-heading" class="section-title">Selected work</h2>
     </header>
-    <ol class="carousel" aria-label="Featured projects" data-reveal style="--reveal-i: 1">
-      {featured.map(({ project, label, detail }, i) => (
-        <li class="featured-card">
-          <a class="featured-media" href={`/projects/${project.slug}/`} tabindex="-1" aria-hidden="true">
-            {thumbnail(project) && <Image src={thumbnail(project)!} alt="" widths={[480, 800, 1200, 1600]} sizes="(max-width: 48rem) 86vw, 46rem" format="webp" loading={i < 2 ? 'eager' : 'lazy'} />}
-          </a>
-          <div class="featured-copy">
-            {label && <p class="eyebrow">{label}</p>}
-            <h3><a class="stretched" href={`/projects/${project.slug}/`}>{project.title}</a></h3>
-            <p>{detail}</p>
-          </div>
-        </li>
-      ))}
+    <ol class="selects" aria-label="Featured projects">
+      {featured.map(({ project, label, detail }, i) => {
+        const t = thumb(project);
+        return (
+          <li class="select">
+            <div class="frame-media">
+              {t ? (
+                <Image src={t.src} alt={t.alt} widths={[480, 800, 1200]} sizes="(max-width: 40rem) 100vw, 36rem" format="webp" loading={i < 2 ? 'eager' : 'lazy'} />
+              ) : (
+                <span class="frame-blank" aria-hidden="true">{project.title}</span>
+              )}
+              <GreaseLoop selected variant={i} />
+            </div>
+            <div class="select-copy">
+              <h3><a class="stretched" href={`/projects/${project.slug}/`}>{project.title}</a></h3>
+              <p class="select-detail">{detail}</p>
+              {label && <p class="select-label">{label}</p>}
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  </section>
+
+  <section id="projects" class="section" aria-labelledby="projects-heading">
+    <header class="section-head">
+      <h2 id="projects-heading" class="section-title">All projects <span class="count">{projects.length}</span></h2>
+    </header>
+    <div class="project-filter-controls" hidden>
+      <div class="project-filters" role="group" aria-label="Filter projects by type">
+        {filters.map((filter, i) => (
+          <button type="button" data-project-filter={filter.id} aria-pressed={filter.id === 'all' ? 'true' : 'false'} aria-controls="project-list">
+            {filter.label} <span class="filter-count">{filter.count}</span>
+            <GreaseLoop variant={i} />
+          </button>
+        ))}
+      </div>
+      <p class="filter-status" role="status" aria-live="polite" aria-atomic="true">Showing all {projects.length} projects</p>
+    </div>
+    <ol class="sheet" id="project-list">
+      {
+        projects.map((p, i) => {
+          const t = thumb(p);
+          const types = categoriesByProject[p.slug].map((id) => categoryLabel[id]).join(', ');
+          return (
+            <li class="frame loop-host" data-categories={categoriesByProject[p.slug].join(' ')}>
+              <div class="frame-media">
+                {t ? (
+                  <Image src={t.src} alt={t.alt} widths={[360, 720]} sizes="(max-width: 36rem) 100vw, (max-width: 56rem) 50vw, (max-width: 72rem) 33vw, 300px" format="webp" loading="lazy" />
+                ) : (
+                  <span class="frame-blank" aria-hidden="true">{p.title}</span>
+                )}
+                <GreaseLoop variant={i} />
+              </div>
+              <div class="frame-copy">
+                <h3><a class="stretched" href={`/projects/${p.slug}/`}>{p.title}</a></h3>
+                <p class="frame-meta">
+                  {p.context && <span>{p.context}</span>}
+                  <span>{types}</span>
+                </p>
+                {p.award && <p class="frame-award">{p.award}</p>}
+                <p class="frame-pitch">{p.pitch}</p>
+                <ProjectLinks project={p} />
+              </div>
+            </li>
+          );
+        })
+      }
     </ol>
   </section>
 
   <section id="experience" class="section" aria-labelledby="experience-heading">
-    <header class="section-head" data-reveal>
+    <header class="section-head">
       <h2 id="experience-heading" class="section-title">Experience</h2>
     </header>
     <ol class="experience">
       {experience.map((item) => (
-        <li data-reveal>
-          <div class="experience-side">
-            <div class="experience-logo">
-              <Image src={logos[`../assets/experience/${item.logo}`].default} alt="" width={52} height={52} format="webp" loading="lazy" />
-            </div>
-            <p class="experience-meta">{item.period}<br />{item.location}</p>
-          </div>
+        <li>
+          <p class="when"><span>{item.period}</span><span>{item.location}</span></p>
           <div class="experience-main">
-            <h3>{item.company}</h3>
+            <h3>
+              <span class="experience-logo">
+                <Image src={logos[`../assets/experience/${item.logo}`].default} alt="" width={52} height={52} format="webp" loading="lazy" />
+              </span>
+              {item.company}
+            </h3>
             <p class="experience-role">{item.role}</p>
             <p class="experience-lead">{item.highlights[0]}</p>
             {item.highlights.length > 1 && (
               <details class="more">
-                <summary>More</summary>
+                <summary><span class="more-closed">More</span><span class="more-open">Less</span></summary>
                 <ul>{item.highlights.slice(1).map((line) => <li>{line}</li>)}</ul>
               </details>
             )}
@@ -170,21 +224,21 @@ const structuredData = {
   </section>
 
   <section id="education" class="section" aria-labelledby="education-heading">
-    <header class="section-head" data-reveal>
+    <header class="section-head">
       <h2 id="education-heading" class="section-title">Education & skills</h2>
     </header>
     <div class="education-grid">
       <ol class="education">
         {education.map((item) => (
-          <li data-reveal>
-            <p class="experience-meta">{item.period}</p>
+          <li>
+            <p class="when"><span>{item.period}</span></p>
             <h3>{item.degree}</h3>
-            <p class="experience-role">{item.school}</p>
+            <p class="education-school">{item.school}</p>
             <p class="education-detail">{item.detail}</p>
           </li>
         ))}
       </ol>
-      <dl class="skills" data-reveal>
+      <dl class="skills">
         {skills.map((group) => (
           <div>
             <dt>{group.label}</dt>
@@ -195,110 +249,21 @@ const structuredData = {
     </div>
   </section>
 
-  <section id="projects" class="section" aria-labelledby="projects-heading">
-    <header class="section-head" data-reveal>
-      <h2 id="projects-heading" class="section-title">All projects <span class="count">{projects.length}</span></h2>
-    </header>
-    <div class="project-filter-controls" hidden>
-      <div class="project-filters" role="group" aria-label="Filter projects by type">
-        {filters.map((filter) => (
-          <button type="button" data-project-filter={filter.id} aria-pressed={filter.id === 'all' ? 'true' : 'false'} aria-controls="project-list">
-            {filter.label} <span>{filter.count}</span>
-          </button>
-        ))}
+  <section class="contact-section" aria-labelledby="contact-heading">
+    <div class="contact-inner">
+      <h2 id="contact-heading">Let’s talk.</h2>
+      <p>Questions about a project, an opportunity, or an idea to build together? Send me an email.</p>
+      <div class="contact-actions">
+        <ContactButton />
+        <ul class="contact-links" aria-label="Elsewhere">
+          {links.map((l) => <li><a class="icon-link" href={l.href}><LinkIcon name={l.label} />{l.label}</a></li>)}
+        </ul>
       </div>
-      <p class="filter-status" role="status" aria-live="polite" aria-atomic="true">Showing all {projects.length} projects</p>
     </div>
-    <ol class="projects" id="project-list">
-      {
-        projects.map((p) => (
-          <li class="project" data-categories={categoriesByProject[p.slug].join(' ')} data-reveal>
-            <a class="thumbnail" href={`/projects/${p.slug}/`} tabindex="-1" aria-hidden="true">
-              {thumbnail(p) ? (
-                <Image src={thumbnail(p)!} alt="" widths={[360, 720]} sizes="(max-width: 40rem) 100vw, (max-width: 64rem) 50vw, 360px" format="webp" loading="lazy" />
-              ) : (
-                <span class="thumbnail-type"><span>{p.title}</span><small>{p.stack[0]}</small></span>
-              )}
-            </a>
-            <div class="project-copy">
-              <h3>
-                <a href={`/projects/${p.slug}/`}>{p.title}</a>
-                {p.award && <span class="award">{p.award}</span>}
-              </h3>
-              <p class="pitch">{p.pitch}</p>
-              <div class="project-foot">
-                <ProjectLinks project={p} />
-                <button class="peek-toggle" type="button" aria-expanded="false" aria-controls={`peek-${p.slug}`} aria-label={`Quick look: ${p.title}`}>Quick look</button>
-              </div>
-              <div class="peek" id={`peek-${p.slug}`} hidden>
-                <p class="peek-problem">{p.problem}</p>
-                {p.results.length > 0 && <ul class="peek-results">{p.results.slice(0, 3).map((r) => <li>{r}</li>)}</ul>}
-                <ul class="tags">{p.stack.map((t) => <li>{t}</li>)}</ul>
-                <a class="peek-more" href={`/projects/${p.slug}/`}>Full write-up <span aria-hidden="true">→</span></a>
-              </div>
-            </div>
-          </li>
-        ))
-      }
-    </ol>
-  </section>
-
-  <section class="contact-section" aria-labelledby="contact-heading" data-reveal>
-    <h2 id="contact-heading">Let’s talk.</h2>
-    <p>Questions about a project, an opportunity, or an idea to build together? Send me an email.</p>
-    <ContactButton />
   </section>
 </Base>
 
 <script>
-  for (const track of document.querySelectorAll<HTMLElement>('.carousel')) {
-    const section = track.closest('section')!;
-    const [prev, next] = section.querySelectorAll<HTMLButtonElement>('.carousel-btn');
-    const current = section.querySelector('[data-current]')!;
-    const items = [...track.children] as HTMLElement[];
-    const start = () => track.getBoundingClientRect().left + parseFloat(getComputedStyle(track).paddingLeft);
-    const index = () => {
-      const s = start();
-      let best = 0;
-      items.forEach((el, i) => { if (Math.abs(el.getBoundingClientRect().left - s) < Math.abs(items[best].getBoundingClientRect().left - s)) best = i; });
-      return best;
-    };
-    const pad = () => { track.style.scrollPaddingInline = getComputedStyle(track).paddingLeft; };
-    const atEnd = () => track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
-    const shown = () => (atEnd() ? items.length - 1 : index());
-    const update = () => {
-      const i = shown();
-      current.textContent = String(i + 1);
-      prev.disabled = track.scrollLeft <= 4;
-      next.disabled = atEnd();
-    };
-    const go = (dir: number) => {
-      const i = Math.min(items.length - 1, Math.max(0, shown() + dir));
-      track.scrollTo({ left: track.scrollLeft + items[i].getBoundingClientRect().left - start(), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-    };
-    prev.addEventListener('click', () => go(-1));
-    next.addEventListener('click', () => go(1));
-    track.addEventListener('scroll', () => requestAnimationFrame(update), { passive: true });
-    addEventListener('resize', () => { pad(); update(); });
-    pad();
-    update();
-  }
-
-  // Project cards expand in place to show the problem, results and stack.
-  for (const toggle of document.querySelectorAll<HTMLButtonElement>('.peek-toggle')) {
-    toggle.addEventListener('click', () => {
-      const card = toggle.closest<HTMLElement>('.project')!;
-      const open = toggle.getAttribute('aria-expanded') !== 'true';
-      toggle.setAttribute('aria-expanded', String(open));
-      toggle.textContent = open ? 'Close' : 'Quick look';
-      toggle.setAttribute('aria-label', toggle.getAttribute('aria-label')!.replace(/^(Quick look|Close):/, open ? 'Close:' : 'Quick look:'));
-      document.getElementById(toggle.getAttribute('aria-controls')!)!.hidden = !open;
-      card.classList.toggle('is-open', open);
-      const top = card.getBoundingClientRect().top;
-      if (open && (top < 64 || top > innerHeight * 0.6)) card.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-    });
-  }
-
   // Printed copies should include every experience highlight.
   let openedForPrint: HTMLDetailsElement[] = [];
   addEventListener('beforeprint', () => {
@@ -312,7 +277,7 @@ const structuredData = {
 
   const controls = document.querySelector<HTMLElement>('.project-filter-controls');
   const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-project-filter]'));
-  const cards = Array.from(document.querySelectorAll<HTMLElement>('#project-list > .project'));
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('#project-list > .frame'));
   const status = document.querySelector<HTMLElement>('.filter-status');
 
   function selectFilter(requested: string | null) {
@@ -342,6 +307,16 @@ const structuredData = {
   window.addEventListener('popstate', () => selectFilter(new URLSearchParams(window.location.search).get('type')));
   selectFilter(new URLSearchParams(window.location.search).get('type'));
   if (controls) controls.hidden = false;
+
+  // Touch screens have no hover, so the frame passing through the middle of the screen is the one
+  // that comes back to colour and gets circled.
+  if (matchMedia('(hover: none)').matches && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      (entries) => { for (const e of entries) e.target.classList.toggle('is-picked', e.isIntersecting); },
+      { rootMargin: '-42% 0px -42% 0px' },
+    );
+    cards.forEach((card) => io.observe(card));
+  }
 </script>
 
 <style>
@@ -377,127 +352,116 @@ const structuredData = {
 
   /* Sections */
   .section { margin-top: var(--space-section); scroll-margin-top: 4.5rem; }
-  .section-head { display: flex; align-items: baseline; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--rule); margin-bottom: clamp(1.5rem, 3vw, 2.25rem); }
-  .section-title { font-size: var(--step-3); font-weight: 800; letter-spacing: -0.04em; }
-  .section-title .count { font-family: var(--mono); font-size: var(--step--1); font-weight: 400; color: var(--muted); letter-spacing: 0; vertical-align: 0.6em; margin-left: 0.25rem; }
-  .stretched::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+  .section-head { padding-top: 0.875rem; border-top: 2px solid var(--ink); margin-bottom: clamp(1.75rem, 4vw, 3rem); }
+  .section-title { font-size: clamp(2.25rem, 1.35rem + 3.8vw, 4.5rem); font-weight: 800; line-height: 0.95; letter-spacing: -0.04em; text-wrap: balance; }
+  .section-title .count { font-size: var(--step-1); font-weight: 700; line-height: 1; letter-spacing: 0; color: var(--muted); font-variant-numeric: tabular-nums; vertical-align: top; margin-left: 0.1em; }
+  .stretched::after { content: ''; position: absolute; inset: 0; z-index: 1; }
 
-  /* Featured */
-  .carousel-head { display: flex; align-items: end; justify-content: space-between; gap: 1rem; }
-  .carousel-controls { display: flex; align-items: center; gap: 0.5rem; }
-  .carousel-count { white-space: nowrap; font-family: var(--mono); font-size: var(--step--1); color: var(--muted); margin-right: 0.5rem; font-variant-numeric: tabular-nums; }
-  .carousel-btn { width: 2.5rem; height: 2.5rem; border-radius: 999px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); font: inherit; cursor: pointer; transition: border-color 0.2s var(--ease), opacity 0.2s var(--ease); }
-  .carousel-btn:hover:not(:disabled) { border-color: var(--ink); }
-  .carousel-btn:disabled { opacity: 0.35; cursor: default; }
-  .carousel { list-style: none; margin: 0 calc(50% - 50vw); padding: 0.25rem max(var(--gutter), calc(50vw - 50%)) 1rem; display: grid; grid-auto-flow: column; grid-auto-columns: min(86vw, 46rem); gap: clamp(0.875rem, 2vw, 1.5rem); overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: max(var(--gutter), (100vw - var(--wide)) / 2); overscroll-behavior-x: contain; scrollbar-width: none; }
-  .carousel::-webkit-scrollbar { display: none; }
-  .carousel > li { scroll-snap-align: start; }
-  .featured-card { position: relative; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; background: var(--bg); transition: border-color 0.25s var(--ease); }
-  .featured-card:hover { border-color: color-mix(in srgb, var(--ink) 30%, var(--rule)); }
-  .featured-media { display: block; aspect-ratio: 16 / 10; overflow: hidden; background: var(--accent-soft); border-bottom: 1px solid var(--rule); }
-  .featured-media :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: top center; transition: transform 0.6s var(--ease); }
-  .featured-card:hover .featured-media :global(img) { transform: scale(1.03); }
-  .featured-copy { padding: clamp(1rem, 2vw, 1.4rem); display: flex; flex-direction: column; flex: 1; gap: 0.6rem; }
-  .eyebrow { color: var(--muted); font-size: var(--step--1); }
-  .featured-card h3 { font-size: var(--step-2); letter-spacing: -0.02em; }
-  .featured-card h3 a { text-decoration: none; }
-  .featured-copy > p:not(.eyebrow) { font-size: 0.9375rem; color: var(--muted); }
-  .featured-card:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .featured-card a:focus-visible { outline: none; }
+  /* Frames: a print on the contact sheet, set in a strip of film black. The rebate stays black in
+     both themes, like the film itself. */
+  .frame-media { position: relative; aspect-ratio: 3 / 2; padding: 3px; background: #0a0a0a; }
+  .frame-media :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .frame-blank { display: flex; align-items: flex-end; height: 100%; padding: 1rem; background: var(--accent-soft); color: var(--ink); font-size: var(--step-2); font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+
+  /* Selected work: big frames, in colour, circled. */
+  .selects { list-style: none; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(3rem, 6vw, 4.5rem) clamp(2rem, 4.5vw, 3.75rem); }
+  @media (min-width: 40rem) { .selects { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .select { position: relative; display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+  .select-copy { display: grid; gap: 0.5rem; max-width: 34rem; }
+  .select h3 { font-size: var(--step-3); font-weight: 800; line-height: 1; letter-spacing: -0.035em; }
+  .select h3 a { text-decoration: none; }
+  .select:hover h3 a { text-decoration-line: underline; text-decoration-thickness: 2px; text-decoration-color: currentColor; }
+  .select-detail { color: var(--muted); text-wrap: pretty; }
+  .select-label { font-size: var(--step--1); font-weight: 700; }
+
+  /* All projects: the contact sheet. Greyscale proofs that come back to colour and get circled
+     when picked (hover or keyboard focus; on touch screens, while passing mid-screen). */
+  .project-filter-controls { margin-bottom: clamp(2rem, 4vw, 2.75rem); }
+  .project-filters { display: flex; flex-wrap: wrap; gap: 0 0.25rem; margin-inline: -0.75rem; }
+  .project-filters button { position: relative; min-height: 2.75rem; padding: 0.35rem 0.75rem; border: 0; background: none; font: inherit; color: var(--muted); cursor: pointer; }
+  .project-filters button:hover, .project-filters button[aria-pressed='true'] { color: var(--ink); }
+  .project-filters button[aria-pressed='true'] :global(.grease-loop path) { stroke-dashoffset: 0; opacity: 1; }
+  .filter-count { margin-left: 0.15em; font-size: var(--step--1); font-variant-numeric: tabular-nums; }
+  .filter-status { margin-top: 0.5rem; color: var(--muted); font-size: var(--step--1); }
+
+  .sheet { list-style: none; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); column-gap: 0; row-gap: clamp(2.25rem, 4vw, 3rem); }
+  @media (min-width: 36rem) { .sheet { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 56rem) { .sheet { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (min-width: 72rem) { .sheet { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .frame { position: relative; display: flex; flex-direction: column; min-width: 0; }
+  .frame[hidden] { display: none; }
+  .frame .frame-media :global(img) { filter: grayscale(1); }
+  .frame:is(:hover, :focus-within, .is-picked) .frame-media :global(img) { filter: none; }
+  .frame.is-picked .frame-media :global(.grease-loop path) { stroke-dashoffset: 0; opacity: 1; }
+  @media (prefers-reduced-motion: no-preference) { .frame .frame-media :global(img) { transition: filter 0.35s var(--ease); } }
+  .frame-copy { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.9rem 1.25rem 0 3px; }
+  .frame h3 { font-size: var(--step-1); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; }
+  .frame h3 a { text-decoration: none; }
+  .frame:hover h3 a { text-decoration-line: underline; text-decoration-thickness: 2px; text-decoration-color: currentColor; }
+  .frame-meta { display: grid; font-size: var(--step--1); line-height: 1.45; color: var(--muted); }
+  .frame-award { font-size: var(--step--1); font-weight: 700; line-height: 1.45; }
+  .frame-pitch { margin-top: 0.2rem; font-size: 0.9375rem; color: var(--muted); text-wrap: pretty; }
+  .frame :global(.actions) { position: relative; z-index: 3; gap: 0 1.1rem; font-size: 0.875rem; }
+  .frame :global(.actions a), .frame :global(.actions .pending) { display: inline-flex; align-items: center; min-height: 2.75rem; }
 
   /* Experience */
   .experience { list-style: none; padding: 0; }
-  .experience > li { display: grid; grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr); gap: 1.5rem clamp(1.5rem, 4vw, 4rem); padding: clamp(1.5rem, 3vw, 2.25rem) 0; border-bottom: 1px solid var(--rule); }
-  .experience > li:first-child { padding-top: 0.5rem; }
-  .experience-side { display: flex; flex-direction: column; gap: 0.9rem; }
-  .experience-logo { width: 3.25rem; height: 3.25rem; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--rule); border-radius: 10px; background: #fff; }
-  .experience-logo :global(img) { width: 2.75rem; height: 2.75rem; object-fit: contain; }
-  .experience-meta { color: var(--muted); font-size: var(--step--1); font-family: var(--mono); line-height: 1.6; }
-  .experience h3 { font-size: var(--step-2); letter-spacing: -0.02em; }
-  .experience-role { margin-top: 0.3rem; color: var(--accent); font-size: 0.9375rem; }
-  .experience-lead { margin-top: 0.9rem; color: var(--muted); font-size: 0.9375rem; max-width: var(--measure); }
-  .more { margin-top: 0.6rem; }
-  .more summary { cursor: pointer; font-size: var(--step--1); color: var(--muted); list-style: none; display: inline-flex; gap: 0.35rem; }
-  .more summary::-webkit-details-marker { display: none; }
-  .more summary::after { content: '+'; }
-  .more[open] summary::after { content: '−'; }
-  .more summary:hover { color: var(--ink); }
-  .experience-main ul { padding-left: 1.1rem; margin-top: 1rem; color: var(--muted); font-size: 0.9375rem; max-width: var(--measure); }
-  .experience-main ul li + li { margin-top: 0.55rem; }
-  .experience-main ul li::marker { color: color-mix(in srgb, var(--muted) 60%, transparent); }
-  @media (max-width: 40rem) {
-    .experience > li { grid-template-columns: 1fr; gap: 1rem; }
-    .experience-side { flex-direction: row; align-items: center; gap: 0.9rem; }
-  }
-
-  /* Education */
-  .education-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: start; }
-  .education { list-style: none; padding: 0; }
-  .education > li { padding: 0 0 1.5rem; }
-  .education > li + li { padding-top: 1.5rem; border-top: 1px solid var(--rule); }
-  .education h3 { font-size: var(--step-1); margin-top: 0.4rem; letter-spacing: -0.01em; }
-  .education-detail { margin-top: 0.5rem; color: var(--muted); font-size: 0.9375rem; }
-  .skills { margin: 0; border-top: 1px solid var(--rule); }
-  .skills > div { display: grid; grid-template-columns: 8.5rem 1fr; gap: 1rem; padding: 0.8rem 0; border-bottom: 1px solid var(--rule); font-size: 0.9375rem; }
-  .skills dt { color: var(--muted); font-family: var(--mono); font-size: var(--step--1); padding-top: 0.1rem; }
-  .skills dd { margin: 0; }
-  @media (max-width: 52rem) { .education-grid { grid-template-columns: 1fr; } }
-  @media (max-width: 30rem) { .skills > div { grid-template-columns: 1fr; gap: 0.2rem; } }
-
-  /* Projects */
-  .project-filter-controls { margin-bottom: clamp(1.5rem, 3vw, 2rem); }
-  .project-filters { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .project-filters button { font: inherit; font-size: 0.875rem; padding: 0.4rem 0.85rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--bg); color: var(--muted); cursor: pointer; transition: border-color 0.2s var(--ease), color 0.2s var(--ease), background 0.2s var(--ease); }
-  .project-filters button span { margin-left: 0.3rem; font-family: var(--mono); font-size: 0.75rem; opacity: 0.8; }
-  .project-filters button[aria-pressed='true'] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
-  .project-filters button:hover:not([aria-pressed='true']) { border-color: color-mix(in srgb, var(--ink) 35%, var(--rule)); color: var(--ink); }
-  .project-filters button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-  .filter-status { margin-top: 0.75rem; color: var(--muted); font-size: 0.8125rem; }
-  .projects { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); gap: clamp(2rem, 3vw, 2.75rem) clamp(1rem, 2vw, 1.5rem); }
-  .project { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
-  .project[hidden] { display: none; }
-  .thumbnail { display: block; overflow: hidden; aspect-ratio: 16 / 10; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--accent-soft); text-decoration: none; transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease); }
-  .thumbnail :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: top center; transition: transform 0.6s var(--ease); }
-  .project:hover .thumbnail { border-color: color-mix(in srgb, var(--ink) 30%, var(--rule)); }
-  .project:hover .thumbnail :global(img) { transform: scale(1.03); }
-  .thumbnail-type { display: flex; flex-direction: column; justify-content: flex-end; gap: 0.4rem; height: 100%; padding: 1.25rem; color: var(--accent); font-family: var(--mono); font-size: 1.05rem; background: linear-gradient(135deg, var(--accent-soft), color-mix(in srgb, var(--accent-soft) 40%, var(--bg))); }
-  .thumbnail-type small { font-size: 0.75rem; color: var(--muted); }
-  .project-copy { min-width: 0; }
-  .project h3 { font-size: var(--step-1); letter-spacing: -0.015em; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.6rem; }
-  .project h3 a { text-decoration: none; }
-  .project h3 a:hover { color: var(--accent); }
-  .project .award { white-space: normal; }
-  .pitch { margin-top: 0.45rem; font-size: 0.9375rem; }
-  .project-foot { margin-top: 0.7rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; }
-  .project :global(.actions) { font-size: 0.875rem; }
-  .peek-toggle { font: inherit; font-size: 0.8125rem; font-family: var(--mono); color: var(--accent); background: var(--accent-soft); border: 1px solid transparent; border-radius: 999px; padding: 0.3rem 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; transition: border-color 0.2s var(--ease); }
-  .peek-toggle::after { content: '+'; font-weight: 700; transition: transform 0.25s var(--ease); }
-  .peek-toggle[aria-expanded='true']::after { transform: rotate(45deg); }
-  .peek-toggle:hover { border-color: var(--accent); }
-  .peek-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .peek { margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--rule); display: grid; gap: 0.85rem; font-size: 0.9375rem; }
-  .peek-problem { color: var(--muted); max-width: var(--measure); }
-  .peek-results { padding-left: 1.1rem; display: grid; gap: 0.4rem; max-width: var(--measure); }
-  .peek-results li::marker { color: var(--accent); }
-  .peek-more { font-weight: 700; font-size: 0.9375rem; justify-self: start; }
-  .peek[hidden] { display: none; }
-  .project.is-open:not([hidden]) { grid-column: 1 / -1; }
+  .experience > li { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.6rem; padding: clamp(1.75rem, 3vw, 2.5rem) 0; border-bottom: 1px solid var(--rule); }
+  .experience > li:first-child { padding-top: 0; }
+  .when { display: flex; flex-wrap: wrap; gap: 0 0.5rem; font-size: var(--step--1); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .when span + span::before { content: '·'; margin-right: 0.5rem; }
   @media (min-width: 48rem) {
-    .project.is-open:not([hidden]) { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(1.25rem, 3vw, 2.5rem); align-items: start; }
+    .experience > li { grid-template-columns: 13rem minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 4rem); }
+    .experience .when { flex-direction: column; padding-top: 0.6rem; }
+    .experience .when span + span::before { content: none; }
   }
-  @media (prefers-reduced-motion: no-preference) {
-    .peek:not([hidden]) { animation: peek-in 0.35s var(--ease); }
-  }
-  @keyframes peek-in { from { opacity: 0; transform: translateY(-6px); } }
+  .experience h3 { display: flex; align-items: center; gap: 0.75rem; font-size: clamp(1.5rem, 1.2rem + 1.3vw, 2.25rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; }
+  .experience-logo { flex: none; width: 2.25rem; height: 2.25rem; overflow: hidden; border-radius: var(--radius); background: #fff; outline: 1px solid var(--rule); }
+  .experience-logo :global(img) { width: 100%; height: 100%; object-fit: contain; filter: grayscale(1); }
+  .experience-role { margin-top: 0.6rem; font-weight: 700; }
+  .experience-lead { margin-top: 0.75rem; max-width: var(--measure); color: var(--muted); text-wrap: pretty; }
+  .more summary { display: inline-flex; align-items: center; min-height: 2.75rem; cursor: pointer; list-style: none; font-size: var(--step--1); font-weight: 700; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.25em; }
+  .more summary::-webkit-details-marker { display: none; }
+  .more summary:hover { text-decoration-thickness: 2px; }
+  .more-open, .more[open] .more-closed { display: none; }
+  .more[open] .more-open { display: inline; }
+  .experience-main ul { padding-left: 1.1rem; margin-top: 0.25rem; max-width: var(--measure); color: var(--muted); }
+  .experience-main ul li + li { margin-top: 0.55rem; }
+  .experience-main ul li::marker { color: var(--ink); }
 
+  /* Education & skills */
+  .education-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(2.5rem, 5vw, 4.5rem); align-items: start; }
+  @media (min-width: 56rem) { .education-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); } }
+  .education { list-style: none; padding: 0; }
+  .education > li { padding-bottom: 1.5rem; }
+  .education > li + li { padding-top: 1.5rem; border-top: 1px solid var(--rule); }
+  .education h3 { margin-top: 0.4rem; font-size: var(--step-2); font-weight: 800; line-height: 1.1; letter-spacing: -0.025em; text-wrap: balance; }
+  .education-school { margin-top: 0.4rem; font-weight: 700; }
+  .education-detail { margin-top: 0.5rem; color: var(--muted); text-wrap: pretty; }
+  .skills { margin: 0; }
+  .skills > div { display: grid; gap: 0.15rem; padding: 0.9rem 0; border-top: 1px solid var(--rule); }
+  .skills > div:first-child { padding-top: 0; border-top: 0; }
+  @media (min-width: 30rem) { .skills > div { grid-template-columns: 8.5rem minmax(0, 1fr); gap: 1rem; } }
+  .skills dt { font-weight: 700; }
+  .skills dd { margin: 0; color: var(--muted); }
 
-  /* Contact */
-  .contact-section { margin-top: var(--space-section); padding-top: clamp(2rem, 4vw, 3rem); border-top: 1px solid var(--rule); }
-  .contact-section h2 { font-size: var(--step-3); letter-spacing: -0.035em; }
-  .contact-section p { margin: 0.75rem 0 1.5rem; color: var(--muted); max-width: 32rem; font-size: var(--step-0); }
+  /* Contact: the page closes on a full-width block of ink. */
+  .contact-section { margin-top: var(--space-section); margin-inline: calc(50% - 50vw); background: var(--ink); color: var(--bg); }
+  .contact-inner { max-width: calc(var(--wide) + 2 * var(--gutter)); margin: 0 auto; padding: clamp(4rem, 3rem + 7vw, 8rem) var(--gutter); }
+  .contact-section h2 { font-size: var(--step-display); font-weight: 800; line-height: 0.9; letter-spacing: -0.04em; }
+  .contact-section p { margin-top: clamp(1.25rem, 2.5vw, 1.75rem); max-width: 34rem; font-size: var(--step-1); line-height: 1.5; color: color-mix(in srgb, var(--bg) 78%, var(--ink)); text-wrap: pretty; }
+  .contact-actions { margin-top: clamp(1.75rem, 3vw, 2.5rem); display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.75rem; }
+  .contact-section :global(.contact-button) { min-height: 2.75rem; background: var(--bg); border-color: var(--bg); color: var(--ink); }
+  .contact-section :global(.contact-button:hover) { background: transparent; color: var(--bg); }
+  .contact-links { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0 1.25rem; font-size: 0.9375rem; }
+  .contact-links a { min-height: 2.75rem; color: color-mix(in srgb, var(--bg) 78%, var(--ink)); text-decoration: none; }
+  .contact-links a:hover { color: var(--bg); text-decoration-line: underline; }
+  .contact-section a:focus-visible, .contact-section :global(.contact-button:focus-visible) { outline-color: var(--bg); }
+
   @media print {
-    .carousel-controls { display: none; }
-    .carousel { margin: 0; padding: 0; grid-auto-flow: row; grid-template-columns: 1fr 1fr; overflow: visible; }
-    .featured-card { break-inside: avoid; }
+    .frame .frame-media :global(img) { filter: none; }
+    .project-filter-controls { display: none; }
+    .contact-section { margin-inline: 0; background: none; color: inherit; }
+    .contact-inner { padding: 2rem 0; }
   }
 </style>
