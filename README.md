@@ -15,7 +15,10 @@ npm run build          # static site in dist/
 npm run preview        # serve dist/ locally
 npm run check:links    # internal links in dist/ (run after build)
 npm run check:external # internal links plus a request to every external link
+npm run indexnow       # after a deploy: submit the live sitemap's URLs to IndexNow
 ```
+
+IndexNow lets Bing and other engines recrawl right after a deploy. The key is `public/<key>.txt` (public by design); `npm run indexnow -- --dry-run` lists the URLs without sending them.
 
 ## Edit experience
 
@@ -79,7 +82,7 @@ The site is served at `https://www.veermickey.com`; the apex `veermickey.com` re
 
 ## Notes and featured projects
 
-Add Markdown files in `src/content/notes/` with quoted `title`, `description`, and ISO `date` frontmatter. Set `draft: true` to exclude a post from the site. Published notes appear at `/notes/<filename>/`, in the notes index, and on the home page. The two initial notes summarize the existing Veer and DishBrain project write-ups.
+Add Markdown files in `src/content/notes/` with quoted `title`, `description`, and ISO `date` frontmatter. Set `draft: true` to exclude a post from the site. Published notes appear at `/notes/<filename>/`, in the notes index, and on the home page. They are also in the RSS feed at `/rss.xml`. `/llms.txt`, a plain-text summary of the site for language models, is generated from `src/data` and the notes at build time. The two initial notes summarize the existing Veer and DishBrain project write-ups.
 
 The `featured` list in `src/pages/index.astro` selects the home-page highlights (currently five). The contact button uses the Email link in `src/data/profile.ts`.
 
