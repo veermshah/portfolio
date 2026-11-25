@@ -1,7 +1,7 @@
 // Dots that form the name in the home hero. The background dot grid gathers into the name, and
 // dots scatter away from a pointer or finger and spring back. The real <h1> stays in the DOM
 // (visually hidden while the dots show) for screen readers and search engines.
-// Skipped with reduced motion, in the ?hero=photo variant, or when canvas is unavailable; the
+// Skipped with reduced motion or when canvas is unavailable; the
 // plain h1 shows then. The loop pauses off screen, in a hidden tab and once every dot is still.
 
 const MAX_DOTS = 3200;
@@ -24,7 +24,6 @@ export function initHeroField() {
   const probe = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
   if (!ctx || !probe) return giveUp();
 
-  const onPhoto = hero.dataset.hero !== 'dots';
   let w = 0;
   let h = 0;
   let n = 0;
@@ -38,9 +37,9 @@ export function initHeroField() {
   let ty = new Float32Array(0);
   let k = new Float32Array(0);
   let accent = new Uint8Array(0);
-  // White dots and a light accent read on the dark photo scrim in both themes.
-  let ink = '#fff';
-  let hot = '#ff9a62';
+  // White dots read on the dark photo scrim in both themes. The site is black and white only.
+  const ink = '#fff';
+  const hot = '#fff';
   let pointer = { x: 0, y: 0, active: false };
   let pushRadius = 120;
   let visible = true;
@@ -51,12 +50,7 @@ export function initHeroField() {
   let introAt = 0;
   let alive = true;
 
-  const colors = () => {
-    if (onPhoto) return;
-    const style = getComputedStyle(document.documentElement);
-    ink = style.getPropertyValue('--ink').trim() || '#17191c';
-    hot = style.getPropertyValue('--accent').trim() || '#c2410c';
-  };
+  const colors = () => {};
 
   // Lay the name out like the h1 (same font, size, spacing and wrapping), draw it on an offscreen
   // canvas and pick dot targets from its filled pixels.

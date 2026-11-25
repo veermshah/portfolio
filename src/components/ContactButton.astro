@@ -3,8 +3,8 @@ import LinkIcon from './LinkIcon.astro';
 import { profile } from '../data/profile';
 const email = profile.links.find((link) => link.label === 'Email')?.href;
 ---
-{email && <a class="contact-button" href={email}><LinkIcon name="Email" />Get in touch</a>}
+{email && <a class="contact-button" href={email}><LinkIcon name="Email" />Email me</a>}
 <style>
-  .contact-button { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.15rem; border-radius: 999px; background: var(--ink); color: var(--bg); text-decoration: none; font-size: 0.9375rem; font-weight: 700; transition: transform 0.2s var(--ease), background 0.2s var(--ease); }
-  .contact-button:hover { color: var(--bg); background: var(--accent); transform: translateY(-1px); }
+  .contact-button { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.15rem; border-radius: 0; border: 1px solid var(--ink); background: var(--ink); color: var(--bg); text-decoration: none; font-size: 0.9375rem; font-weight: 700; transition: background 0.15s var(--ease), color 0.15s var(--ease); }
+  .contact-button:hover { color: var(--ink); background: transparent; }
 </style>

@@ -1,5 +1,5 @@
 ---
-// Optional round portrait beside the home bio. Renders only when src/assets/portrait.jpg (or
+// Optional round portrait above the name in the home hero. Renders only when src/assets/portrait.jpg (or
 // .jpeg, .png, .webp) exists; drop a square photo there to show it. Update the alt text below
 // if you swap in a different photo.
 import { Picture } from 'astro:assets';
@@ -15,10 +15,10 @@ const portrait = Object.values(found)[0]?.default;
       src={portrait}
       formats={['avif', 'webp']}
       fallbackFormat={portrait.format === 'png' ? 'png' : 'jpg'}
-      widths={[80, 160, 240]}
-      sizes="5rem"
-      width={160}
-      height={160}
+      widths={[112, 224, 336]}
+      sizes="(min-width: 40rem) 7rem, 5.5rem"
+      width={224}
+      height={224}
       alt="Veer Shah at his UT Dallas graduation"
       loading="eager"
       fetchpriority="low"
@@ -30,12 +30,15 @@ const portrait = Object.values(found)[0]?.default;
 <style>
   .portrait { flex: none; display: block; }
   .portrait :global(img) {
-    width: clamp(3.75rem, 2.9rem + 2.4vw, 5rem);
+    width: 5.5rem;
     height: auto;
     aspect-ratio: 1;
     object-fit: cover;
     border-radius: 50%;
-    border: 2px solid color-mix(in srgb, currentColor 80%, transparent);
-    box-shadow: 0 6px 20px -8px rgb(0 0 0 / 0.5);
+    /* A thin white ring and a soft shadow keep the photo distinct on any background photo. */
+    box-shadow: 0 0 0 2px #fff, 0 14px 34px -12px rgb(0 0 0 / 0.7);
+  }
+  @media (min-width: 40rem) {
+    .portrait :global(img) { width: 7rem; }
   }
 </style>

@@ -71,12 +71,12 @@ const year = new Date().getFullYear();
     {canonical && <link rel="canonical" href={canonical} />}
     <link rel="preload" href={bodyFont} as="font" type="font/woff2" crossorigin />
     <meta name="author" content={profile.name} />
-    <meta name="theme-color" content="#fcfcfc" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#141517" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
     <script is:inline>
       for (const m of document.querySelectorAll('meta[name="theme-color"]')) {
         m.removeAttribute('media');
-        m.content = document.documentElement.dataset.theme === 'dark' ? '#141517' : '#fcfcfc';
+        m.content = document.documentElement.dataset.theme === 'dark' ? '#0a0a0a' : '#ffffff';
       }
     </script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -146,7 +146,7 @@ const year = new Date().getFullYear();
       toggle.addEventListener('click', () => {
         root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
         try { sessionStorage.setItem('theme', root.dataset.theme); } catch {}
-        for (const m of document.querySelectorAll('meta[name="theme-color"]')) m.content = root.dataset.theme === 'dark' ? '#141517' : '#fcfcfc';
+        for (const m of document.querySelectorAll('meta[name="theme-color"]')) m.content = root.dataset.theme === 'dark' ? '#0a0a0a' : '#ffffff';
         syncToggle();
       });
       const header = document.querySelector('.site-header');
