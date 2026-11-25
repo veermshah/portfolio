@@ -90,8 +90,8 @@ const structuredData = {
       description: profile.description,
       email: profile.links.find((l) => l.label === 'Email')?.href?.replace(/^mailto:/, ''),
       alumniOf: { '@id': `${siteUrl}#utd` },
-      affiliation: [{ '@id': `${siteUrl}#hackutd` }, { '@id': `${siteUrl}#mlh` }, { '@id': `${siteUrl}#utd` }],
-      memberOf: { '@id': `${siteUrl}#hackutd` },
+      affiliation: [{ '@id': `${siteUrl}#mlh` }, { '@id': `${siteUrl}#utd` }],
+      memberOf: { '@id': `${siteUrl}#mlh` },
       knowsAbout,
       homeLocation: {
         '@type': 'Place',
@@ -100,7 +100,6 @@ const structuredData = {
       sameAs: profile.sameAs,
     },
     { '@type': 'CollegeOrUniversity', '@id': `${siteUrl}#utd`, name: 'University of Texas at Dallas', url: 'https://www.utdallas.edu' },
-    { '@type': 'Organization', '@id': `${siteUrl}#hackutd`, name: 'HackUTD', url: 'https://hackutd.co' },
     { '@type': 'Organization', '@id': `${siteUrl}#mlh`, name: 'Major League Hacking', alternateName: 'MLH', url: 'https://mlh.io' },
   ],
 };
