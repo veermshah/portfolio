@@ -136,7 +136,7 @@ const [lead, ...rest] = frames;
       .hero-photos {
         top: -22%;
         height: 122%;
-        animation: hero-drift linear both;
+        animation-name: hero-drift; animation-timing-function: linear; animation-fill-mode: both;
         animation-timeline: scroll(root);
         animation-range: 0 100vh;
       }
@@ -144,7 +144,7 @@ const [lead, ...rest] = frames;
       /* The dot name moves with the hero text (same keyframes as .hero-text in index.astro), so the
          dots stay on the name while both drift up more slowly than the page and fade. */
       .hero-field {
-        animation: hero-text-drift linear both;
+        animation-name: hero-text-drift; animation-timing-function: linear; animation-fill-mode: both;
         animation-timeline: scroll(root);
         animation-range: 0 90vh;
       }

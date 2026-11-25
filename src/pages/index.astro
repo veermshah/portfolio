@@ -329,14 +329,14 @@ const structuredData = {
   @supports (animation-timeline: scroll()) {
     @media (prefers-reduced-motion: no-preference) {
       .hero-portrait {
-        animation: portrait-rise linear both;
+        animation-name: portrait-rise; animation-timing-function: linear; animation-fill-mode: both;
         animation-timeline: scroll(root);
         animation-range: 0 100vh;
       }
       @keyframes portrait-rise { to { transform: translate3d(0, -18vh, 0) rotate(-1.5deg); } }
       /* The text lags behind and fades; the dot name in Hero.astro uses the same keyframes. */
       .hero-text {
-        animation: hero-text-drift linear both;
+        animation-name: hero-text-drift; animation-timing-function: linear; animation-fill-mode: both;
         animation-timeline: scroll(root);
         animation-range: 0 90vh;
       }
@@ -349,7 +349,7 @@ const structuredData = {
       /* Every project image slides inside its frame as it passes, at different depths, so the page
          reads in layers. The big picks move most. */
       .frame-media :global(img) {
-        animation: frame-slide linear both;
+        animation-name: frame-slide; animation-timing-function: linear; animation-fill-mode: both;
         animation-timeline: view();
         animation-range: cover;
       }
@@ -363,23 +363,23 @@ const structuredData = {
       /* The picks print in: each frame wipes open from the bottom as it enters, like paper coming
          up in the tray. */
       .select .frame-media {
-        animation: print-in linear both;
+        animation-name: print-in; animation-timing-function: linear; animation-fill-mode: both;
         animation-timeline: view();
         animation-range: entry 0% entry 70%;
       }
       @keyframes print-in { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
       /* Cards in the sheet rise in; even columns trail a little so a row arrives as a ripple. */
-      .frame { animation: rise-card linear both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
+      .frame { animation-name: rise-card; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
       .frame:nth-child(even) { animation-range: entry 12% entry 70%; }
       @keyframes rise-card { from { opacity: 0; translate: 0 4rem; } }
-      .select-copy { animation: rise-card linear both; animation-timeline: view(); animation-range: entry 0% entry 80%; }
+      .select-copy { animation-name: rise-card; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% entry 80%; }
       /* Section titles slide in from the left as their rule draws across. */
-      .section-head::before { animation: rule-draw linear both; animation-timeline: view(); animation-range: entry 0% entry 100%; }
+      .section-head::before { animation-name: rule-draw; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% entry 100%; }
       @keyframes rule-draw { from { transform: scaleX(0); } }
-      .section-title { animation: title-slide linear both; animation-timeline: view(); animation-range: entry 0% cover 30%; }
+      .section-title { animation-name: title-slide; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% cover 30%; }
       @keyframes title-slide { from { translate: -1.5rem 0; opacity: 0; } }
       /* The closing line grows into place. */
-      .contact-section h2 { animation: talk-grow linear both; animation-timeline: view(); animation-range: entry 10% cover 45%; transform-origin: left bottom; }
+      .contact-section h2 { animation-name: talk-grow; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 10% cover 45%; transform-origin: left bottom; }
       @keyframes talk-grow { from { scale: 0.82; opacity: 0.2; } }
     }
   }

@@ -494,7 +494,7 @@ body:has(.hero) .site-header:not(.is-scrolled) :focus-visible { outline-color: #
 
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: scroll()) {
-    .scroll-progress { animation: progress linear both; animation-timeline: scroll(root); }
+    .scroll-progress { animation-name: progress; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: scroll(root); }
     @keyframes progress { to { transform: scaleX(1); } }
   }
 }
@@ -613,12 +613,12 @@ main:has(> .contact-section:last-child) + .site-footer { margin-top: 0; border-t
 :root:not([data-theme='dark']) .footer-glow { opacity: 0.75; }
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
-    .footer-glow span { animation: glow-rise linear both; animation-timeline: view(); animation-range: entry 0% cover 55%; }
+    .footer-glow span { animation-name: glow-rise; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% cover 55%; }
     .footer-glow span:nth-child(2) { animation-range: entry 10% cover 60%; }
     .footer-glow span:nth-child(3) { animation-range: entry 20% cover 65%; }
     .footer-glow span:nth-child(4) { animation-range: entry 30% cover 70%; }
     @keyframes glow-rise { from { transform: translate3d(0, 60%, 0) scaleX(0.7); opacity: 0; } }
-    .footer-mark { animation: mark-rise linear both; animation-timeline: view(); animation-range: entry 0% cover 40%; }
+    .footer-mark { animation-name: mark-rise; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% cover 40%; }
     @keyframes mark-rise { from { translate: 0 30%; opacity: 0; scale: 0.94; } }
   }
 }
@@ -628,7 +628,7 @@ main:has(> .contact-section:last-child) + .site-footer { margin-top: 0; border-t
    view timelines, where everything is simply shown. */
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
-    [data-rise] { animation: rise linear both; animation-timeline: view(); animation-range: entry 0% entry 60%; }
+    [data-rise] { animation-name: rise; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% entry 60%; }
     [data-rise='late'] { animation-range: entry 15% entry 80%; }
     @keyframes rise { from { opacity: 0; translate: 0 3.5rem; } }
   }
