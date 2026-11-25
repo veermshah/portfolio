@@ -37,12 +37,15 @@ const d = paths[Math.abs(variant) % paths.length];
     stroke-linecap: round;
     stroke-linejoin: round;
     vector-effect: non-scaling-stroke;
-    stroke-dasharray: 1 1;
-    stroke-dashoffset: 1;
+    /* With a non-scaling stroke, Chrome lays dashes out in screen pixels scaled by pathLength, so one
+       pathLength unit covers the loop only on small frames. A dash of 8 covers frames up to about
+       1600px wide; the hidden state shifts the gap over the whole loop. */
+    stroke-dasharray: 8 8;
+    stroke-dashoffset: 8;
     opacity: 0;
   }
   /* A wider stroke in the page colour under the pencil line keeps the loop readable on light and dark images. */
-  .grease-loop path.under { stroke: var(--bg); stroke-width: 7px; }
+  .grease-loop path.under { stroke: var(--bg); stroke-width: 5.5px; }
   .grease-loop.is-selected path,
   :global(.loop-host:hover) .grease-loop path,
   :global(.loop-host:focus-within) .grease-loop path {
@@ -50,6 +53,6 @@ const d = paths[Math.abs(variant) % paths.length];
     opacity: 1;
   }
   @media (prefers-reduced-motion: no-preference) {
-    .grease-loop path { transition: stroke-dashoffset 0.55s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.1s linear; }
+    .grease-loop path { transition: stroke-dashoffset 0.7s cubic-bezier(0.6, 0, 0.2, 1), opacity 0.1s linear; }
   }
 </style>
