@@ -790,7 +790,9 @@ export const projects: Project[] = [
       "React",
       "Gemini",
       "Auth0",
-      "MongoDB"
+      "MongoDB",
+      "Chart.js",
+      "Spline"
     ],
     "code": "https://github.com/veermshah/HackUPC",
     "extra": [
@@ -801,8 +803,10 @@ export const projects: Project[] = [
     ],
     "problem": "Planning with friends means reconciling different budgets, schedules and ideas about where to go.",
     "built": [
-      "A shared travel-planning experience that uses AI to recommend destinations and activities from the group’s preferences.",
-      "A Next.js and React app with Gemini, Auth0 and MongoDB."
+      "We built a group travel planner where each friend enters their preferences, budget and available dates in one shared form.",
+      "Gemini reads the group’s answers and recommends destinations, activities and timing.",
+      "For each option, the app shows typical restaurants, local events during the trip and its CO2 emissions.",
+      "The Next.js and React frontend uses Chart.js for charts and Spline for 3D elements, with Auth0 for login and MongoDB for user data."
     ],
     "results": [
       "Won the MLH Best Use of MongoDB Atlas prize at HackUPC 2025."
@@ -828,7 +832,8 @@ export const projects: Project[] = [
       "ElevenLabs",
       "OpenFace",
       "MediaPipe",
-      "Firebase"
+      "Firebase",
+      "Auth0"
     ],
     "code": "https://github.com/veermshah/hackuta25",
     "extra": [
@@ -839,8 +844,10 @@ export const projects: Project[] = [
     ],
     "problem": "Reading practice can be frustrating for children with dyslexia. We built a companion designed to make that practice calmer and more playful.",
     "built": [
-      "A reading companion combining speech with gaze and emotion-aware feedback.",
-      "Gemini and ElevenLabs support the reading experience, alongside OpenFace, MediaPipe and Firebase."
+      "We built a reading companion that listens as a child reads aloud, using ElevenLabs to transcribe the reading and flag tricky sections.",
+      "OpenFace and MediaPipe Iris track gaze and facial expressions, narrowing from paragraph to sentence to word to find where a reader gets stuck.",
+      "When the child looks confused or frustrated, the app offers a hint or encouragement, and Gemini summarizes focus and fluency into Firestore.",
+      "A parent area called Fox Mode shows that progress next to articles about dyslexia, and Auth0 handles sign-in."
     ],
     "results": [
       "Won MLH Best Use of Auth0 at HackUTA 7."
@@ -878,8 +885,9 @@ export const projects: Project[] = [
     ],
     "problem": "Donors often have little visibility into how charities allocate their contributions. We explored a public transaction record as a way to make that flow easier to inspect.",
     "built": [
-      "A donation platform built around recording contributions on Solana.",
-      "A React interface with Phantom wallet integration and Web3.js."
+      "We built a donation site where donors send SOL from their Phantom wallet directly to the charity's Phantom wallet.",
+      "Instead of writing smart contracts, we read Solana's transaction logs to track each donation.",
+      "After each donation, the site records the donor, the amount and the timestamp, and shows the full log publicly."
     ],
     "results": [
       "Won GoDaddy Best Domain Name and a Solana prize at HackTheChains."
@@ -915,8 +923,9 @@ export const projects: Project[] = [
     ],
     "problem": "As autonomous and human-operated aircraft share space, familiar marshalling gestures offer an interface between people and machines. We explored the idea on a rover.",
     "built": [
-      "A computer-vision prototype that interprets gestures using Python, OpenCV and MediaPipe.",
-      "Viam rover integration to translate the gesture interface into a physical robotics demonstration."
+      "We built a system that lets a person steer a Viam rover with hand gestures based on standard aircraft marshalling signals.",
+      "A hand-tracking model reads the webcam feed frame by frame and maps each gesture to one of five commands: forward, backward, turn left, turn right or stop.",
+      "We used Viam's app, API and Python SDK to send those commands to the rover's wheels."
     ],
     "results": [
       "Won Best Use of Viam Software in Robotics at PennApps XXIV."
