@@ -16,6 +16,7 @@ const paths = [
 const d = paths[Math.abs(variant) % paths.length];
 ---
 <svg class:list={['grease-loop', { 'is-selected': selected }]} viewBox="0 0 200 120" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+  <path class="under" d={d} pathLength="1" />
   <path d={d} pathLength="1" />
 </svg>
 
@@ -40,6 +41,8 @@ const d = paths[Math.abs(variant) % paths.length];
     stroke-dashoffset: 1;
     opacity: 0;
   }
+  /* A wider stroke in the page colour under the pencil line keeps the loop readable on light and dark images. */
+  .grease-loop path.under { stroke: var(--bg); stroke-width: 7px; }
   .grease-loop.is-selected path,
   :global(.loop-host:hover) .grease-loop path,
   :global(.loop-host:focus-within) .grease-loop path {

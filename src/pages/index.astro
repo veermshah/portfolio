@@ -386,6 +386,14 @@ const structuredData = {
 
   .sheet { list-style: none; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); column-gap: 0; row-gap: clamp(2.25rem, 4vw, 3rem); }
   @media (min-width: 36rem) { .sheet { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  /* Phones: a dense two-up sheet of frames with title and type; the write-up, pitch and links are one tap away. */
+  @media (max-width: 35.99rem) {
+    .sheet { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 3px; row-gap: 1.5rem; }
+    .frame-copy { padding: 0.6rem 0.25rem 0 3px; gap: 0.2rem; }
+    .frame h3 { font-size: 1rem; }
+    .frame-pitch, .frame :global(.actions) { display: none; }
+    .frame h3 a::after { content: ''; position: absolute; inset: 0; z-index: 3; }
+  }
   @media (min-width: 56rem) { .sheet { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   @media (min-width: 72rem) { .sheet { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
   .frame { position: relative; display: flex; flex-direction: column; min-width: 0; }
