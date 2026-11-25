@@ -7,6 +7,8 @@ import '@fontsource/atkinson-hyperlegible-mono/latin-400.css';
 import '../styles/global.css';
 // Same file the 400 @font-face above points at, so the preload and the stylesheet share one hashed URL.
 import bodyFont from '@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-400-normal.woff2?url';
+// The hero name and the intro's board are set in 800, so it is fetched up front too.
+import displayFont from '@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-800-normal.woff2?url';
 import { profile } from '../data/profile';
 import { BLOG_ORIGIN } from '../lib/blog/config';
 
@@ -84,6 +86,7 @@ const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
     <meta name="description" content={description} />
     {canonical && <link rel="canonical" href={canonical} />}
     <link rel="preload" href={bodyFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
     <meta name="author" content={profile.name} />
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
@@ -188,16 +191,31 @@ const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
       const themeSwitch = document.querySelector('.menu-switch');
       const syncSwitch = () => themeSwitch?.setAttribute('aria-checked', String(root.dataset.theme === 'dark'));
       syncSwitch();
-      themeSwitch?.addEventListener('click', () => {
-        // Ease the whole page between themes (skipped with reduced motion).
-        if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-          root.classList.add('theme-switching');
-          setTimeout(() => root.classList.remove('theme-switching'), 450);
-        }
+      const setTheme = () => {
         root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
         try { sessionStorage.setItem('theme', root.dataset.theme); } catch {}
         for (const m of document.querySelectorAll('meta[name="theme-color"]')) m.content = root.dataset.theme === 'dark' ? '#0a0a0a' : '#ffffff';
         syncSwitch();
+      };
+      themeSwitch?.addEventListener('click', () => {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return setTheme();
+        if (!document.startViewTransition) {
+          // No View Transitions: ease the colours instead.
+          root.classList.add('theme-switching');
+          setTimeout(() => root.classList.remove('theme-switching'), 450);
+          return setTheme();
+        }
+        // The new theme grows as a circle out of the switch until it covers the screen.
+        const r = themeSwitch.querySelector('.menu-switch-track')?.getBoundingClientRect() ?? themeSwitch.getBoundingClientRect();
+        const x = r.left + r.width / 2, y = r.top + r.height / 2;
+        const end = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+        root.classList.add('theme-wipe');
+        const t = document.startViewTransition(setTheme);
+        t.ready.then(() => root.animate(
+          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${end}px at ${x}px ${y}px)`] },
+          { duration: 700, easing: 'cubic-bezier(0.65, 0, 0.25, 1)', pseudoElement: '::view-transition-new(root)' },
+        )).catch(() => {});
+        t.finished.finally(() => root.classList.remove('theme-wipe'));
       });
       // The menu is a modal dialog, so focus stays inside, Esc closes it and the page behind is inert.
       const menu = document.getElementById('site-menu');

@@ -416,6 +416,9 @@ html:has(.site-menu[open]) { overflow: hidden; }
 }
 
 /* The whole page eases between themes instead of snapping. */
+/* Theme switch as an expanding circle (View Transitions); the script animates the new snapshot's clip-path. */
+html.theme-wipe::view-transition-old(root), html.theme-wipe::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html.theme-wipe::view-transition-new(root) { z-index: 1; }
 html.theme-switching, html.theme-switching * { transition: background-color 0.4s var(--ease), color 0.4s var(--ease), border-color 0.4s var(--ease), fill 0.4s var(--ease) !important; }
 
 /* ===== Buttons and links: tactile, quick, monochrome ===== */
