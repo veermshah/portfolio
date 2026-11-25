@@ -50,6 +50,51 @@ export interface Project {
 
 export const projects: Project[] = [
   {
+    slug: 'proofsnap',
+    title: 'ProofSnap',
+    pitch: 'Snap a photo of a handwritten proof and see exactly which step breaks: each step is translated into Lean 4 and checked by the proof assistant.',
+    role: { kind: 'Solo' },
+    stack: ['TypeScript', 'Next.js', 'Lean 4', 'Mathlib', 'AI SDK', 'Vercel Sandbox', 'Zod', 'Tailwind CSS'],
+    live: 'https://proofsnap-tan.vercel.app',
+    code: 'https://github.com/veermshah/proofsnap',
+    problem:
+      'Students get proofs back marked wrong with little detail on which step failed or why. A language model alone can grade confidently and still be wrong, so a formal proof checker decides each step and the model only translates and explains.',
+    built: [
+      'A vision model transcribes the theorem and splits the proof into numbered steps without fixing anything. The model then writes a Lean 4 + Mathlib file where every student step is its own `have` claim, so a false or unjustified step fails in Lean.',
+      'Lean runs in a Vercel Sandbox microVM booted from a snapshot with Mathlib and its build cache already in place, with all network access denied and a 150-second limit per check.',
+      'Lean errors are mapped back to steps. The model gets up to two repair passes for Lean technicalities without changing what any step claims, and `#print axioms` confirms no `sorry` or non-standard axiom slipped in.',
+      'Lean’s per-step result is the ground truth. The model explains each failing step in plain math, with a counterexample when there is one, and flags it when the formal statement doesn’t match what the student set out to prove.',
+    ],
+    results: [
+      'Live on Vercel.',
+      'A hand-labeled set of 9 proofs (correct ones, plus ones with a known first wrong step) runs through an admin route that checks whether the verdict and the first wrong step match. A daily cron keeps Lean warm.',
+    ],
+    images: [{ file: 'landing.webp', alt: 'ProofSnap home page: upload a photo of a handwritten proof or type it, with sample proofs to try', caption: 'Upload a photo or type the proof, then check it' }],
+  },
+  {
+    slug: 'riff',
+    title: 'Riff',
+    pitch: 'A music studio where Claude writes a multitrack loop from a described vibe, builds a band around chords you play on your laptop keyboard, and co-writes lyrics around your lines.',
+    role: { kind: 'Solo' },
+    stack: ['TypeScript', 'Electron', 'React', 'Tone.js', 'Anthropic SDK', 'Vite', 'Vitest'],
+    live: 'https://riff-studio-one.vercel.app',
+    code: 'https://github.com/veermshah/Call-Option-Calculator',
+    problem:
+      'Getting from an idea for a beat to something playable takes a DAW and a lot of clicking. Riff turns a described vibe or a few played chords into an editable multitrack loop, without the AI overwriting the parts you made yourself.',
+    built: [
+      'The composer sends the current song and recent chat to Claude with a JSON schema for the reply, so edits build on what exists. `normalizeSong()` clamps and cleans every response before it reaches the editor.',
+      'The home row plays chords in the song’s key, single notes or drums. Recorded parts are locked, and the app puts them back exactly after every model reply.',
+      'In the Lyrics tab, Claude finishes verses or writes choruses in your rhyme scheme. With “Keep my lines exactly” on, the app checks your lines came back word for word and warns about missing ones. It can also write a vocal melody, one note per syllable.',
+      'A Tone.js engine with synthesized instruments, swing, mute/solo and live edits; a piano roll; undo/redo; and Standard MIDI File export.',
+      'Runs as an Electron app (API key encrypted with `safeStorage`) or as a static site on Vercel, where the key stays in the browser and requests go straight to Anthropic.',
+    ],
+    results: [
+      'Live in the browser with your own Anthropic API key.',
+      '16 unit tests cover song normalization, MIDI output, music theory, locked tracks and lyric matching.',
+    ],
+    images: [{ file: 'studio.webp', alt: 'Riff studio in the browser: composer panel, transport with BPM, key, bars and swing, and Arrange and Lyrics tabs', caption: 'The web build, before a loop is composed' }],
+  },
+  {
   "slug": "fog-map",
   "title": "Fog Map",
   "pitch": "Compare interpretations of a spec and rank the decisions that need clarification.",
@@ -538,7 +583,10 @@ export const projects: Project[] = [
     stack: ['Python', 'Flask-SocketIO', 'Raspberry Pi', 'Arduino', 'React Three Fiber', 'MediaPipe'],
     live: 'https://sa-night-drive.vercel.app',
     code: 'https://github.com/veermshah/rowdyhacks',
-    extra: [{ label: 'Devpost', href: 'https://devpost.com/software/hackstash' }],
+    extra: [
+      { label: 'Devpost', href: 'https://devpost.com/software/hackstash' },
+      { label: 'Demo video', href: 'https://youtu.be/Odbm37fi118' },
+    ],
     problem:
       'We wanted a heist game that used real San Antonio streets, needed no controller, and spilled out of the browser: each landmark vault opens a challenge on physical hardware or a real phone call.',
     built: [

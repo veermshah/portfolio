@@ -177,6 +177,11 @@ img {
   white-space: nowrap;
 }
 
+/* Long award names wrap on project pages instead of being clipped on phones. */
+.award-line .award {
+  white-space: normal;
+}
+
 .tags {
   list-style: none;
   padding: 0;

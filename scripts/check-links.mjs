@@ -56,7 +56,8 @@ for (const page of pages) {
   const html = await readFile(page, 'utf8');
   const from = '/' + relative(DIST, page);
   for (const [, attr, raw] of html.matchAll(/\s(href|src|srcset)="([^"]+)"/g)) {
-    const urls = attr === 'srcset' ? raw.split(',').map((s) => s.trim().split(/\s+/)[0]) : [raw];
+    const decoded = raw.replaceAll('&amp;', '&');
+    const urls = attr === 'srcset' ? decoded.split(',').map((s) => s.trim().split(/\s+/)[0]) : [decoded];
     for (const url of urls) {
       if (!url || url.startsWith('#') || url.startsWith('mailto:') || url.startsWith('data:')) continue;
       if (/^https?:\/\//.test(url)) {
