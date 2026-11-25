@@ -1,0 +1,135 @@
+---
+// First-visit intro for the home page, built from Veer's own flights (src/data/flights.json): on
+// black, every route he has flown draws itself as an arc between its airports while a counter runs
+// up to the number of flights, the last arcs land home in Dallas, and the black lifts away. Once per
+// browser session, skipped with prefers-reduced-motion or without JavaScript, and any click or key
+// ends it early. Pure inline SVG, no images, so it never competes with the hero for the largest paint.
+import flights from '../data/flights.json';
+import { profile } from '../data/profile';
+
+type Airport = { lat: number; lon: number; city: string };
+const airports = flights.airports as Record<string, Airport>;
+const LON0 = -130, LON1 = 150, LAT0 = 64, W = 1000;
+const k = W / (LON1 - LON0);
+const H = Math.round((LAT0 - -6) * k);
+const at = (a: Airport) => [(a.lon - LON0) * k, (LAT0 - a.lat) * k] as const;
+const total = flights.routes.reduce((n, r) => n + r.count, 0);
+// Routes that end in Dallas draw last, so the sequence comes home.
+const home = (r: { a: string; b: string }) => r.a === 'DFW' || r.b === 'DFW';
+const routes = [...flights.routes].sort((x, y) => Number(home(x)) - Number(home(y)) || x.a.localeCompare(y.a));
+const arcs = routes.map((r) => {
+  const [x1, y1] = at(airports[r.a]);
+  const [x2, y2] = at(airports[r.b]);
+  const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
+  const lift = Math.min(90, len * 0.22);
+  // Bow each arc toward the top of the map, like a route on a flight tracker.
+  let nx = -dy / len, ny = dx / len;
+  if (ny > 0) { nx = -nx; ny = -ny; }
+  const cx = (x1 + x2) / 2 + nx * lift, cy = (y1 + y2) / 2 + ny * lift;
+  return { d: `M${x1.toFixed(1)} ${y1.toFixed(1)}Q${cx.toFixed(1)} ${cy.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`, w: Math.min(2.4, 0.9 + r.count * 0.25) };
+});
+const dots = Object.entries(airports).map(([code, a]) => ({ code, xy: at(a) }));
+const dfw = at(airports.DFW);
+---
+
+<script is:inline>
+  (function () {
+    var seen = false;
+    try { seen = sessionStorage.getItem('intro') === '1'; } catch (e) {}
+    if (!seen && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('intro-on');
+  })();
+</script>
+<div class="intro" aria-hidden="true">
+  <div class="intro-top">
+    <span>{profile.name}</span>
+    <span><b data-count={total}>000</b> flights</span>
+  </div>
+  <svg class="intro-map" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
+    {arcs.map((a, i) => <path d={a.d} pathLength="1" style={`--i: ${i}; stroke-width: ${a.w}`} />)}
+    {dots.map((d) => <circle cx={d.xy[0].toFixed(1)} cy={d.xy[1].toFixed(1)} r="2.6" class:list={{ home: d.code === 'DFW' }} />)}
+    <circle class="pulse" cx={dfw[0].toFixed(1)} cy={dfw[1].toFixed(1)} r="6" />
+  </svg>
+  <div class="intro-bottom">
+    <span>{Object.keys(airports).length} airports</span>
+    <span>Home · {airports.DFW.city}</span>
+  </div>
+</div>
+<script is:inline>
+  (function () {
+    var root = document.documentElement;
+    if (!root.classList.contains('intro-on')) return;
+    var intro = document.currentScript.previousElementSibling;
+    var count = intro.querySelector('[data-count]');
+    var total = Number(count.dataset.count);
+    var t0 = performance.now();
+    var done = false;
+    // The counter runs up with the arcs (about 1.7 s), easing out as the last routes land.
+    (function tick(now) {
+      if (done) return;
+      var p = Math.min(1, (now - t0) / 1700);
+      count.textContent = String(Math.round(total * (1 - Math.pow(1 - p, 3)))).padStart(3, '0');
+      if (p < 1) requestAnimationFrame(tick);
+    })(t0);
+    function finish() {
+      if (done) return;
+      done = true;
+      try { sessionStorage.setItem('intro', '1'); } catch (e) {}
+      root.classList.remove('intro-on');
+      intro.remove();
+    }
+    intro.addEventListener('animationend', function (e) { if (e.target === intro) finish(); });
+    setTimeout(finish, 3600);
+    addEventListener('pointerdown', finish, { once: true });
+    addEventListener('keydown', finish, { once: true });
+  })();
+</script>
+
+<style>
+  .intro { display: none; }
+  :global(html.intro-on) .intro {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 1rem;
+    padding: clamp(1.25rem, 3vw, 2.25rem) var(--gutter);
+    background: #0a0a0a;
+    color: #f5f5f5;
+    pointer-events: none;
+    /* After the last route lands, the black lifts away from the bottom up. */
+    animation: intro-lift 0.75s cubic-bezier(0.7, 0, 0.2, 1) 2.35s both;
+  }
+  @keyframes intro-lift { to { clip-path: inset(0 0 100% 0); } }
+  .intro-top, .intro-bottom {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+  .intro-top b { font-weight: 500; }
+  .intro-bottom { color: rgb(245 245 245 / 0.6); animation: intro-fade 0.6s var(--ease) 1.4s both; }
+  @keyframes intro-fade { from { opacity: 0; } }
+  .intro-map { align-self: center; justify-self: center; width: min(100%, 72rem); height: auto; max-height: 100%; overflow: visible; }
+  .intro-map path {
+    fill: none;
+    stroke: #f5f5f5;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    opacity: 0.75;
+    animation: route-draw 0.55s cubic-bezier(0.4, 0, 0.2, 1) both;
+    animation-delay: calc(0.15s + var(--i) * 45ms);
+  }
+  @keyframes route-draw { to { stroke-dashoffset: 0; } }
+  .intro-map circle { fill: #f5f5f5; animation: intro-fade 0.4s var(--ease) 0.1s both; }
+  .intro-map .home { r: 4; }
+  .intro-map .pulse { fill: none; stroke: #f5f5f5; stroke-width: 1; transform-box: fill-box; transform-origin: center; animation: pulse 0.9s var(--ease) 1.6s both; }
+  @keyframes pulse { from { opacity: 0.9; scale: 0.4; } to { opacity: 0; scale: 3.2; } }
+  /* The hero settles in as the black lifts, instead of under it. */
+  :global(html.intro-on [data-reveal]) { animation-delay: calc(2.5s + var(--reveal-i, 0) * 90ms) !important; }
+</style>

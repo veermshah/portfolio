@@ -1,11 +1,12 @@
 ---
-import '@fontsource/atkinson-hyperlegible-next/latin-400.css';
-import '@fontsource/atkinson-hyperlegible-next/latin-700.css';
-import '@fontsource/atkinson-hyperlegible-next/latin-800.css';
+import '@fontsource/bricolage-grotesque/latin-400.css';
+import '@fontsource/bricolage-grotesque/latin-500.css';
+import '@fontsource/bricolage-grotesque/latin-700.css';
+import '@fontsource/bricolage-grotesque/latin-800.css';
 import '@fontsource/atkinson-hyperlegible-mono/latin-400.css';
 import '../styles/global.css';
 // Same file the 400 @font-face above points at, so the preload and the stylesheet share one hashed URL.
-import bodyFont from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff2?url';
+import bodyFont from '@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-400-normal.woff2?url';
 import { profile } from '../data/profile';
 import { BLOG_ORIGIN } from '../lib/blog/config';
 
@@ -122,33 +123,41 @@ const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
     <a class="skip" href="#main">Skip to content</a>
     <header class="site-header">
       <div class="site-header-inner">
-        <a class="wordmark" href="/"><span class="monogram" aria-hidden="true"><span class="mono-v">V</span><span class="mono-s">S</span></span><span class="wordmark-swap"><span class="wordmark-name">{profile.name}</span><span class="wordmark-section" aria-hidden="true"></span></span></a>
+        <a class="wordmark" href="/">{profile.name}</a>
         <nav class="site-nav" aria-label="Site">
-          <span class="nav-blob" aria-hidden="true"></span>
           {navItems.map((item) => <a href={item.href} aria-current={item.current ? 'page' : undefined}>{item.label}</a>)}
         </nav>
-        <button class="menu-button" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="site-menu" hidden>
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg>
-        </button>
-        <button class="theme-toggle" type="button" aria-label="Toggle dark mode" hidden>
-          <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-          <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <button class="menu-button" type="button" aria-expanded="false" aria-controls="site-menu" hidden>
+          Menu<span class="menu-lines" aria-hidden="true"></span>
         </button>
       </div>
     </header>
     <dialog class="site-menu" id="site-menu" aria-label="Menu">
-      <div class="site-menu-bar">
-        <a class="wordmark" href="/"><span class="monogram" aria-hidden="true">VS</span><span class="wordmark-name">{profile.name}</span></a>
-        <button class="menu-close" type="button" aria-label="Close menu">
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg>
-        </button>
+      <div class="site-menu-inner">
+        <div class="site-menu-bar">
+          <a class="wordmark" href="/">{profile.name}</a>
+          <button class="menu-close" type="button">Close<span class="menu-lines" aria-hidden="true"></span></button>
+        </div>
+        <nav aria-label="Site">
+          <ol class="site-menu-list">
+            {navItems.map((item, i) => (
+              <li style={`--i: ${i}`}>
+                <a href={item.href} aria-current={item.current ? 'page' : undefined}>
+                  <span class="menu-no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="menu-label">{item.label}</span>
+                  <span class="menu-arrow" aria-hidden="true">↗</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+        <div class="site-menu-foot">
+          <button class="menu-switch" type="button" role="switch" aria-checked="false"><span class="menu-switch-track" aria-hidden="true"></span>Dark mode</button>
+          <ul class="menu-pills" aria-label="Elsewhere">
+            {profile.links.filter((link) => ['Email', 'LinkedIn', 'GitHub'].includes(link.label) && link.href).map((link) => <li><a href={link.href}>{link.label}<span aria-hidden="true">↗</span></a></li>)}
+          </ul>
+        </div>
       </div>
-      <nav aria-label="Site">
-        <ol class="site-menu-list">
-          {navItems.map((item, i) => <li style={`--i: ${i}`}><a href={item.href} aria-current={item.current ? 'page' : undefined}>{item.label}</a></li>)}
-        </ol>
-      </nav>
-      <button class="menu-theme" type="button">Switch to <span class="menu-theme-dark">dark</span><span class="menu-theme-light">light</span> mode</button>
     </dialog>
     <div class:list={['page', { 'is-wide': wide }]}>
       <main id="main">
@@ -175,12 +184,11 @@ const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
       if (location.hostname === 'blog.veermickey.com') {
         for (const a of document.querySelectorAll('.site-header a[href^="/"], .site-menu a[href^="/"], .site-footer a[href^="/"]')) a.href = 'https://www.veermickey.com' + a.getAttribute('href');
       }
-      const toggle = document.querySelector('.theme-toggle');
       const root = document.documentElement;
-      const syncToggle = () => toggle.setAttribute('aria-pressed', String(root.dataset.theme === 'dark'));
-      toggle.hidden = false;
-      syncToggle();
-      toggle.addEventListener('click', () => {
+      const themeSwitch = document.querySelector('.menu-switch');
+      const syncSwitch = () => themeSwitch?.setAttribute('aria-checked', String(root.dataset.theme === 'dark'));
+      syncSwitch();
+      themeSwitch?.addEventListener('click', () => {
         // Ease the whole page between themes (skipped with reduced motion).
         if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
           root.classList.add('theme-switching');
@@ -189,9 +197,9 @@ const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
         root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
         try { sessionStorage.setItem('theme', root.dataset.theme); } catch {}
         for (const m of document.querySelectorAll('meta[name="theme-color"]')) m.content = root.dataset.theme === 'dark' ? '#0a0a0a' : '#ffffff';
-        syncToggle();
+        syncSwitch();
       });
-      // Phone menu: a modal dialog, so focus stays inside, Esc closes it and the page behind is inert.
+      // The menu is a modal dialog, so focus stays inside, Esc closes it and the page behind is inert.
       const menu = document.getElementById('site-menu');
       const menuButton = document.querySelector('.menu-button');
       if (menu && menuButton && typeof menu.showModal === 'function') {
@@ -200,68 +208,17 @@ const footerElsewhere = ['GitHub', 'LinkedIn', 'Email', 'Resume']
         menuButton.addEventListener('click', () => { menu.showModal(); setOpen(true); });
         menu.addEventListener('close', () => { setOpen(false); menuButton.focus(); });
         menu.querySelector('.menu-close').addEventListener('click', () => menu.close());
-        // A tap on the backdrop (outside the sheet) or on a link closes it.
-        menu.addEventListener('click', (e) => { if (e.target === menu || e.target.closest('a')) menu.close(); });
-        menu.querySelector('.menu-theme').addEventListener('click', () => toggle.click());
-        addEventListener('resize', () => { if (menu.open && matchMedia('(min-width: 60rem)').matches) menu.close(); }, { passive: true });
+        menu.addEventListener('click', (e) => { if (e.target.closest('a')) menu.close(); });
+      } else {
+        // No dialog support: show the links in the bar instead.
+        root.classList.remove('js');
       }
 
-      // At the top of the home page the header is clear over the hero; it turns solid as soon as you scroll.
+      // The bar gains a hairline once you scroll (and turns solid over the home hero).
       const header = document.querySelector('.site-header');
       const onScroll = () => header?.classList.toggle('is-scrolled', scrollY > 24);
       addEventListener('scroll', onScroll, { passive: true });
       onScroll();
-
-      // The sliding pill under the nav links: follows the pointer, then settles on the section on screen.
-      const nav = document.querySelector('.site-nav');
-      const blob = nav?.querySelector('.nav-blob');
-      const navLinks = nav ? [...nav.querySelectorAll('a')] : [];
-      let current = navLinks.find((a) => a.getAttribute('aria-current') === 'page') || null;
-      let shown = null;
-      const place = (link) => {
-        if (!blob) return;
-        shown = link;
-        navLinks.forEach((a) => a.classList.toggle('on-blob', a === link));
-        if (!link) { blob.classList.remove('is-on'); return; }
-        blob.style.setProperty('--x', link.offsetLeft + 'px');
-        blob.style.setProperty('--w', link.offsetWidth + 'px');
-        blob.classList.add('is-on');
-      };
-      navLinks.forEach((a) => {
-        a.addEventListener('pointerenter', () => place(a));
-        a.addEventListener('focus', () => place(a));
-      });
-      nav?.addEventListener('pointerleave', () => place(current));
-      nav?.addEventListener('focusout', (e) => { if (!nav.contains(e.relatedTarget)) place(current); });
-      place(current);
-      // Re-measure once the web font has loaded or the header changes shape (fallback text is wider).
-      const remeasure = () => place(shown);
-      document.fonts?.ready.then(remeasure);
-      if (nav && 'ResizeObserver' in window) new ResizeObserver(remeasure).observe(nav);
-      addEventListener('resize', remeasure, { passive: true });
-
-      // Home: as each section scrolls through the middle of the screen, the pill moves to its link and
-      // the wordmark swaps the name for the section's name.
-      const wordmark = document.querySelector('.site-header .wordmark');
-      const sectionLabel = wordmark?.querySelector('.wordmark-section');
-      const spy = navLinks.filter((a) => a.getAttribute('href').startsWith('/#')).map((a) => [a, document.getElementById(a.getAttribute('href').slice(2))]).filter(([, el]) => el);
-      if (spy.length && 'IntersectionObserver' in window) {
-        const io = new IntersectionObserver((entries) => {
-          for (const entry of entries) {
-            const link = spy.find(([, el]) => el === entry.target)?.[0];
-            if (!link) continue;
-            link.classList.toggle('is-here', entry.isIntersecting);
-            if (entry.isIntersecting) current = link;
-            else if (current === link) current = null;
-          }
-          if (!nav.matches(':hover')) place(current);
-          if (sectionLabel) {
-            if (current) sectionLabel.textContent = current.textContent;
-            wordmark.classList.toggle('has-section', Boolean(current));
-          }
-        }, { rootMargin: '-45% 0px -50% 0px' });
-        spy.forEach(([, el]) => io.observe(el));
-      }
     </script>
     <script is:inline>
       // Links that leave the site (GitHub, LinkedIn, live demos, the resume PDF) open in a new tab.
