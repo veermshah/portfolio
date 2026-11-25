@@ -264,7 +264,7 @@ const structuredData = {
     <div class="flights-grid">
       <div class="flights-copy" data-rise>
         <p class="flights-summary">{flightCount} flights between {flightAirports.length} airports in {flightCountries} countries and territories.</p>
-        <p class="flights-cities">{flightCities.join(' · ')}</p>
+        <p class="flights-cities">{flightCities.join('\u00a0· ')}</p>
       </div>
       <div class="flights-globe" data-flight-globe>
         <canvas aria-hidden="true"></canvas>
