@@ -48,7 +48,7 @@ async function load(): Promise<UnsplashPhoto[]> {
           width: p.width,
           height: p.height,
           color: p.color ?? '#888',
-          alt: p.alt_description ?? p.description ?? 'Photo by Veer Shah',
+          alt: p.alt_description ?? p.description ?? 'Photo by Veer Mickey Shah',
           raw: p.urls.raw,
           page: p.links.html,
         });
