@@ -1,8 +1,6 @@
 ---
 // Home hero: Veer's photos crossfading full-bleed behind the name, with the dot field forming the
 // name on top. The hero's text (kicker, h1, bio, links) comes from the page through the slot.
-//
-// Temporary: /?hero=photo shows only the photos, /?hero=dots only the dot name. See README.
 import { getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { getUnsplashPhotos, UTM } from '../lib/unsplash';
@@ -42,14 +40,12 @@ const frames: Frame[] = shots.length
 const [lead, ...rest] = frames;
 ---
 
-<section class="hero" data-hero="both" aria-labelledby="hero-name">
+<section class="hero" aria-labelledby="hero-name">
   <script is:inline>
     (function (hero) {
-      var mode = new URLSearchParams(location.search).get('hero');
-      if (mode === 'photo' || mode === 'dots') hero.dataset.hero = mode;
       // Hide the h1 text (it stays readable to screen readers) until the dot name takes its place,
       // so the name doesn't flash as text first. Shown again if the dots haven't started in 3 s.
-      if (hero.dataset.hero !== 'photo' && !matchMedia('(prefers-reduced-motion: reduce)').matches && document.createElement('canvas').getContext) {
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches && document.createElement('canvas').getContext) {
         hero.classList.add('dot-pending');
         setTimeout(function () { if (!hero.classList.contains('has-dot-name')) hero.classList.remove('dot-pending'); }, 3000);
       }
@@ -99,11 +95,13 @@ const [lead, ...rest] = frames;
     padding-bottom: clamp(1rem, 3vw, 2rem);
   }
   /* On the photo the hero is light text on a dark scrim, whatever the site theme. */
-  .hero:not([data-hero='dots']) {
-    min-height: min(calc(100svh - 3.5rem - var(--hero-pad)), 48rem);
+  .hero {
+    --hero-min: min(calc(100svh - 3.5rem - var(--hero-pad)), 48rem);
+    min-height: var(--hero-min);
     padding-bottom: clamp(4rem, 3rem + 3vw, 5.5rem);
     color: #fff;
   }
+  @media (max-width: 40rem) { .hero { min-height: 0; padding-bottom: 3.75rem; } }
   .hero-bg {
     position: absolute;
     z-index: -1;
@@ -139,9 +137,6 @@ const [lead, ...rest] = frames;
   }
   .hero-field { display: none; }
   .hero.has-dot-name .hero-field { display: block; }
-  .hero[data-hero='dots'] .hero-photos,
-  .hero[data-hero='dots'] .hero-scrim,
-  .hero[data-hero='dots'] .hero-credit { display: none; }
 
   .hero-credit {
     position: absolute;

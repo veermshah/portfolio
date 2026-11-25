@@ -9,7 +9,7 @@ type Frame = { src: string; srcset: string; page?: string };
 export function initHeroPhotos() {
   const hero = document.querySelector<HTMLElement>('.hero');
   const stage = hero?.querySelector<HTMLElement>('.hero-photos');
-  if (!hero || !stage || hero.dataset.hero === 'dots') return;
+  if (!hero || !stage) return;
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
   if (connection?.saveData || /2g|3g/.test(connection?.effectiveType ?? '')) return;

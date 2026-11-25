@@ -19,7 +19,7 @@ export function initHeroField() {
   const giveUp = () => hero.classList.remove('dot-pending');
 
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-  if (hero.dataset.hero === 'photo' || reduce.matches) return giveUp();
+  if (reduce.matches) return giveUp();
   const ctx = canvas.getContext('2d');
   const probe = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
   if (!ctx || !probe) return giveUp();
