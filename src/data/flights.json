@@ -1,0 +1,282 @@
+{
+  "_note": "Airport routes for the flight globe. Pairs are unordered; count is flights flown on that route in either direction. Append new routes or bump counts; add any new airport to airports.",
+  "airports": {
+    "BUD": {
+      "lat": 47.43,
+      "lon": 19.262,
+      "city": "Budapest",
+      "country": "HU"
+    },
+    "CPH": {
+      "lat": 55.618,
+      "lon": 12.656,
+      "city": "Copenhagen",
+      "country": "DK"
+    },
+    "CUN": {
+      "lat": 21.041,
+      "lon": -86.873,
+      "city": "Cancún",
+      "country": "MX"
+    },
+    "DEN": {
+      "lat": 39.86,
+      "lon": -104.674,
+      "city": "Denver",
+      "country": "US"
+    },
+    "DFW": {
+      "lat": 32.897,
+      "lon": -97.038,
+      "city": "Dallas",
+      "country": "US"
+    },
+    "FCO": {
+      "lat": 41.805,
+      "lon": 12.252,
+      "city": "Rome",
+      "country": "IT"
+    },
+    "HKG": {
+      "lat": 22.312,
+      "lon": 113.915,
+      "city": "Hong Kong",
+      "country": "HK"
+    },
+    "IAD": {
+      "lat": 38.944,
+      "lon": -77.456,
+      "city": "Washington",
+      "country": "US"
+    },
+    "IAH": {
+      "lat": 29.984,
+      "lon": -95.341,
+      "city": "Houston",
+      "country": "US"
+    },
+    "ICN": {
+      "lat": 37.469,
+      "lon": 126.451,
+      "city": "Seoul",
+      "country": "KR"
+    },
+    "LIS": {
+      "lat": 38.781,
+      "lon": -9.136,
+      "city": "Lisbon",
+      "country": "PT"
+    },
+    "MAD": {
+      "lat": 40.493,
+      "lon": -3.572,
+      "city": "Madrid",
+      "country": "ES"
+    },
+    "MIA": {
+      "lat": 25.796,
+      "lon": -80.29,
+      "city": "Miami",
+      "country": "US"
+    },
+    "NRT": {
+      "lat": 35.769,
+      "lon": 140.389,
+      "city": "Tokyo",
+      "country": "JP"
+    },
+    "ORD": {
+      "lat": 41.979,
+      "lon": -87.905,
+      "city": "Chicago",
+      "country": "US"
+    },
+    "PHL": {
+      "lat": 39.872,
+      "lon": -75.241,
+      "city": "Philadelphia",
+      "country": "US"
+    },
+    "RAK": {
+      "lat": 31.605,
+      "lon": -8.036,
+      "city": "Marrakesh",
+      "country": "MA"
+    },
+    "RIC": {
+      "lat": 37.505,
+      "lon": -77.32,
+      "city": "Richmond",
+      "country": "US"
+    },
+    "SFO": {
+      "lat": 37.62,
+      "lon": -122.375,
+      "city": "San Francisco",
+      "country": "US"
+    },
+    "SIN": {
+      "lat": 1.35,
+      "lon": 103.994,
+      "city": "Singapore",
+      "country": "SG"
+    },
+    "TFN": {
+      "lat": 28.483,
+      "lon": -16.342,
+      "city": "Tenerife",
+      "country": "ES"
+    },
+    "VIE": {
+      "lat": 48.11,
+      "lon": 16.57,
+      "city": "Vienna",
+      "country": "AT"
+    },
+    "YYT": {
+      "lat": 47.619,
+      "lon": -52.752,
+      "city": "St. John's",
+      "country": "CA"
+    },
+    "YYZ": {
+      "lat": 43.676,
+      "lon": -79.629,
+      "city": "Toronto",
+      "country": "CA"
+    },
+    "ZRH": {
+      "lat": 47.458,
+      "lon": 8.548,
+      "city": "Zurich",
+      "country": "CH"
+    }
+  },
+  "routes": [
+    {
+      "a": "BUD",
+      "b": "MAD",
+      "count": 1
+    },
+    {
+      "a": "CPH",
+      "b": "MAD",
+      "count": 2
+    },
+    {
+      "a": "CUN",
+      "b": "DFW",
+      "count": 2
+    },
+    {
+      "a": "DEN",
+      "b": "DFW",
+      "count": 1
+    },
+    {
+      "a": "DEN",
+      "b": "RIC",
+      "count": 1
+    },
+    {
+      "a": "DFW",
+      "b": "HKG",
+      "count": 1
+    },
+    {
+      "a": "DFW",
+      "b": "IAD",
+      "count": 3
+    },
+    {
+      "a": "DFW",
+      "b": "IAH",
+      "count": 1
+    },
+    {
+      "a": "DFW",
+      "b": "ICN",
+      "count": 1
+    },
+    {
+      "a": "DFW",
+      "b": "MAD",
+      "count": 4
+    },
+    {
+      "a": "DFW",
+      "b": "ORD",
+      "count": 2
+    },
+    {
+      "a": "DFW",
+      "b": "PHL",
+      "count": 2
+    },
+    {
+      "a": "DFW",
+      "b": "SFO",
+      "count": 6
+    },
+    {
+      "a": "DFW",
+      "b": "YYZ",
+      "count": 4
+    },
+    {
+      "a": "DFW",
+      "b": "ZRH",
+      "count": 1
+    },
+    {
+      "a": "FCO",
+      "b": "MAD",
+      "count": 2
+    },
+    {
+      "a": "HKG",
+      "b": "SIN",
+      "count": 1
+    },
+    {
+      "a": "IAD",
+      "b": "RIC",
+      "count": 1
+    },
+    {
+      "a": "IAH",
+      "b": "NRT",
+      "count": 1
+    },
+    {
+      "a": "LIS",
+      "b": "MAD",
+      "count": 2
+    },
+    {
+      "a": "LIS",
+      "b": "MIA",
+      "count": 2
+    },
+    {
+      "a": "MAD",
+      "b": "RAK",
+      "count": 2
+    },
+    {
+      "a": "MAD",
+      "b": "TFN",
+      "count": 2
+    },
+    {
+      "a": "MAD",
+      "b": "VIE",
+      "count": 1
+    },
+    {
+      "a": "YYT",
+      "b": "YYZ",
+      "count": 2
+    }
+  ]
+}
