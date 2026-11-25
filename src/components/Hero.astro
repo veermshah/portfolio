@@ -4,6 +4,7 @@
 import { getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { getUnsplashPhotos, UTM } from '../lib/unsplash';
+import GreaseLoop from './GreaseLoop.astro';
 import marinaBay from '../assets/photos/marina-bay.jpg';
 import skylineNight from '../assets/photos/skyline-night.jpg';
 import bridge from '../assets/photos/bridge.jpg';
@@ -14,7 +15,7 @@ const COUNT = 5;
 // The scrim darkens the photo, so a lower quality is not visible and saves bytes.
 const unsplashUrl = (raw: string, width: number) => `${raw}&w=${width}&auto=format&fit=max&q=60`;
 
-type Frame = { src: string; srcset: string; width: number; height: number; page?: string; color: string };
+type Frame = { src: string; srcset: string; thumb: string; width: number; height: number; page?: string; color: string; alt: string };
 
 // Hand-picked city shots first (Unsplash photo IDs), topped up with the most popular landscape
 // photos if fewer than three picks come back. Without Unsplash, the local photos below.
@@ -26,6 +27,8 @@ const frames: Frame[] = shots.length
   ? shots.map((p) => ({
       src: unsplashUrl(p.raw, 1920),
       srcset: WIDTHS.filter((w) => w <= p.width).map((w) => `${unsplashUrl(p.raw, w)} ${w}w`).join(', '),
+      thumb: `${p.raw}&w=240&h=160&fit=crop&auto=format&q=55`,
+      alt: p.alt,
       width: p.width,
       height: p.height,
       page: `${p.page}?${UTM}`,
@@ -34,7 +37,8 @@ const frames: Frame[] = shots.length
   : await Promise.all(
       ([marinaBay, skylineNight, bridge, netSculpture] as ImageMetadata[]).map(async (src) => {
         const image = await getImage({ src, widths: WIDTHS.filter((w) => w <= src.width), format: 'webp', quality: 60 });
-        return { src: image.src, srcset: image.srcSet.attribute, width: src.width, height: src.height, color: '#1b1d21' };
+        const thumb = await getImage({ src, width: 240, height: 160, fit: 'cover', format: 'webp', quality: 55 });
+        return { src: image.src, srcset: image.srcSet.attribute, thumb: thumb.src, width: src.width, height: src.height, color: '#1b1d21', alt: '' };
       }),
     );
 const [lead, ...rest] = frames;
@@ -71,6 +75,18 @@ const [lead, ...rest] = frames;
     <canvas class="hero-field"></canvas>
   </div>
   <slot />
+  {frames.length > 1 && (
+    <ol class="hero-strip" aria-label="Photos behind the name" hidden>
+      {frames.map((f, i) => (
+        <li class:list={['loop-host', { 'is-current': i === 0 }]}>
+          <button type="button" data-frame={i} aria-pressed={i === 0 ? 'true' : 'false'} aria-label={`Show photo ${i + 1} of ${frames.length}`}>
+            <img src={f.thumb} alt="" width="120" height="80" loading="lazy" decoding="async" />
+          </button>
+          <GreaseLoop variant={i} />
+        </li>
+      ))}
+    </ol>
+  )}
   <p class="hero-credit">
     {lead.page ? <>Photo: <a href={lead.page} data-photo-link>Veer Shah on Unsplash</a></> : <>Photo: Veer Shah</>}
     <span class="sep" aria-hidden="true">·</span>
@@ -98,10 +114,10 @@ const [lead, ...rest] = frames;
   .hero {
     --hero-min: min(calc(100svh - 3.5rem - var(--hero-pad)), 48rem);
     min-height: var(--hero-min);
-    padding-bottom: clamp(4rem, 3rem + 3vw, 5.5rem);
+    padding-bottom: clamp(5.5rem, 4.5rem + 3vw, 7rem);
     color: #fff;
   }
-  @media (max-width: 40rem) { .hero { min-height: 0; padding-bottom: 3.75rem; } }
+  @media (max-width: 40rem) { .hero { min-height: 0; padding-bottom: 7.5rem; } }
   .hero-bg {
     position: absolute;
     z-index: -1;
@@ -140,6 +156,41 @@ const [lead, ...rest] = frames;
   .hero-field { display: none; }
   .hero.has-dot-name .hero-field { display: block; }
 
+  /* A strip of the slideshow's frames, like a contact strip; the photo on screen is circled. */
+  .hero-strip {
+    position: absolute;
+    left: 0;
+    bottom: clamp(0.9rem, 2vw, 1.4rem);
+    display: flex;
+    gap: 3px;
+    padding: 3px;
+    margin: 0;
+    list-style: none;
+    background: #0a0a0a;
+  }
+  .hero-strip li { position: relative; color: #fff; }
+  .hero-strip button {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    min-height: 44px;
+  }
+  .hero-strip img {
+    width: clamp(3.25rem, 2.6rem + 2vw, 4.5rem);
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    filter: grayscale(1);
+    opacity: 0.55;
+    transition: opacity 0.2s linear;
+  }
+  .hero-strip button:hover img,
+  .hero-strip button:focus-visible img,
+  .hero-strip .is-current img { opacity: 1; }
+  .hero-strip button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .hero-strip .is-current :global(.grease-loop path) { stroke-dashoffset: 0; opacity: 1; }
   .hero-credit {
     position: absolute;
     right: 0;
@@ -147,6 +198,11 @@ const [lead, ...rest] = frames;
     font-size: 0.75rem;
     color: rgb(255 255 255 / 0.85);
     text-shadow: 0 1px 6px rgb(0 0 0 / 0.6);
+  }
+  /* Phones: the strip sits above the credit line, both on the left. */
+  @media (max-width: 40rem) {
+    .hero-strip { bottom: 2.6rem; }
+    .hero-credit { left: 0; right: auto; bottom: 0.9rem; }
   }
   .hero-credit a { color: inherit; }
   .hero-credit .sep { margin: 0 0.45em; }
