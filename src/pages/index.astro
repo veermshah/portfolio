@@ -51,7 +51,7 @@ const featured = [
 const links = profile.links.filter((l) => l.href && l.label !== 'Email');
 
 const siteUrl = new URL('/', Astro.site).href;
-const portrait = await getImage({ src: portraitSrc, width: 800, format: 'jpg' });
+const portrait = await getImage({ src: portraitSrc, width: 600, format: 'jpg' });
 const portraitUrl = new URL(portrait.src, Astro.site).href;
 const structuredData = {
   '@context': 'https://schema.org',
@@ -81,7 +81,7 @@ const structuredData = {
       alternateName: profile.alternateNames,
       url: siteUrl,
       jobTitle: 'Software Engineer',
-      image: { '@type': 'ImageObject', url: portraitUrl, width: 800, height: 800, caption: `${profile.name} at his UT Dallas graduation` },
+      image: { '@type': 'ImageObject', url: portraitUrl, width: 600, height: 600, caption: `${profile.name} at his UT Dallas graduation` },
       description: profile.description,
       email: profile.links.find((l) => l.label === 'Email')?.href?.replace(/^mailto:/, ''),
       alumniOf: { '@id': `${siteUrl}#utd` },
