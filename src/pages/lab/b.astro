@@ -1,0 +1,469 @@
+---
+import { Image, Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { experience } from '../../data/experience';
+import { education, skills, knowsAbout } from '../../data/education';
+import LinkIcon from '../../components/LinkIcon.astro';
+import ContactButton from '../../components/ContactButton.astro';
+import Base from '../../layouts/Base.astro';
+import ProjectLinks from '../../components/ProjectLinks.astro';
+
+
+import { profile } from '../../data/profile';
+import { getImage } from 'astro:assets';
+import portraitSrc from '../../assets/portrait.jpg';
+import { projects } from '../../data/projects';
+import { projectCategories, categoriesByProject } from '../../data/project-categories';
+import { jsonLd } from '../../lib/seo';
+
+const assets = import.meta.glob<{ default: ImageMetadata }>('../../assets/projects/*/*.{png,jpg,jpeg,webp}', { eager: true });
+/** The project's lead image and its alt text, or undefined when it has none. */
+const thumb = (p: (typeof projects)[number]) => {
+  const first = p.images[0];
+  const src = first ? assets[`../assets/projects/${p.slug}/${first.file}`]?.default : undefined;
+  return first && src ? { src, alt: first.alt } : undefined;
+};
+
+const logos = import.meta.glob<{ default: ImageMetadata }>('../../assets/experience/*.{jpg,png}', { eager: true });
+
+for (const project of projects) {
+  if (!categoriesByProject[project.slug]?.length) throw new Error(`Missing categories for ${project.slug}`);
+}
+
+const featured = [
+  { slug: 'proofsnap', label: 'Product', detail: 'Photo of a handwritten proof in, a Lean 4 check of every step out.' },
+  { slug: 'veer', label: 'Compiler engineering', detail: 'Static contracts for KV-cache memory, token budgets and numeric error.' },
+  { slug: 'dishbrain-playground', label: 'Experimental work', detail: 'Controlled experiments with paired seeds, ablations and held-out evaluation.' },
+  { slug: 'wander', label: 'Accessibility', detail: 'Indoor navigation with a voice guide, 3D mapping and deterministic routing.' },
+  { slug: 'destina' },
+  { slug: 'quantumloans' },
+].map((feature: { slug: string; label?: string; detail?: string }) => {
+  const project = projects.find((project) => project.slug === feature.slug);
+  if (!project) throw new Error(`Missing featured project: ${feature.slug}`);
+  return { project, label: project.award ?? '', detail: feature.detail ?? project.pitch };
+});
+const links = profile.links.filter((l) => l.href && l.label !== 'Email');
+// The sheet holds everything not already shown in Selected work. Prototype sessions go last so
+// shipped work and award winners lead.
+const featuredSlugs = new Set(featured.map((f) => f.project.slug));
+const isPrototype = (p: (typeof projects)[number]) => /prototype session/i.test(p.context ?? '');
+const sheet = projects.filter((p) => !featuredSlugs.has(p.slug)).sort((a, b) => Number(isPrototype(a)) - Number(isPrototype(b)));
+const filters = [
+  { id: 'all', label: 'All', count: sheet.length },
+  ...projectCategories
+    .map((category) => ({ ...category, count: sheet.filter((project) => categoriesByProject[project.slug].includes(category.id)).length }))
+    .filter((category) => category.count > 0),
+];
+
+const siteUrl = new URL('/', Astro.site).href;
+const portrait = await getImage({ src: portraitSrc, width: 640, format: 'jpg' });
+const portraitUrl = new URL(portrait.src, Astro.site).href;
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${siteUrl}#website`,
+      url: siteUrl,
+      name: profile.name,
+      alternateName: [...profile.alternateNames, 'veermickey.com'],
+      publisher: { '@id': `${siteUrl}#person` },
+    },
+    {
+      '@type': 'ProfilePage',
+      '@id': `${siteUrl}#profile`,
+      url: siteUrl,
+      name: `${profile.name}, software engineer`,
+      isPartOf: { '@id': `${siteUrl}#website` },
+      mainEntity: { '@id': `${siteUrl}#person` },
+    },
+    {
+      '@type': 'Person',
+      '@id': `${siteUrl}#person`,
+      name: profile.name,
+      givenName: 'Veer',
+      familyName: 'Shah',
+      alternateName: profile.alternateNames,
+      url: siteUrl,
+      jobTitle: 'Software Engineer',
+      image: { '@type': 'ImageObject', url: portraitUrl, width: 640, height: 800, caption: `${profile.name} at his UT Dallas graduation` },
+      description: profile.description,
+      email: profile.links.find((l) => l.label === 'Email')?.href?.replace(/^mailto:/, ''),
+      alumniOf: { '@id': `${siteUrl}#utd` },
+      affiliation: [{ '@id': `${siteUrl}#mlh` }, { '@id': `${siteUrl}#utd` }],
+      memberOf: { '@id': `${siteUrl}#mlh` },
+      knowsAbout,
+      homeLocation: {
+        '@type': 'Place',
+        address: { '@type': 'PostalAddress', addressLocality: profile.locality.city, addressRegion: profile.locality.region, addressCountry: profile.locality.country },
+      },
+      sameAs: profile.sameAs,
+    },
+    { '@type': 'CollegeOrUniversity', '@id': `${siteUrl}#utd`, name: 'University of Texas at Dallas', url: 'https://www.utdallas.edu' },
+    { '@type': 'Organization', '@id': `${siteUrl}#mlh`, name: 'Major League Hacking', alternateName: 'MLH', url: 'https://mlh.io' },
+  ],
+};
+import marinaBay from '../../assets/photos/marina-bay.jpg';
+const [lead, second, ...restFeatured] = featured;
+const latest = lead.project;
+const latestThumb = thumb(latest);
+const now = education[0];
+---
+
+<Base title="Redesign B: Bento | Veer Mickey Shah" description="A design preview for veermickey.com. Not the live site." noindex wide>
+
+  <section class="bento hero-bento" aria-labelledby="hero-name" data-glow>
+    <div class="tile t-name" style="--i: 0">
+      <p class="eyebrow">Software engineer · {profile.locality.city}, {profile.locality.region}</p>
+      <h1 id="hero-name" class="display">{profile.name}</h1>
+      <p class="bio">{profile.bio}</p>
+    </div>
+    <div class="tile t-pic" style="--i: 1">
+      <Picture src={portraitSrc} formats={['avif', 'webp']} fallbackFormat="jpg" widths={[400, 640, 960, 1280]}
+        sizes="(min-width: 64rem) 26vw, (min-width: 40rem) 45vw, calc(100vw - 2.5rem)"
+        alt="Veer Mickey Shah at his UT Dallas graduation" loading="eager" fetchpriority="high" />
+    </div>
+    <div class="tile t-clock" style="--i: 2" aria-label="Local time">
+      <p class="eyebrow">Local time</p>
+      <p class="clock" data-clock>{profile.locality.city}</p>
+      <p class="sub">Central Time, Texas</p>
+    </div>
+    <a class="tile t-work" style="--i: 3" href={`/projects/${latest.slug}/`}>
+      <p class="eyebrow">Latest build</p>
+      {latestThumb && <Image src={latestThumb.src} alt="" widths={[360, 640]} sizes="(min-width: 64rem) 22vw, 90vw" format="webp" loading="eager" />}
+      <p class="tile-title">{latest.title} <span aria-hidden="true">↗</span></p>
+    </a>
+    <a class="tile t-photos" style="--i: 4" href="/photography/">
+      <Image src={marinaBay} alt="" widths={[360, 640]} sizes="(min-width: 64rem) 22vw, 90vw" format="webp" loading="eager" />
+      <p class="tile-title on-photo">Photography <span aria-hidden="true">↗</span></p>
+    </a>
+    <div class="tile t-links" style="--i: 5">
+      <p class="eyebrow">Say hello</p>
+      <div class="links-row">
+        <ContactButton />
+        <ul class="contact" aria-label="Elsewhere">
+          {links.map((l) => <li><a class="chip" href={l.href} rel={profile.sameAs.includes(l.href!) ? 'me' : undefined}><LinkIcon name={l.label} />{l.label}</a></li>)}
+        </ul>
+      </div>
+    </div>
+    <div class="tile t-now" style="--i: 6">
+      <p class="eyebrow">Now</p>
+      <p class="now">{now.degree}</p>
+      <p class="sub">{now.school} · {now.period}</p>
+    </div>
+  </section>
+
+  <section id="work" class="section" aria-labelledby="featured-heading">
+    <header class="section-head" data-rise>
+      <h2 id="featured-heading" class="section-title">Selected work</h2>
+      <a class="head-link" href="#projects">All projects ↓</a>
+    </header>
+    <ol class="bento work-bento" aria-label="Featured projects" data-glow>
+      {featured.map(({ project, label, detail }, i) => {
+        const t = thumb(project);
+        return (
+          <li class:list={['tile', 'w-tile', { big: i < 2 }]} data-rise>
+            <div class="w-media">
+              {t ? <Image src={t.src} alt={t.alt} widths={[480, 800, 1200]} sizes={i < 2 ? '(min-width: 64rem) 36rem, 100vw' : '(min-width: 64rem) 24rem, 100vw'} format="webp" loading={i < 2 ? 'eager' : 'lazy'} />
+                 : <span class="frame-blank" aria-hidden="true">{project.title}</span>}
+            </div>
+            <div class="w-copy">
+              {label && <p class="eyebrow">{label}</p>}
+              <h3><a class="stretched" href={`/projects/${project.slug}/`}>{project.title}</a></h3>
+              <p class="w-detail">{detail}</p>
+              <ProjectLinks project={project} writeup={false} />
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  </section>
+
+  <section id="projects" class="section" aria-labelledby="projects-heading">
+    <header class="section-head" data-rise>
+      <h2 id="projects-heading" class="section-title">More projects <span class="count">{sheet.length}</span></h2>
+    </header>
+    <div class="project-filter-controls" hidden>
+      <div class="project-filters" role="group" aria-label="Filter projects by type">
+        {filters.map((filter) => (
+          <button type="button" data-project-filter={filter.id} aria-pressed={filter.id === 'all' ? 'true' : 'false'} aria-controls="project-list">
+            {filter.label} <span class="filter-count">{filter.count}</span>
+          </button>
+        ))}
+      </div>
+      <p class="filter-status visually-hidden" role="status" aria-live="polite" aria-atomic="true">Showing all {sheet.length} projects</p>
+    </div>
+    <ol class="mini-grid" id="project-list" data-glow>
+      {sheet.map((p) => {
+        const t = thumb(p);
+        return (
+          <li class="tile mini" data-categories={categoriesByProject[p.slug].join(' ')}>
+            <div class="mini-media">
+              {t ? <Image src={t.src} alt={t.alt} widths={[360, 720]} sizes="(max-width: 36rem) 100vw, (max-width: 56rem) 50vw, 300px" format="webp" loading="lazy" />
+                 : <span class="frame-blank" aria-hidden="true">{p.title}</span>}
+            </div>
+            <div class="mini-copy">
+              <h3><a class="stretched" href={`/projects/${p.slug}/`}>{p.title}</a></h3>
+              {p.award ? <p class="mini-award">{p.award}</p> : p.context && <p class="mini-meta">{p.context}</p>}
+              <p class="mini-pitch">{p.pitch}</p>
+              <ProjectLinks project={p} writeup={false} />
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  </section>
+
+  <section id="experience" class="section" aria-labelledby="experience-heading">
+    <header class="section-head" data-rise>
+      <h2 id="experience-heading" class="section-title">Experience</h2>
+    </header>
+    <ol class="bento exp-bento" data-glow>
+      {experience.map((item) => (
+        <li class="tile exp" data-rise>
+          <div class="exp-top">
+            {item.logo && logos[`../assets/experience/${item.logo}`] && (
+              <span class="exp-logo"><Image src={logos[`../assets/experience/${item.logo}`].default} alt="" width={52} height={52} format="webp" loading="lazy" /></span>
+            )}
+            <p class="sub">{item.period}<br />{item.location}</p>
+          </div>
+          <h3>{item.company}</h3>
+          <p class="exp-role">{item.role}</p>
+          <p class="exp-lead">{item.highlights[0]}</p>
+          {item.highlights.length > 1 && (
+            <details class="more">
+              <summary><span class="more-closed">More</span><span class="more-open">Less</span></summary>
+              <ul>{item.highlights.slice(1).map((line) => <li>{line}</li>)}</ul>
+            </details>
+          )}
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section id="education" class="section" aria-labelledby="education-heading">
+    <header class="section-head" data-rise>
+      <h2 id="education-heading" class="section-title">Education & skills</h2>
+    </header>
+    <div class="bento edu-bento" data-glow>
+      {education.map((item) => (
+        <div class="tile edu" data-rise>
+          <p class="sub">{item.period}</p>
+          <h3>{item.degree}</h3>
+          <p class="exp-role">{item.school}</p>
+          <p class="exp-lead">{item.detail}</p>
+        </div>
+      ))}
+      <dl class="tile skills" data-rise>
+        {skills.map((group) => (<div><dt class="eyebrow">{group.label}</dt><dd>{group.items}</dd></div>))}
+      </dl>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="contact-heading">
+    <div class="tile contact-tile" data-rise>
+      <h2 id="contact-heading">Let’s talk</h2>
+      <p>Questions about a project, an opportunity, or an idea to build together? Send me an email.</p>
+      <div class="links-row">
+        <ContactButton />
+        <ul class="contact" aria-label="Elsewhere">
+          {links.map((l) => <li><a class="chip" href={l.href}><LinkIcon name={l.label} />{l.label}</a></li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const clock = document.querySelector<HTMLElement>('[data-clock]');
+  if (clock) {
+    const fmt = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
+    const tick = () => { clock.textContent = fmt.format(new Date()); };
+    tick();
+    setInterval(tick, 15_000);
+  }
+
+  // One pointer listener per grid: each tile's border lights up where the pointer is.
+  if (matchMedia('(hover: hover)').matches) {
+    document.querySelectorAll<HTMLElement>('[data-glow]').forEach((grid) => {
+      grid.addEventListener('pointermove', (e) => {
+        for (const tile of grid.querySelectorAll<HTMLElement>('.tile')) {
+          const r = tile.getBoundingClientRect();
+          tile.style.setProperty('--mx', `${e.clientX - r.left}px`);
+          tile.style.setProperty('--my', `${e.clientY - r.top}px`);
+        }
+      });
+    });
+  }
+
+  let openedForPrint: HTMLDetailsElement[] = [];
+  addEventListener('beforeprint', () => {
+    openedForPrint = [...document.querySelectorAll<HTMLDetailsElement>('details.more:not([open])')];
+    openedForPrint.forEach((d) => (d.open = true));
+  });
+  addEventListener('afterprint', () => { openedForPrint.forEach((d) => (d.open = false)); openedForPrint = []; });
+
+  const controls = document.querySelector<HTMLElement>('.project-filter-controls');
+  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-project-filter]'));
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('#project-list > .mini'));
+  const status = document.querySelector<HTMLElement>('.filter-status');
+  function selectFilter(requested: string | null) {
+    const selected = buttons.find((b) => b.dataset.projectFilter === requested) ?? buttons[0];
+    const filter = selected.dataset.projectFilter;
+    for (const b of buttons) b.setAttribute('aria-pressed', String(b === selected));
+    let visible = 0;
+    for (const card of cards) {
+      card.hidden = filter !== 'all' && !card.dataset.categories?.split(' ').includes(filter!);
+      if (!card.hidden) visible++;
+    }
+    if (status) status.textContent = filter === 'all' ? `Showing all ${cards.length} projects` : `Showing ${visible} of ${cards.length} projects`;
+  }
+  for (const b of buttons) {
+    b.addEventListener('click', () => {
+      const filter = b.dataset.projectFilter!;
+      selectFilter(filter);
+      const url = new URL(window.location.href);
+      if (filter === 'all') url.searchParams.delete('type'); else url.searchParams.set('type', filter);
+      window.history.pushState(null, '', url);
+    });
+  }
+  window.addEventListener('popstate', () => selectFilter(new URLSearchParams(window.location.search).get('type')));
+  selectFilter(new URLSearchParams(window.location.search).get('type'));
+  if (controls) controls.hidden = false;
+</script>
+
+<style>
+  /* Bento: everything lives on rounded tiles in a grid. Tiles lift on hover and their border lights
+     up where the pointer is. Black and white; colour comes from the photo and project tiles. */
+  .bento { list-style: none; padding: 0; display: grid; gap: clamp(0.6rem, 1.2vw, 1rem); }
+  .tile {
+    --mx: -999px; --my: -999px;
+    position: relative; min-width: 0; padding: clamp(1.1rem, 2vw, 1.6rem);
+    border-radius: clamp(16px, 2vw, 24px);
+    background: var(--accent-soft);
+    border: 1px solid var(--rule);
+    color: var(--ink); text-decoration: none;
+    overflow: clip; isolation: isolate;
+    transition: translate 0.35s var(--ease), box-shadow 0.35s var(--ease), border-color 0.35s var(--ease);
+  }
+  .tile::before {
+    content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 2;
+    background: radial-gradient(240px circle at var(--mx) var(--my), color-mix(in srgb, var(--ink) 55%, transparent), transparent 70%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+  }
+  @media (hover: hover) { .tile:hover { translate: 0 -3px; box-shadow: var(--shadow); } }
+  .eyebrow { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .sub { font-size: var(--step--1); color: var(--muted); }
+  .tile-title { font-weight: 800; letter-spacing: -0.02em; font-size: var(--step-1); }
+
+  /* Hero board */
+  .hero-bento { margin-top: clamp(0.5rem, 1.5vw, 1rem); grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 40rem) {
+    .hero-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: 'name name' 'pic clock' 'pic work' 'photos now' 'links links'; }
+  }
+  @media (min-width: 64rem) {
+    .hero-bento {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.25fr);
+      grid-template-areas: 'name name name pic' 'clock work photos pic' 'links links now pic';
+      min-height: min(calc(100svh - 7rem), 54rem);
+    }
+  }
+  .t-name { grid-area: name; display: flex; flex-direction: column; justify-content: flex-end; padding: clamp(1.5rem, 3vw, 2.5rem); background: var(--bg); }
+  .t-pic { grid-area: pic; padding: 0; background: #0a0a0a; }
+  .t-pic :global(picture), .t-pic :global(img) { display: block; width: 100%; height: 100%; }
+  .t-pic :global(img) { object-fit: cover; aspect-ratio: 4 / 5; }
+  @media (min-width: 64rem) { .t-pic :global(img) { aspect-ratio: auto; position: absolute; inset: 0; } }
+  .t-clock { grid-area: clock; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; }
+  .clock { font-size: clamp(2.25rem, 1.5rem + 2.5vw, 3.5rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .t-work { grid-area: work; display: flex; flex-direction: column; gap: 0.75rem; }
+  .t-work :global(img) { width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; border-radius: 10px; }
+  .t-photos { grid-area: photos; padding: 0; min-height: 11rem; }
+  .t-photos :global(img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: scale 0.8s var(--ease); }
+  .t-photos:hover :global(img) { scale: 1.06; }
+  .on-photo { position: absolute; left: 1.1rem; bottom: 1rem; color: #fff; text-shadow: 0 1px 12px rgb(0 0 0 / 0.5); }
+  .t-links { grid-area: links; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; }
+  .t-now { grid-area: now; display: flex; flex-direction: column; justify-content: space-between; gap: 0.75rem; background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .t-now .eyebrow, .t-now .sub { color: color-mix(in srgb, var(--bg) 70%, transparent); }
+  .now { font-size: var(--step-1); font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; }
+  .display { margin-top: 0.75rem; font-size: clamp(3rem, 1rem + 7vw, 6.25rem); font-weight: 800; line-height: 0.88; letter-spacing: -0.045em; text-wrap: balance; }
+  .bio { margin-top: 1.25rem; max-width: 40rem; font-size: var(--step-1); line-height: 1.55; color: var(--muted); text-wrap: pretty; }
+  .links-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; }
+  .contact { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .chip { position: relative; z-index: 3; display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.5rem; padding: 0.35rem 0.85rem; border-radius: 999px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); text-decoration: none; font-size: 0.875rem; transition: background-color 0.2s var(--ease), color 0.2s var(--ease); }
+  .chip:hover { background: var(--ink); color: var(--bg); }
+  :global(.contact-button) { border-radius: 999px !important; }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-bento > .tile { animation: tile-in 0.8s var(--ease) both; animation-delay: calc(var(--i) * 70ms); }
+    @keyframes tile-in { from { translate: 0 1.75rem; scale: 0.97; } }
+  }
+
+  /* Sections */
+  .section { margin-top: var(--space-section); scroll-margin-top: 4.5rem; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: clamp(1.25rem, 3vw, 2rem); }
+  .section-title { font-size: clamp(2rem, 1.2rem + 3vw, 3.5rem); font-weight: 800; line-height: 0.95; letter-spacing: -0.04em; }
+  .section-title .count { font-family: var(--mono); font-size: var(--step-0); font-weight: 400; letter-spacing: 0; color: var(--muted); vertical-align: top; }
+  .head-link { font-size: 0.9375rem; color: var(--muted); }
+  .stretched::after { content: ''; position: absolute; inset: 0; z-index: 1; }
+  .frame-blank { display: flex; align-items: flex-end; width: 100%; height: 100%; min-height: 10rem; padding: 1rem; background: var(--bg); font-size: var(--step-2); font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+
+  .work-bento { grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 48rem) { .work-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 64rem) { .work-bento { grid-template-columns: repeat(4, minmax(0, 1fr)); } .w-tile.big { grid-column: span 2; } }
+  .w-tile { display: flex; flex-direction: column; gap: 1rem; padding: 0.6rem 0.6rem 1.25rem; }
+  .w-media { overflow: clip; border-radius: calc(clamp(16px, 2vw, 24px) - 8px); aspect-ratio: 16 / 10; background: var(--bg); }
+  .w-media :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: top center; transition: scale 0.7s var(--ease); }
+  .w-tile:hover .w-media :global(img) { scale: 1.04; }
+  .w-copy { display: grid; gap: 0.45rem; padding-inline: 0.6rem; }
+  .w-tile h3 { font-size: var(--step-2); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; }
+  .w-tile.big h3 { font-size: var(--step-3); }
+  .w-tile h3 a { text-decoration: none; }
+  .w-detail { color: var(--muted); text-wrap: pretty; }
+  .w-tile :global(.actions), .mini :global(.actions) { position: relative; z-index: 3; gap: 0 1.1rem; font-size: 0.875rem; }
+  .w-tile :global(.actions a), .w-tile :global(.actions .pending), .mini :global(.actions a), .mini :global(.actions .pending) { display: inline-flex; align-items: center; min-height: 2.5rem; }
+
+  .project-filter-controls { margin-bottom: 1.5rem; }
+  .project-filters { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .project-filters button { min-height: 2.5rem; padding: 0.35rem 0.9rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--bg); font: inherit; font-size: 0.9375rem; color: var(--muted); cursor: pointer; transition: background-color 0.2s var(--ease), color 0.2s var(--ease); }
+  .project-filters button:hover { color: var(--ink); }
+  .project-filters button[aria-pressed='true'] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .filter-count { margin-left: 0.15em; font-family: var(--mono); font-size: var(--step--1); }
+  .mini-grid { list-style: none; padding: 0; display: grid; gap: clamp(0.6rem, 1.2vw, 1rem); grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); }
+  .mini { display: flex; flex-direction: column; gap: 0.85rem; padding: 0.5rem 0.5rem 1rem; }
+  .mini[hidden] { display: none; }
+  .mini-media { overflow: clip; border-radius: 12px; aspect-ratio: 3 / 2; background: var(--bg); }
+  .mini-media :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .mini-copy { display: grid; gap: 0.3rem; padding-inline: 0.5rem; }
+  .mini h3 { font-size: var(--step-1); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; }
+  .mini h3 a { text-decoration: none; }
+  .mini-meta { font-size: var(--step--1); color: var(--muted); }
+  .mini-award { font-size: var(--step--1); font-weight: 700; }
+  .mini-pitch { font-size: 0.9375rem; color: var(--muted); text-wrap: pretty; }
+
+  .exp-bento { grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); }
+  .exp { display: flex; flex-direction: column; gap: 0.5rem; }
+  .exp-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem; }
+  .exp-top .sub { text-align: right; font-family: var(--mono); font-size: 0.75rem; }
+  .exp-logo { flex: none; width: 3rem; height: 3rem; overflow: hidden; border-radius: 12px; background: #fff; outline: 1px solid var(--rule); }
+  .exp-logo :global(img) { width: 100%; height: 100%; object-fit: contain; }
+  .exp h3, .edu h3 { font-size: var(--step-2); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; }
+  .exp-role { font-weight: 700; }
+  .exp-lead { color: var(--muted); text-wrap: pretty; }
+  .more summary { display: inline-flex; align-items: center; min-height: 2.5rem; cursor: pointer; list-style: none; font-size: var(--step--1); font-weight: 700; text-decoration: underline; text-underline-offset: 0.25em; }
+  .more summary::-webkit-details-marker { display: none; }
+  .more-open, .more[open] .more-closed { display: none; }
+  .more[open] .more-open { display: inline; }
+  .more ul { margin-top: 0.25rem; padding-left: 1.1rem; color: var(--muted); display: grid; gap: 0.5rem; }
+  .edu-bento { grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 56rem) { .edu-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); } .skills { grid-column: span 2; } }
+  .edu { display: grid; gap: 0.5rem; align-content: start; }
+  .skills { margin: 0; display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); }
+  .skills dd { margin: 0.35rem 0 0; }
+
+  .contact-tile { padding: clamp(2rem, 5vw, 4rem); background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .contact-tile h2 { font-size: clamp(3rem, 1rem + 7vw, 6rem); font-weight: 800; line-height: 0.9; letter-spacing: -0.045em; }
+  .contact-tile p { margin: 1.25rem 0 2rem; max-width: 34rem; font-size: var(--step-1); color: color-mix(in srgb, var(--bg) 72%, transparent); }
+  .contact-tile .chip { background: transparent; color: var(--bg); border-color: color-mix(in srgb, var(--bg) 30%, transparent); }
+  .contact-tile .chip:hover { background: var(--bg); color: var(--ink); }
+  .contact-tile :global(.contact-button) { background: var(--bg); color: var(--ink); border-color: var(--bg); }
+  .contact-tile::before { background: radial-gradient(240px circle at var(--mx) var(--my), color-mix(in srgb, var(--bg) 55%, transparent), transparent 70%); }
+</style>
