@@ -5,6 +5,8 @@ import Base from '../../layouts/Base.astro';
 import ProjectLinks from '../../components/ProjectLinks.astro';
 import { projects, type Project } from '../../data/projects';
 import { roleSummary, myPart } from '../../lib/format';
+import { categoriesByProject } from '../../data/project-categories';
+import { notes } from '../../data/notes';
 import { breadcrumbs, jsonLd, metaDescription, personRef, projectTitle, schemaIds } from '../../lib/seo';
 
 export const getStaticPaths = (() =>
@@ -40,6 +42,19 @@ const inline = (text: string) =>
 
 const [lead, ...rest] = images;
 const stripped = (s: string) => s.replace(/`/g, '');
+
+// Related projects: up to three that share the most categories, then the nearest in list order.
+// Previous and next are skipped because the pager already links them. Deterministic for a given list.
+const here = projects.findIndex((x) => x.slug === p.slug);
+const mine = categoriesByProject[p.slug] ?? [];
+const related = projects
+  .map((other, i) => ({ other, i, shared: (categoriesByProject[other.slug] ?? []).filter((c) => mine.includes(c)).length }))
+  .filter(({ other, shared }) => shared > 0 && ![p.slug, prev?.slug, next?.slug].includes(other.slug))
+  .sort((a, b) => b.shared - a.shared || Math.abs(a.i - here) - Math.abs(b.i - here) || a.i - b.i)
+  .slice(0, 3)
+  .map(({ other }) => other);
+// Notes whose text links to this project's page.
+const relatedNotes = notes.filter((note) => note.rawContent().includes(`/projects/${p.slug}/`));
 
 // SEO: a descriptive title, a 110 to 160 character description, the lead screenshot as the share card, and JSON-LD.
 const pageTitle = projectTitle(p.slug, p.title, p.pitch);
@@ -172,6 +187,39 @@ const structuredData = {
     }
   </article>
 
+  {
+    (related.length > 0 || relatedNotes.length > 0) && (
+      <aside class="related" aria-label="Related reading">
+        {related.length > 0 && (
+          <>
+            <h2 id="related-projects">Related projects</h2>
+            <ul aria-labelledby="related-projects">
+              {related.map((r) => (
+                <li>
+                  <a href={`/projects/${r.slug}/`}>{r.title}</a>
+                  <p>{stripped(r.pitch)}</p>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        {relatedNotes.length > 0 && (
+          <>
+            <h2 id="related-notes">{relatedNotes.length > 1 ? 'Notes on this project' : 'A note on this project'}</h2>
+            <ul aria-labelledby="related-notes">
+              {relatedNotes.map((note) => (
+                <li>
+                  <a href={`/notes/${note.slug}/`}>{note.frontmatter.title}</a>
+                  <p>{note.frontmatter.description}</p>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </aside>
+    )
+  }
+
   <nav class="pager" aria-label="More projects">
     {prev ? <a href={`/projects/${prev.slug}/`} rel="prev">Previous: {prev.title}</a> : <span />}
     {next ? <a href={`/projects/${next.slug}/`} rel="next">Next: {next.title}</a> : <a href="/">All projects</a>}
@@ -289,8 +337,38 @@ const structuredData = {
     margin-top: 0.5rem;
   }
 
-  .pager {
+  .related {
     margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .related h2 {
+    font-size: 1.125rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .related ul + h2 {
+    margin-top: 2rem;
+  }
+
+  .related ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .related li + li {
+    margin-top: 0.85rem;
+  }
+
+  .related li p {
+    margin-top: 0.15rem;
+    font-size: 0.9375rem;
+    color: var(--muted);
+  }
+
+  .pager {
+    margin-top: 3rem;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;

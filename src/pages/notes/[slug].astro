@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import ContactButton from '../../components/ContactButton.astro';
 import { notes, formatDate } from '../../data/notes';
+import { projects } from '../../data/projects';
 import { breadcrumbs, jsonLd, personRef, schemaIds } from '../../lib/seo';
 export const getStaticPaths = () => notes.map((note) => ({ params: { slug: note.slug }, props: { note } }));
 const { note } = Astro.props;
@@ -9,6 +10,8 @@ const { Content, frontmatter } = note;
 
 const pageUrl = new URL(`/notes/${note.slug}/`, Astro.site).href;
 const ids = schemaIds(Astro.site);
+// Projects this note links to, by the same @id their own pages use.
+const mentioned = projects.filter((p) => note.rawContent().includes(`/projects/${p.slug}/`));
 const structuredData = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -25,6 +28,9 @@ const structuredData = {
       author: personRef(Astro.site),
       publisher: personRef(Astro.site),
       isPartOf: { '@id': ids.website },
+      ...(mentioned.length
+        ? { about: mentioned.map((p) => ({ '@type': 'SoftwareSourceCode', '@id': new URL(`/projects/${p.slug}/#project`, Astro.site).href, name: p.title })) }
+        : {}),
     },
     breadcrumbs(`${pageUrl}#breadcrumb`, [
       ['Home', ids.home],
