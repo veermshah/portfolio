@@ -1,35 +1,39 @@
 ---
-// First-visit intro for the home page, built from Veer's own flights (src/data/flights.json): on
-// black, every route he has flown draws itself as an arc between its airports while a counter runs
-// up to the number of flights, the last arcs land home in Dallas, and the black lifts away. Once per
-// browser session, skipped with prefers-reduced-motion or without JavaScript, and any click or key
-// ends it early. Pure inline SVG, no images, so it never competes with the hero for the largest paint.
+// First-visit intro for the home page, built from Veer's own flights (src/data/flights.json).
+// A departure board on black: one huge airport code flips through every airport he has flown
+// through, sweeping west to east around the world, while a marker jumps across a faint map of his
+// routes and a counter runs up to his number of flights. It slows, lands on DFW (home), and the
+// black splits open from the middle onto the page. Once per browser session, skipped with
+// prefers-reduced-motion or without JavaScript, and any click or key ends it early. Text and inline
+// SVG only, no images; the hero copy moves but never fades, so it does not delay the largest paint.
 import flights from '../data/flights.json';
 import { profile } from '../data/profile';
 
-type Airport = { lat: number; lon: number; city: string };
+type Airport = { lat: number; lon: number; city: string; country: string };
 const airports = flights.airports as Record<string, Airport>;
 const LON0 = -130, LON1 = 150, LAT0 = 64, W = 1000;
 const k = W / (LON1 - LON0);
-const H = Math.round((LAT0 - -6) * k);
-const at = (a: Airport) => [(a.lon - LON0) * k, (LAT0 - a.lat) * k] as const;
+const H = Math.round((LAT0 + 6) * k);
+const at = (a: Airport) => [+((a.lon - LON0) * k).toFixed(1), +((LAT0 - a.lat) * k).toFixed(1)] as const;
 const total = flights.routes.reduce((n, r) => n + r.count, 0);
-// Routes that end in Dallas draw last, so the sequence comes home.
-const home = (r: { a: string; b: string }) => r.a === 'DFW' || r.b === 'DFW';
-const routes = [...flights.routes].sort((x, y) => Number(home(x)) - Number(home(y)) || x.a.localeCompare(y.a));
-const arcs = routes.map((r) => {
+const countries = new Set(Object.values(airports).map((a) => a.country)).size;
+const arcs = flights.routes.map((r) => {
   const [x1, y1] = at(airports[r.a]);
   const [x2, y2] = at(airports[r.b]);
   const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
   const lift = Math.min(90, len * 0.22);
-  // Bow each arc toward the top of the map, like a route on a flight tracker.
   let nx = -dy / len, ny = dx / len;
   if (ny > 0) { nx = -nx; ny = -ny; }
   const cx = (x1 + x2) / 2 + nx * lift, cy = (y1 + y2) / 2 + ny * lift;
-  return { d: `M${x1.toFixed(1)} ${y1.toFixed(1)}Q${cx.toFixed(1)} ${cy.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`, w: Math.min(2.4, 0.9 + r.count * 0.25) };
+  return `M${x1} ${y1}Q${cx.toFixed(1)} ${cy.toFixed(1)} ${x2} ${y2}`;
 });
-const dots = Object.entries(airports).map(([code, a]) => ({ code, xy: at(a) }));
-const dfw = at(airports.DFW);
+// The board sweeps east from the Pacific and ends at home.
+const stops = Object.entries(airports)
+  .filter(([code]) => code !== 'DFW')
+  .sort(([, a], [, b]) => a.lon - b.lon)
+  .map(([code, a]) => ({ code, city: a.city, xy: at(a) }));
+stops.push({ code: 'DFW', city: 'Dallas', xy: at(airports.DFW) });
+const first = stops[0];
 ---
 
 <script is:inline>
@@ -39,19 +43,23 @@ const dfw = at(airports.DFW);
     if (!seen && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('intro-on');
   })();
 </script>
-<div class="intro" aria-hidden="true">
+<div class="intro" aria-hidden="true" data-stops={JSON.stringify(stops)} data-total={total}>
   <div class="intro-top">
     <span>{profile.name}</span>
-    <span><b data-count={total}>000</b> flights</span>
+    <span><b class="intro-count">000</b> flights</span>
   </div>
-  <svg class="intro-map" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
-    {arcs.map((a, i) => <path d={a.d} pathLength="1" style={`--i: ${i}; stroke-width: ${a.w}`} />)}
-    {dots.map((d) => <circle cx={d.xy[0].toFixed(1)} cy={d.xy[1].toFixed(1)} r="2.6" class:list={{ home: d.code === 'DFW' }} />)}
-    <circle class="pulse" cx={dfw[0].toFixed(1)} cy={dfw[1].toFixed(1)} r="6" />
-  </svg>
+  <div class="intro-board">
+    <svg class="intro-map" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
+      {arcs.map((d, i) => <path d={d} pathLength="1" style={`--i: ${i}`} />)}
+      {stops.map((s) => <circle cx={s.xy[0]} cy={s.xy[1]} r="2.4" />)}
+      <g class="intro-here" transform={`translate(${first.xy[0]} ${first.xy[1]})`}><circle r="7" /><circle r="2.8" /></g>
+    </svg>
+    <p class="intro-code">{[...first.code].map((c) => <span>{c}</span>)}</p>
+    <p class="intro-city">{first.city}</p>
+  </div>
   <div class="intro-bottom">
-    <span>{Object.keys(airports).length} airports</span>
-    <span>Home · {airports.DFW.city}</span>
+    <span>{stops.length} airports · {countries} countries</span>
+    <span class="intro-home">Home · Dallas</span>
   </div>
 </div>
 <script is:inline>
@@ -59,26 +67,49 @@ const dfw = at(airports.DFW);
     var root = document.documentElement;
     if (!root.classList.contains('intro-on')) return;
     var intro = document.currentScript.previousElementSibling;
-    var count = intro.querySelector('[data-count]');
-    var total = Number(count.dataset.count);
-    var t0 = performance.now();
-    var done = false;
-    // The counter runs up with the arcs (about 1.7 s), easing out as the last routes land.
-    (function tick(now) {
+    var stops = JSON.parse(intro.dataset.stops);
+    var total = Number(intro.dataset.total);
+    var letters = intro.querySelectorAll('.intro-code span');
+    var city = intro.querySelector('.intro-city');
+    var count = intro.querySelector('.intro-count');
+    var here = intro.querySelector('.intro-here');
+    var done = false, timer = 0, i = 0, n = stops.length - 1;
+    function flip(s) {
+      for (var j = 0; j < 3; j++) {
+        if (letters[j].textContent === s.code[j]) continue;
+        letters[j].textContent = s.code[j];
+        letters[j].animate([{ transform: 'translateY(0.1em)' }, { transform: 'none' }], { duration: 150, delay: j * 22, easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)', fill: 'backwards' });
+      }
+      city.textContent = s.city;
+      here.setAttribute('transform', 'translate(' + s.xy[0] + ' ' + s.xy[1] + ')');
+      count.textContent = String(Math.round(total * i / n)).padStart(3, '0');
+    }
+    function step() {
       if (done) return;
-      var p = Math.min(1, (now - t0) / 1700);
-      count.textContent = String(Math.round(total * (1 - Math.pow(1 - p, 3)))).padStart(3, '0');
-      if (p < 1) requestAnimationFrame(tick);
-    })(t0);
+      i++;
+      flip(stops[i]);
+      if (i < n) {
+        // Fast through the world, slowing as it comes home (about 1.6 s in all).
+        timer = setTimeout(step, 25 + 120 * Math.pow(i / n, 3));
+      } else {
+        intro.classList.add('is-home');
+        timer = setTimeout(open, 420);
+      }
+    }
+    function open() {
+      if (done) return;
+      intro.classList.add('is-open');
+      timer = setTimeout(finish, 800);
+    }
     function finish() {
       if (done) return;
       done = true;
+      clearTimeout(timer);
       try { sessionStorage.setItem('intro', '1'); } catch (e) {}
       root.classList.remove('intro-on');
       intro.remove();
     }
-    intro.addEventListener('animationend', function (e) { if (e.target === intro) finish(); });
-    setTimeout(finish, 3600);
+    timer = setTimeout(step, 260);
     addEventListener('pointerdown', finish, { once: true });
     addEventListener('keydown', finish, { once: true });
   })();
@@ -92,16 +123,36 @@ const dfw = at(airports.DFW);
     z-index: 100;
     display: grid;
     grid-template-rows: auto 1fr auto;
-    gap: 1rem;
-    padding: clamp(1.25rem, 3vw, 2.25rem) var(--gutter);
-    background: #0a0a0a;
-    color: #f5f5f5;
+    padding-bottom: clamp(1.25rem, 3vw, 2.25rem);
+    color: var(--ink);
     pointer-events: none;
-    /* After the last route lands, the black lifts away from the bottom up. */
-    animation: intro-lift 0.75s cubic-bezier(0.7, 0, 0.2, 1) 2.35s both;
+    /* Safety net: never cover the page for more than a few seconds, whatever happens to the script. */
+    animation: intro-gone 0s linear 5s forwards;
   }
-  @keyframes intro-lift { to { clip-path: inset(0 0 100% 0); } }
+  @keyframes intro-gone { to { visibility: hidden; } }
+  /* Two black halves, so the board can split open from the middle onto the page. */
+  .intro::before, .intro::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 50.5%;
+    /* The board follows the theme the visitor is about to see, so there is no flash of the other one. */
+    background: var(--bg);
+    transition: transform 0.75s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  .intro::before { top: 0; }
+  .intro::after { bottom: 0; }
+  .intro.is-open::before { transform: translateY(-100%); }
+  .intro.is-open::after { transform: translateY(100%); }
+  .intro > * { position: relative; z-index: 1; transition: opacity 0.25s ease; }
+  .intro.is-open > * { opacity: 0; }
+
   .intro-top, .intro-bottom {
+    width: 100%;
+    max-width: calc(var(--wide) + 2 * var(--gutter));
+    margin: 0 auto;
+    padding: 0 var(--gutter);
     display: flex;
     justify-content: space-between;
     gap: 1rem;
@@ -111,25 +162,52 @@ const dfw = at(airports.DFW);
     text-transform: uppercase;
     font-variant-numeric: tabular-nums;
   }
+  /* Same height and gutter as the site header, so the name stays put when the board opens. */
+  .intro-top { height: var(--header-h); align-items: center; }
   .intro-top b { font-weight: 500; }
-  .intro-bottom { color: rgb(245 245 245 / 0.6); animation: intro-fade 0.6s var(--ease) 1.4s both; }
-  @keyframes intro-fade { from { opacity: 0; } }
-  .intro-map { align-self: center; justify-self: center; width: min(100%, 72rem); height: auto; max-height: 100%; overflow: visible; }
+  .intro-bottom { color: var(--muted); }
+  .intro-home { opacity: 0; transition: opacity 0.3s ease; }
+  .intro.is-home .intro-home { opacity: 1; color: var(--ink); }
+
+  .intro-board { position: relative; display: grid; place-items: center; align-content: center; min-height: 0; }
+  .intro-map {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.4;
+  }
   .intro-map path {
     fill: none;
-    stroke: #f5f5f5;
-    stroke-linecap: round;
+    stroke: var(--ink);
+    stroke-width: 0.8;
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
-    opacity: 0.75;
-    animation: route-draw 0.55s cubic-bezier(0.4, 0, 0.2, 1) both;
-    animation-delay: calc(0.15s + var(--i) * 45ms);
+    animation: route-draw 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+    animation-delay: calc(0.2s + var(--i) * 30ms);
   }
   @keyframes route-draw { to { stroke-dashoffset: 0; } }
-  .intro-map circle { fill: #f5f5f5; animation: intro-fade 0.4s var(--ease) 0.1s both; }
-  .intro-map .home { r: 4; }
-  .intro-map .pulse { fill: none; stroke: #f5f5f5; stroke-width: 1; transform-box: fill-box; transform-origin: center; animation: pulse 0.9s var(--ease) 1.6s both; }
-  @keyframes pulse { from { opacity: 0.9; scale: 0.4; } to { opacity: 0; scale: 3.2; } }
-  /* The hero settles in as the black lifts, instead of under it. */
-  :global(html.intro-on [data-reveal]) { animation-delay: calc(2.5s + var(--reveal-i, 0) * 90ms) !important; }
+  .intro-map circle { fill: var(--ink); }
+  .intro-here circle:first-child { fill: none; stroke: var(--ink); stroke-width: 1.2; }
+  /* Above the map, so the routes pass behind the letters. */
+  .intro-code, .intro-city { position: relative; }
+  .intro-code {
+    display: flex;
+    font-size: clamp(6rem, 30vw, 22rem);
+    font-weight: 800;
+    line-height: 0.8;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  /* Fixed-width cells, so the code does not jitter as its letters change. */
+  .intro-code span { display: inline-block; width: 0.68em; text-align: center; }
+  .intro-city {
+    margin-top: clamp(0.75rem, 2vw, 1.25rem);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+  /* The hero settles in as the board opens, instead of under it. */
+  :global(html.intro-on [data-reveal]) { animation-delay: calc(2.4s + var(--reveal-i, 0) * 90ms) !important; }
 </style>

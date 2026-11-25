@@ -78,7 +78,7 @@ export const projects: Project[] = [
     role: { kind: 'Solo' },
     stack: ['TypeScript', 'Electron', 'React', 'Tone.js', 'Anthropic SDK', 'Vite', 'Vitest'],
     live: 'https://riff-studio-one.vercel.app',
-    code: 'https://github.com/veermshah/Call-Option-Calculator',
+    code: 'https://github.com/veermshah/riff',
     problem:
       'Getting from an idea for a beat to something playable takes a DAW and a lot of clicking. Riff turns a described vibe or a few played chords into an editable multitrack loop, without the AI overwriting the parts you made yourself.',
     built: [

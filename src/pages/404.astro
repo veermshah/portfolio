@@ -8,7 +8,7 @@ import Base from '../layouts/Base.astro';
     <h1>Page not found</h1>
     <p class="nf-body">This address doesn’t match anything here.</p>
     <p class="nf-home">
-      <a class="nf-link" href="/#projects">Go to the project list</a>
+      <a class="button is-primary" href="/#projects">Go to the project list</a>
       <a class="nf-alt" href="/photography/">or see the photos</a>
     </p>
   </div>
@@ -33,7 +33,7 @@ import Base from '../layouts/Base.astro';
   }
 
   h1 {
-    font-size: clamp(2.5rem, 1.4rem + 5vw, 5rem);
+    font-size: var(--step-4);
     font-weight: 800;
     line-height: 0.98;
     letter-spacing: -0.04em;
@@ -51,23 +51,4 @@ import Base from '../layouts/Base.astro';
     margin-top: 2rem;
   }
 
-  .nf-link {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.75rem;
-    padding: 0.6rem 1.1rem;
-    border: 1px solid var(--ink);
-    background: var(--ink);
-    color: var(--bg);
-    font-size: 0.9375rem;
-    font-weight: 700;
-    text-decoration: none;
-    transition: color 0.15s var(--ease), background-color 0.15s var(--ease);
-  }
-
-  .nf-link:hover {
-    background: var(--bg);
-    color: var(--ink);
-  }
 </style>
