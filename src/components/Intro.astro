@@ -1,0 +1,100 @@
+---
+// First-visit intro for the home page: the name sets letter by letter on black, a hairline draws
+// under it, then the black lifts away as a shutter of horizontal blinds. Once per browser session,
+// skipped with prefers-reduced-motion or without JavaScript, and any click or key ends it early.
+// No images, so it never competes with the hero for the largest paint.
+import { profile } from '../data/profile';
+const words = profile.name.split(' ');
+const BLINDS = 7;
+---
+
+<script is:inline>
+  (function () {
+    var seen = false;
+    try { seen = sessionStorage.getItem('intro') === '1'; } catch (e) {}
+    if (!seen && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('intro-on');
+  })();
+</script>
+<div class="intro" aria-hidden="true">
+  {Array.from({ length: BLINDS }, (_, i) => <span class="blind" style={`--b: ${i}`}></span>)}
+  <div class="intro-stage">
+    <p class="intro-name">
+      {words.map((word, w) => (
+        <span class="intro-word">
+          {[...word].map((ch, c) => <span class="intro-ch" style={`--c: ${w * 6 + c}`}>{ch}</span>)}
+        </span>
+      ))}
+    </p>
+    <span class="intro-rule"></span>
+    <p class="intro-meta"><span>{profile.locality.city}, {profile.locality.region}</span><span>Software engineer</span></p>
+  </div>
+</div>
+<script is:inline>
+  (function () {
+    var root = document.documentElement;
+    if (!root.classList.contains('intro-on')) return;
+    var intro = document.currentScript.previousElementSibling;
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      try { sessionStorage.setItem('intro', '1'); } catch (e) {}
+      root.classList.remove('intro-on');
+      intro.remove();
+    }
+    // The last blind to lift ends it; a click, tap or key ends it early.
+    intro.firstElementChild.addEventListener('animationend', finish);
+    setTimeout(finish, 3200);
+    addEventListener('pointerdown', finish, { once: true });
+    addEventListener('keydown', finish, { once: true });
+  })();
+</script>
+
+<style>
+  .intro { display: none; }
+  :global(html.intro-on) .intro {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    color: #f5f5f5;
+  }
+  .blind {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--b) * 100% / 7);
+    height: calc(100% / 7 + 1px);
+    background: #0a0a0a;
+    transform-origin: top;
+    animation: blind-lift 0.6s cubic-bezier(0.7, 0, 0.2, 1) both;
+    animation-delay: calc(1.45s + (6 - var(--b)) * 45ms);
+  }
+  @keyframes blind-lift { to { transform: scaleY(0); } }
+  .intro-stage {
+    position: relative;
+    width: min(100% - 2 * var(--gutter), var(--wide));
+    animation: stage-out 0.45s var(--ease) 1.35s both;
+  }
+  @keyframes stage-out { to { opacity: 0; translate: 0 -1.5rem; } }
+  .intro-name {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.28em;
+    font-size: clamp(2.75rem, 1rem + 8vw, 7.5rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+  }
+  .intro-word { display: inline-flex; overflow: clip; padding-bottom: 0.08em; }
+  .intro-ch { display: inline-block; animation: ch-up 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(var(--c) * 28ms + 0.1s); }
+  @keyframes ch-up { from { translate: 0 105%; } }
+  .intro-rule { display: block; height: 1px; margin-top: 1.25rem; background: currentColor; opacity: 0.5; transform-origin: left; animation: rule-in 0.9s cubic-bezier(0.6, 0, 0.2, 1) 0.35s both; }
+  @keyframes rule-in { from { transform: scaleX(0); } }
+  .intro-meta { display: flex; justify-content: space-between; margin-top: 0.85rem; font-size: 0.8125rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.7; animation: meta-in 0.6s var(--ease) 0.7s both; }
+  @keyframes meta-in { from { opacity: 0; } }
+  /* The hero settles in as the blinds lift, instead of under them. */
+  :global(html.intro-on [data-reveal]) { animation-delay: calc(1.55s + var(--reveal-i, 0) * 90ms) !important; }
+</style>
