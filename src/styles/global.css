@@ -282,10 +282,78 @@ body:has(.hero) .site-header:not(.is-scrolled) :focus-visible { outline-color: #
 }
 .site-nav::-webkit-scrollbar { display: none; }
 @media (min-width: 40rem) { .site-nav { mask-image: none; } }
-@media (max-width: 34rem) {
+/* Phones and small tablets: the links move into the menu sheet behind a hamburger. Without
+   JavaScript the menu button stays hidden and the links scroll sideways in the bar instead. */
+@media (max-width: 47.99rem) {
   .site-header-inner { gap: 0.75rem; }
-  .site-nav { mask-image: none; gap: 0.8rem; }
-  .site-nav .nav-optional { display: none; }
+  .site-nav { mask-image: linear-gradient(to right, #000 85%, transparent); gap: 1rem; }
+  .menu-button:not([hidden]) ~ .theme-toggle,
+  .site-header-inner:has(.menu-button:not([hidden])) .site-nav { display: none; }
+}
+@media (min-width: 48rem) { .menu-button { display: none; } }
+.menu-button, .menu-close {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-right: -0.6rem;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.menu-button[hidden] { display: none; }
+body:has(.hero) .site-header:not(.is-scrolled) .menu-button { color: #fff; }
+
+/* The menu sheet: full screen, ink on paper, big type. */
+.site-menu {
+  width: 100%;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0 var(--gutter) 2rem;
+  border: 0;
+  background: var(--bg);
+  color: var(--ink);
+}
+.site-menu[open] { display: flex; flex-direction: column; }
+.site-menu::backdrop { background: rgb(0 0 0 / 0.5); }
+html:has(.site-menu[open]) { overflow: hidden; }
+.site-menu-bar { display: flex; align-items: center; justify-content: space-between; height: 3.5rem; border-bottom: 1px solid var(--rule); }
+.site-menu-list { list-style: none; padding: 0; margin: 1.5rem 0 0; }
+.site-menu-list li { border-bottom: 1px solid var(--rule); }
+.site-menu-list a {
+  display: flex;
+  align-items: center;
+  min-height: 3.75rem;
+  font-size: clamp(1.75rem, 1.2rem + 3vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  text-decoration: none;
+  color: var(--ink);
+}
+.site-menu-list a[aria-current='page'] { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 0.18em; }
+.menu-theme {
+  margin-top: auto;
+  align-self: flex-start;
+  min-height: 2.75rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--ink);
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.menu-theme:hover { background: var(--ink); color: var(--bg); }
+.menu-theme-light { display: none; }
+:root[data-theme='dark'] .menu-theme-light { display: inline; }
+:root[data-theme='dark'] .menu-theme-dark { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .site-menu[open] { animation: menu-in 0.28s var(--ease); }
+  @keyframes menu-in { from { opacity: 0; transform: translate3d(0, -12px, 0); } }
 }
 .site-nav a { position: relative; color: var(--muted); text-decoration: none; white-space: nowrap; padding: 0.35rem 0; font-weight: 600; }
 .site-nav a:hover, .site-nav a[aria-current='page'], .site-nav a.is-here { color: var(--ink); }

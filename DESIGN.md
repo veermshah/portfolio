@@ -13,12 +13,13 @@ One face, Atkinson Hyperlegible Next. Display 800 weight, tracking no tighter th
 
 ## Shapes and parts
 - Square corners (`--radius: 2px`). Buttons are flat rectangles with a 1px ink border that invert on hover.
-- Selected work is marked by size alone. Hover and focus underline a frame's title; the current item is an ink outline (pager) or a white edge (hero strip).
-- The portrait is head and shoulders at 4:5 with a thin white edge.
+- Selected work is marked by size alone. Hover and focus underline a frame's title; the pager outlines the current project in ink.
+- The portrait is the hero's main element: head and shoulders at 4:5, full content width on phones, a 30rem column on desktop, no frame, a deep shadow.
+- Header: a VS monogram block and the name. Clear over the home hero, solid after it. Nav links draw an underline on hover and keep it on the current page or section. Below 48rem the links live in a full-screen menu (a modal dialog) behind a hamburger.
 - Frames sit edge to edge with 3px gutters on film black.
 
 ## Motion
-One authored moment: the dot name forming in the hero. No generic scroll reveals. Reduced motion turns off the crossfade and the dots.
+One authored moment: the dot name forming in the hero. Parallax is CSS scroll-driven animation on transform only (background photos, portrait, Selected work images), with no JavaScript. No generic scroll reveals. Reduced motion turns off the crossfade, the dots and the parallax.
 
 ## Bans kept
 No eyebrow or kicker labels, no section numbers, no pills or status dots, no glass, no gradient text, no hard offset shadows, no emoji or glyph icons.

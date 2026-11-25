@@ -87,7 +87,7 @@ const structuredData = {
       description: profile.description,
       email: profile.links.find((l) => l.label === 'Email')?.href?.replace(/^mailto:/, ''),
       alumniOf: { '@id': `${siteUrl}#utd` },
-      affiliation: [{ '@id': `${siteUrl}#hackutd` }, { '@id': `${siteUrl}#utd` }],
+      affiliation: [{ '@id': `${siteUrl}#hackutd` }, { '@id': `${siteUrl}#mlh` }, { '@id': `${siteUrl}#utd` }],
       memberOf: { '@id': `${siteUrl}#hackutd` },
       knowsAbout,
       homeLocation: {
@@ -98,6 +98,7 @@ const structuredData = {
     },
     { '@type': 'CollegeOrUniversity', '@id': `${siteUrl}#utd`, name: 'University of Texas at Dallas', url: 'https://www.utdallas.edu' },
     { '@type': 'Organization', '@id': `${siteUrl}#hackutd`, name: 'HackUTD', url: 'https://hackutd.co' },
+    { '@type': 'Organization', '@id': `${siteUrl}#mlh`, name: 'Major League Hacking', alternateName: 'MLH', url: 'https://mlh.io' },
   ],
 };
 ---
@@ -205,9 +206,11 @@ const structuredData = {
           <p class="when"><span>{item.period}</span><span>{item.location}</span></p>
           <div class="experience-main">
             <h3>
-              <span class="experience-logo">
-                <Image src={logos[`../assets/experience/${item.logo}`].default} alt="" width={52} height={52} format="webp" loading="lazy" />
-              </span>
+              {item.logo && logos[`../assets/experience/${item.logo}`] && (
+                <span class="experience-logo">
+                  <Image src={logos[`../assets/experience/${item.logo}`].default} alt="" width={52} height={52} format="webp" loading="lazy" />
+                </span>
+              )}
               {item.company}
             </h3>
             <p class="experience-role">{item.role}</p>
