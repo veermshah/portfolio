@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import { profile } from '../data/profile';
 import { experience } from '../data/experience';
+import { hackathonWins } from '../data/hackathons';
 import { breadcrumbs, jsonLd, personRef, schemaIds } from '../lib/seo';
 
 const entry = experience.find((e) => e.company.startsWith('HackUTD'));
@@ -78,7 +79,7 @@ const structuredData = {
     <h2>More</h2>
     <ul>
       <li><a href="https://hackutd.co">hackutd.co</a>, the event’s own site</li>
-      <li><a href="/hackathons/">Hackathon wins</a>, the prizes I’ve won competing</li>
+      <li><a href="/hackathons/">Hackathon wins</a>, the {hackathonWins.length} projects that won prizes</li>
       <li><a href="/about/">About me</a></li>
     </ul>
   </div>

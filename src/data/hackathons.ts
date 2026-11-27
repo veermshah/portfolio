@@ -14,6 +14,7 @@ export interface HackathonWin {
 
 export const hackathonWins: HackathonWin[] = [
   { slug: 'destina', event: 'HackTX 2026', year: 2026, place: 'Austin, Texas', prizes: ['Meta track, 3rd place'] },
+  { slug: 'hack-odds', event: 'HackSMU VII', year: 2026, place: 'Dallas, Texas', prizes: ['Most Innovative Idea'] },
   { slug: 'hack-stash', event: 'RowdyHacks XII', year: 2026, place: 'San Antonio, Texas', prizes: ['Overall Track, 3rd place', 'MLH Best Use of Presage'] },
   { slug: 'whatdoesdafoxsay', event: 'HackUTA 7', year: 2025, place: 'Arlington, Texas', prizes: ['MLH Best Use of Auth0'] },
   { slug: 'midpoint', event: 'HackUPC 2025', year: 2025, place: 'Barcelona, Spain', prizes: ['MLH Best Use of MongoDB Atlas'] },

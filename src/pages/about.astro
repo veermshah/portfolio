@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { profile } from '../data/profile';
+import { hackathonWins } from '../data/hackathons';
 import { breadcrumbs, jsonLd, personRef, schemaIds } from '../lib/seo';
 
 const pageUrl = new URL('/about/', Astro.site).href;
@@ -62,7 +63,7 @@ const structuredData = {
 
     <h2>Hackathons</h2>
     <p>
-      I compete in hackathons often, and I’ve won prizes with teams at HackTX, RowdyHacks, HackUTA, HackUPC, HackSMU, TAMUhack,
+      I compete in hackathons often, and {hackathonWins.length} of my projects have won prizes, at HackTX, RowdyHacks, HackUTA, HackUPC, HackSMU, TAMUhack,
       PennApps and more; they’re all on my <a href="/hackathons/">hackathon wins</a> page. In 2026 I
       <a href="/hackutd/">directed HackUTD</a>, leading a 45-member team for an event with more than 1,200 hackers, and I now coach
       hackathons for Major League Hacking.

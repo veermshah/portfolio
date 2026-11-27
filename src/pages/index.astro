@@ -15,7 +15,7 @@ import portraitSrc from '../assets/portrait.jpg';
 import { projects } from '../data/projects';
 import { categoriesByProject } from '../data/project-categories';
 import ProjectGrid from '../components/ProjectGrid.astro';
-import { awardStrings } from '../data/hackathons';
+import { awardStrings, hackathonWins } from '../data/hackathons';
 import { jsonLd } from '../lib/seo';
 
 const assets = import.meta.glob<{ default: ImageMetadata }>('../assets/projects/*/*.{png,jpg,jpeg,webp}', { eager: true });
@@ -136,7 +136,7 @@ const structuredData = {
   <section id="work" class="section" aria-labelledby="featured-heading">
     <header class="section-head" data-rise>
       <h2 id="featured-heading" class="section-title">Selected work</h2>
-      <a class="section-link" href="/hackathons/">Hackathon wins</a>
+      <a class="section-link" href="/hackathons/">{hackathonWins.length} hackathon wins</a>
     </header>
     <ol class="selects" aria-label="Featured projects">
       {featured.map(({ project, label, detail }, i) => {

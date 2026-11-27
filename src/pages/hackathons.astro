@@ -15,7 +15,7 @@ const years = [...new Set(wins.map((w) => w.year))].sort((a, b) => b - a);
 const pageUrl = new URL('/hackathons/', Astro.site).href;
 const ids = schemaIds(Astro.site);
 const title = `Hackathon wins by ${profile.shortName} (${profile.name})`;
-const description = `Hackathon prizes ${profile.shortName} has won with teams at HackTX, RowdyHacks, HackUTA, HackUPC, HackSMU, TAMUhack, PennApps and more, with each project’s write-up.`;
+const description = `The ${wins.length} hackathon projects that won prizes for ${profile.shortName}, at HackTX, RowdyHacks, HackUTA, HackUPC, HackSMU, TAMUhack, PennApps and more, with each project’s write-up.`;
 const structuredData = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -56,10 +56,10 @@ const structuredData = {
 <Base title={title} description={description} wide>
   <script is:inline slot="head" type="application/ld+json" set:html={jsonLd(structuredData)} />
   <header class="page-head">
-    <p class="page-kicker">Hackathons</p>
+    <p class="page-kicker">{wins.length} winning projects</p>
     <h1>Hackathon wins</h1>
     <p class="page-lede">
-      Prizes I’ve won with teams at hackathons in Texas, across the US and in Barcelona. Each one links to the project’s
+      Prizes I’ve won at hackathons in Texas, across the US and in Barcelona. Each one links to the project’s
       write-up and its Devpost page. I also led one: <a href="/hackutd/">HackUTD</a>, the UT Dallas hackathon.
     </p>
   </header>

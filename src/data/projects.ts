@@ -612,7 +612,8 @@ export const projects: Project[] = [
     slug: 'hack-odds',
     title: 'Hack Odds',
     pitch: 'A free-to-play prediction market for hackathons on Solana: trade in-app credits on outcomes, settled on devnet.',
-    context: 'HackSMU 2026',
+    award: 'Most Innovative Idea, HackSMU VII',
+    context: 'HackSMU VII (2026)',
     role: { kind: 'Solo' },
     stack: ['Solana', 'Anchor', 'Rust', 'Next.js', 'TypeScript', 'Supabase', 'Gemini'],
     live: 'https://hackodds.vercel.app',
@@ -628,7 +629,7 @@ export const projects: Project[] = [
       'A Next.js app with wallet adapters and a demo wallet, a server-side faucet for the devnet token, portfolio and leaderboard pages linked to Solana Explorer, and Supabase as a cache for search and the activity feed.',
       'Gemini drafts a market from one sentence against a JSON schema, and the draft is validated before it can be published.',
     ],
-    results: ['Live on Vercel against the devnet program `5L1zpnbgDyqcWeqKXp3cBmxhZ3kkX9GmsuZuajSxwme5`, with Anchor integration tests and Vitest tests for odds and market drafts.'],
+    results: ['Won Most Innovative Idea at HackSMU VII.', 'Live on Vercel against the devnet program `5L1zpnbgDyqcWeqKXp3cBmxhZ3kkX9GmsuZuajSxwme5`, with Anchor integration tests and Vitest tests for odds and market drafts.'],
     images: [
       { file: 'home.webp', alt: 'Hack Odds home page', caption: 'Home' },
       { file: 'markets.webp', alt: 'Markets list with binary and multi-outcome markets', caption: 'Markets' },
