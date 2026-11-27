@@ -17,3 +17,4 @@ Personal site for Veer Shah: www.veermickey.com (Astro, Vercel) and blog.veermic
 - Don't invent stats, testimonials, partners, placeholder copy or contact details.
 - Keep canonical URLs on `https://www.veermickey.com`.
 - Run `npm run build` and `npm run check:links` before opening a PR.
+- **Agent visits must never count in the analytics.** Open the site with `?notrack=1` on the first page you load in any browser (for example `https://www.veermickey.com/?notrack=1`), which opts that browser out for a year on the main site and the blog. Automated browsers (`navigator.webdriver`, headless, Lighthouse, PageSpeed, crawlers) are skipped by `src/scripts/notrack.ts`; keep that check in place and don't add any other tracker that ignores it.
