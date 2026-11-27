@@ -6,7 +6,7 @@
   --rule: #e5e5e5;
   --accent: var(--ink);
   --accent-soft: #f2f2f2;
-  /* Text on the home hero photo: ink on a pale wash by day, white on a dark wash at night. */
+  /* Text on the home hero photo: ink on a pale wash in light mode, white on a dark wash in dark mode. */
   --hero-ink: #0a0a0a;
   --hero-on-ink: #ffffff;
   --hero-ink-soft: rgb(10 10 10 / 0.72);
@@ -43,24 +43,11 @@
   --glow-4: #8c8364;
   --shadow: 0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent), 0 12px 32px -12px color-mix(in srgb, var(--ink) 18%, transparent);
 
-  color-scheme: light dark;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --bg: #0a0a0a;
-    --ink: #f5f5f5;
-    --muted: #a3a3a3;
-    --rule: #262626;
-    --accent: var(--ink);
-    --accent-soft: #1a1a1a;
-    --hero-ink: #ffffff;
-    --hero-on-ink: #0a0a0a;
-    --hero-ink-soft: rgb(255 255 255 / 0.82);
-  }
+  color-scheme: light;
 }
 
 :root[data-theme='dark'] {
+  color-scheme: dark;
   --bg: #0a0a0a;
   --ink: #f5f5f5;
   --muted: #a3a3a3;

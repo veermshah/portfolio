@@ -194,7 +194,6 @@ export function mountFlightGlobe(canvas: HTMLCanvasElement) {
   document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
   new ResizeObserver(resize).observe(canvas);
   new MutationObserver(() => { readColors(); draw(performance.now()); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
-  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readColors(); draw(performance.now()); });
   reduce.addEventListener('change', start);
 
   // Drag sideways to spin, up and down to tilt. touch-action: pan-y keeps page scrolling on phones.

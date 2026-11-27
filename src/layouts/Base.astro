@@ -76,18 +76,13 @@ const footerElsewhere = elsewhereOrder
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <script is:inline>
       document.documentElement.classList.add('js');
-      // Light by day, dark from 7pm to 7am in the visitor's time zone, unless they picked one this visit.
-      (() => {
-        let theme;
-        try { theme = sessionStorage.getItem('theme'); } catch {}
-        const hour = new Date().getHours();
-        document.documentElement.dataset.theme = theme || (hour >= 19 || hour < 7 ? 'dark' : 'light');
-      })();
+      // Dark unless the visitor has switched to light, which is remembered on this device.
+      try { if (localStorage.getItem('theme') === 'light') document.documentElement.dataset.theme = 'light'; } catch {}
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
@@ -96,13 +91,9 @@ const footerElsewhere = elsewhereOrder
     <link rel="preload" href={bodyFont} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
     <meta name="author" content={profile.name} />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#0a0a0a" />
     <script is:inline>
-      for (const m of document.querySelectorAll('meta[name="theme-color"]')) {
-        m.removeAttribute('media');
-        m.content = document.documentElement.dataset.theme === 'dark' ? '#0a0a0a' : '#ffffff';
-      }
+      if (document.documentElement.dataset.theme === 'light') document.querySelector('meta[name="theme-color"]').content = '#ffffff';
     </script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
@@ -202,7 +193,7 @@ const footerElsewhere = elsewhereOrder
       syncSwitch();
       const setTheme = () => {
         root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
-        try { sessionStorage.setItem('theme', root.dataset.theme); } catch {}
+        try { localStorage.setItem('theme', root.dataset.theme); } catch {}
         for (const m of document.querySelectorAll('meta[name="theme-color"]')) m.content = root.dataset.theme === 'dark' ? '#0a0a0a' : '#ffffff';
         syncSwitch();
       };
@@ -226,7 +217,7 @@ const footerElsewhere = elsewhereOrder
         )).catch(() => {});
         t.finished.finally(() => root.classList.remove('theme-wipe'));
       });
-      // Veer's local time in the footer, the same clock that turns the site dark at night.
+      // Veer's local time in the footer.
       const clock = document.querySelector('[data-local-time]');
       if (clock) {
         const fmt = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });

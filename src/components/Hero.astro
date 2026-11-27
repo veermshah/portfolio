@@ -134,7 +134,7 @@ import RouteFlourish from './RouteFlourish.astro';
     transition: opacity 1.5s ease-in-out;
   }
   .hero-photos :global(.hero-photo.is-active) { opacity: 1; }
-  /* By day the photos are black and white prints on paper; at night they come back in colour. */
+  /* In light mode the photos are black and white prints on paper; in dark mode they are in colour. */
   :global(:root[data-theme='light']) .hero-photos :global(.hero-photo) { filter: grayscale(1) brightness(1.08); }
   /* Parallax: the background photos drift down at a fraction of the scroll speed. CSS scroll-driven
      animation on transform only, so it runs off the main thread with no JavaScript. The photo layer
@@ -162,8 +162,8 @@ import RouteFlourish from './RouteFlourish.astro';
   }
   /* At least 60% black behind text on phones, and behind the left (text) half on wide screens,
      so white text keeps 4.5:1 even over a white sky. */
-  /* The wash follows the theme: a pale wash with ink text by day, a dark wash with white text at
-     night. Both keep text at 4.5:1 or better over the brightest photo. */
+  /* The wash follows the theme: a pale wash with ink text in light mode, a dark wash with white
+     text in dark mode. Both keep text at 4.5:1 or better over the brightest photo. */
   .hero-scrim {
     --wash: 248 248 247;
     background: linear-gradient(to bottom, rgb(var(--wash) / 0.8), rgb(var(--wash) / 0.76) 40%, rgb(var(--wash) / 0.9));
