@@ -1,5 +1,5 @@
 // Slow crossfade between a few of Veer's photos behind the home hero. Only the first photo is in
-// the HTML; the rest load after the page has loaded, and only on a decent connection without
+// the HTML; the rest load a few seconds after the page has loaded, and only on a decent connection without
 // Save-Data. No crossfade with reduced motion. Pauses off screen and in a hidden tab.
 
 const HOLD_MS = 7000;
@@ -66,8 +66,11 @@ export function initHeroPhotos() {
     });
   };
 
-  if (document.readyState === 'complete') loadRest();
-  else addEventListener('load', loadRest, { once: true });
+  // The first crossfade is 7 s away, so wait a few seconds after load before fetching the rest:
+  // the first screen gets the whole connection, and the extra photos don't count against it.
+  const later = () => setTimeout(loadRest, 3000);
+  if (document.readyState === 'complete') later();
+  else addEventListener('load', later, { once: true });
 
   new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
