@@ -21,7 +21,6 @@ export const experience = [
     location: 'Richardson, TX',
     highlights: [
       'Led a 45-member team organizing HackUTD, the largest 24-hour collegiate hackathon in North America, with 1,200+ participants, 15+ sponsors and more than $50,000 in prizes.',
-      'Directed engineering for Jury, an open-source judging platform adopted by more than four hackathons nationwide, and HARP, a hackathon operations platform.',
       'Competed in hackathons across the country, with wins at HackTX, PennApps, TAMUhack, HackSMU, HackUTA, HackFin, HackUPC and RowdyHacks.',
     ],
   },
