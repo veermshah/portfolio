@@ -16,7 +16,7 @@ export const experience = [
   {
     company: 'HackUTD · ACM',
     logo: 'hackutd.png',
-    role: 'Director (previously Experience Organizer, January 2024 – January 2026)',
+    role: 'Director, 2026 (previously Experience Organizer, January 2024 – January 2026)',
     period: 'January – November 2026',
     location: 'Richardson, TX',
     highlights: [
