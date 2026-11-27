@@ -1,0 +1,120 @@
+---
+import Base from '../layouts/Base.astro';
+import { projects } from '../data/projects';
+import { profile } from '../data/profile';
+import { hackathonWins } from '../data/hackathons';
+import { breadcrumbs, jsonLd, personRef, schemaIds } from '../lib/seo';
+
+const wins = hackathonWins.map((win) => {
+  const project = projects.find((p) => p.slug === win.slug);
+  if (!project) throw new Error(`Missing project for hackathon win: ${win.slug}`);
+  return { ...win, project, devpost: project.extra?.find((l) => l.label === 'Devpost')?.href };
+});
+const years = [...new Set(wins.map((w) => w.year))].sort((a, b) => b - a);
+
+const pageUrl = new URL('/hackathons/', Astro.site).href;
+const ids = schemaIds(Astro.site);
+const title = `Hackathon wins by ${profile.shortName} (${profile.name})`;
+const description = `Hackathon prizes ${profile.shortName} has won with teams at HackTX, RowdyHacks, HackUTA, HackUPC, HackSMU, TAMUhack, PennApps and more, with each project’s write-up.`;
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'CollectionPage',
+      '@id': `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: title,
+      description,
+      inLanguage: 'en',
+      isPartOf: { '@id': ids.website },
+      about: personRef(Astro.site),
+      breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: wins.length,
+        itemListElement: wins.map((w, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          item: {
+            '@type': 'SoftwareSourceCode',
+            name: w.project.title,
+            url: new URL(`/projects/${w.slug}/`, Astro.site).href,
+            award: w.prizes.map((prize) => `${prize}, ${w.event}`),
+            author: personRef(Astro.site),
+          },
+        })),
+      },
+    },
+    breadcrumbs(`${pageUrl}#breadcrumb`, [
+      ['Home', ids.home],
+      ['Hackathon wins', pageUrl],
+    ]),
+  ],
+};
+---
+
+<Base title={title} description={description} wide>
+  <script is:inline slot="head" type="application/ld+json" set:html={jsonLd(structuredData)} />
+  <header class="page-head">
+    <p class="page-kicker">Hackathons</p>
+    <h1>Hackathon wins</h1>
+    <p class="page-lede">
+      Prizes I’ve won with teams at hackathons in Texas, across the US and in Barcelona. Each one links to the project’s
+      write-up and its Devpost page. I also led one: <a href="/hackutd/">HackUTD</a>, the UT Dallas hackathon.
+    </p>
+  </header>
+
+  {
+    years.map((year) => (
+      <section class="year" aria-labelledby={`y${year}`}>
+        <header class="section-head">
+          <h2 id={`y${year}`} class="section-title">{year}</h2>
+        </header>
+        <ol class="wins">
+          {wins
+            .filter((w) => w.year === year)
+            .map((w) => (
+              <li class="win" id={w.slug}>
+                <p class="win-event">
+                  <span>{w.event}</span>
+                  {w.place && <span>{w.place}</span>}
+                </p>
+                <div class="win-main">
+                  <ul class="win-prizes">{w.prizes.map((prize) => <li>{prize}</li>)}</ul>
+                  <h3><a href={`/projects/${w.slug}/`}>{w.project.title}</a></h3>
+                  <p class="win-pitch">{w.project.pitch.replace(/`/g, '')}</p>
+                  <p class="win-links">
+                    <a href={`/projects/${w.slug}/`}>Write-up<span class="visually-hidden"> on {w.project.title}</span></a>
+                    {w.devpost && <a href={w.devpost}>Devpost<span class="visually-hidden"> for {w.project.title}</span></a>}
+                  </p>
+                </div>
+              </li>
+            ))}
+        </ol>
+      </section>
+    ))
+  }
+
+  <p class="more-work">More of what I’ve built is on the <a href="/projects/">projects page</a>.</p>
+</Base>
+
+<style>
+  .year + .year { margin-top: clamp(3rem, 6vw, 5rem); }
+  .wins { list-style: none; padding: 0; }
+  .win { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.5rem; padding: clamp(1.5rem, 3vw, 2.25rem) 0; border-bottom: 1px solid var(--rule); scroll-margin-top: 5rem; }
+  .win:first-child { padding-top: 0; }
+  @media (min-width: 48rem) { .win { grid-template-columns: 13rem minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 4rem); } }
+  .win-event { display: flex; flex-wrap: wrap; gap: 0 0.5rem; font-size: var(--step--1); color: var(--muted); }
+  .win-event span:first-child { font-weight: 700; color: var(--ink); }
+  @media (min-width: 48rem) { .win-event { flex-direction: column; padding-top: 0.35rem; } }
+  @media (max-width: 47.99rem) { .win-event span + span::before { content: '·'; margin-right: 0.5rem; } }
+  .win-prizes { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .win-prizes li { padding: 0.2rem 0.65rem; border-radius: 999px; background: var(--ink); color: var(--bg); font-size: var(--step--1); font-weight: 700; }
+  .win h3 { margin-top: 0.6rem; font-size: clamp(1.5rem, 1.2rem + 1.3vw, 2.25rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; }
+  .win h3 a { text-decoration: none; }
+  .win h3 a:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+  .win-pitch { margin-top: 0.4rem; max-width: var(--measure); color: var(--muted); text-wrap: pretty; }
+  .win-links { display: flex; flex-wrap: wrap; gap: 0 1.25rem; font-size: 0.9375rem; }
+  .win-links a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+  .more-work { margin-top: clamp(2.5rem, 5vw, 4rem); color: var(--muted); }
+</style>

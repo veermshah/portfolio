@@ -13,7 +13,9 @@ import { profile } from '../data/profile';
 import { getImage } from 'astro:assets';
 import portraitSrc from '../assets/portrait.jpg';
 import { projects } from '../data/projects';
-import { projectCategories, categoriesByProject } from '../data/project-categories';
+import { categoriesByProject } from '../data/project-categories';
+import ProjectGrid from '../components/ProjectGrid.astro';
+import { awardStrings } from '../data/hackathons';
 import { jsonLd } from '../lib/seo';
 
 const assets = import.meta.glob<{ default: ImageMetadata }>('../assets/projects/*/*.{png,jpg,jpeg,webp}', { eager: true });
@@ -51,13 +53,6 @@ const links = ['GitHub', 'LinkedIn', 'Devpost', 'Resume']
 const featuredSlugs = new Set(featured.map((f) => f.project.slug));
 const isPrototype = (p: (typeof projects)[number]) => /prototype session/i.test(p.context ?? '');
 const sheet = projects.filter((p) => !featuredSlugs.has(p.slug)).sort((a, b) => Number(isPrototype(a)) - Number(isPrototype(b)));
-const filters = [
-  { id: 'all', label: 'All', count: sheet.length },
-  ...projectCategories
-    .map((category) => ({ ...category, count: sheet.filter((project) => categoriesByProject[project.slug].includes(category.id)).length }))
-    .filter((category) => category.count > 0),
-];
-
 const siteUrl = new URL('/', Astro.site).href;
 const portrait = await getImage({ src: portraitSrc, width: 640, format: 'jpg' });
 const portraitUrl = new URL(portrait.src, Astro.site).href;
@@ -94,7 +89,17 @@ const structuredData = {
       email: profile.links.find((l) => l.label === 'Email')?.href?.replace(/^mailto:/, ''),
       alumniOf: { '@id': `${siteUrl}#utd` },
       affiliation: [{ '@id': `${siteUrl}#mlh` }, { '@id': `${siteUrl}#utd` }],
-      memberOf: { '@id': `${siteUrl}#mlh` },
+      memberOf: [
+        { '@id': `${siteUrl}#mlh` },
+        {
+          '@type': 'OrganizationRole',
+          roleName: 'Director',
+          startDate: '2026-01',
+          endDate: '2026-11',
+          memberOf: { '@type': 'Organization', name: 'HackUTD', url: 'https://hackutd.co' },
+        },
+      ],
+      award: awardStrings,
       knowsAbout,
       homeLocation: {
         '@type': 'Place',
@@ -131,6 +136,7 @@ const structuredData = {
   <section id="work" class="section" aria-labelledby="featured-heading">
     <header class="section-head" data-rise>
       <h2 id="featured-heading" class="section-title">Selected work</h2>
+      <a class="section-link" href="/hackathons/">Hackathon wins</a>
     </header>
     <ol class="selects" aria-label="Featured projects">
       {featured.map(({ project, label, detail }, i) => {
@@ -159,41 +165,9 @@ const structuredData = {
   <section id="projects" class="section" aria-labelledby="projects-heading">
     <header class="section-head" data-rise>
       <h2 id="projects-heading" class="section-title">More projects <span class="count">{sheet.length}</span></h2>
+      <a class="section-link" href="/projects/">All {projects.length} projects</a>
     </header>
-    <div class="project-filter-controls" hidden>
-      <div class="project-filters" role="group" aria-label="Filter projects by type">
-        {filters.map((filter) => (
-          <button type="button" data-project-filter={filter.id} aria-pressed={filter.id === 'all' ? 'true' : 'false'} aria-controls="project-list">
-            {filter.label} <span class="filter-count">{filter.count}</span>
-          </button>
-        ))}
-      </div>
-      <p class="filter-status visually-hidden" role="status" aria-live="polite" aria-atomic="true">Showing all {sheet.length} projects</p>
-    </div>
-    <ol class="sheet" id="project-list">
-      {
-        sheet.map((p) => {
-          const t = thumb(p);
-          return (
-            <li class="frame" data-categories={categoriesByProject[p.slug].join(' ')}>
-              <div class="frame-media">
-                {t ? (
-                  <Image src={t.src} alt={t.alt} widths={[360, 720]} sizes="(max-width: 36rem) 100vw, (max-width: 56rem) 50vw, (max-width: 72rem) 33vw, 300px" format="webp" loading="lazy" />
-                ) : (
-                  <span class="frame-blank" aria-hidden="true">{p.title}</span>
-                )}
-              </div>
-              <div class="frame-copy">
-                <h3><a class="stretched" href={`/projects/${p.slug}/`}>{p.title}</a></h3>
-                {p.award ? <p class="frame-award">{p.award}</p> : p.context && <p class="frame-meta">{p.context}</p>}
-                <p class="frame-pitch">{p.pitch}</p>
-                <ProjectLinks project={p} writeup={false} />
-              </div>
-            </li>
-          );
-        })
-      }
-    </ol>
+    <ProjectGrid projects={sheet} />
   </section>
 
   <section id="experience" class="section" aria-labelledby="experience-heading">
@@ -279,39 +253,6 @@ const structuredData = {
     openedForPrint = [];
   });
 
-  const controls = document.querySelector<HTMLElement>('.project-filter-controls');
-  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-project-filter]'));
-  const cards = Array.from(document.querySelectorAll<HTMLElement>('#project-list > .frame'));
-  const status = document.querySelector<HTMLElement>('.filter-status');
-
-  function selectFilter(requested: string | null) {
-    const selected = buttons.find((button) => button.dataset.projectFilter === requested) ?? buttons[0];
-    const filter = selected.dataset.projectFilter;
-    for (const button of buttons) button.setAttribute('aria-pressed', String(button === selected));
-    let visible = 0;
-    for (const card of cards) {
-      card.hidden = filter !== 'all' && !card.dataset.categories?.split(' ').includes(filter!);
-      if (!card.hidden) visible++;
-    }
-    if (status) status.textContent = filter === 'all'
-      ? `Showing all ${cards.length} projects`
-      : `Showing ${visible} of ${cards.length} projects`;
-  }
-
-  for (const button of buttons) {
-    button.addEventListener('click', () => {
-      const filter = button.dataset.projectFilter!;
-      selectFilter(filter);
-      const url = new URL(window.location.href);
-      if (filter === 'all') url.searchParams.delete('type');
-      else url.searchParams.set('type', filter);
-      window.history.pushState(null, '', url);
-    });
-  }
-  window.addEventListener('popstate', () => selectFilter(new URLSearchParams(window.location.search).get('type')));
-  selectFilter(new URLSearchParams(window.location.search).get('type'));
-  if (controls) controls.hidden = false;
-
 </script>
 
 <style>
@@ -358,8 +299,6 @@ const structuredData = {
         animation-range: cover;
       }
       .select .frame-media :global(img) { --drift: 7%; }
-      .frame:nth-child(odd) .frame-media :global(img) { --drift: 3%; }
-      .frame:nth-child(even) .frame-media :global(img) { --drift: 6%; }
       @keyframes frame-slide {
         from { transform: translate3d(0, calc(-1 * var(--drift, 4%)), 0) scale(1.16); }
         to { transform: translate3d(0, var(--drift, 4%), 0) scale(1.16); }
@@ -372,9 +311,6 @@ const structuredData = {
         animation-range: entry 0% entry 70%;
       }
       @keyframes print-in { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
-      /* Cards in the sheet rise in; even columns trail a little so a row arrives as a ripple. */
-      .frame { animation-name: rise-card; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
-      .frame:nth-child(even) { animation-range: entry 12% entry 70%; }
       @keyframes rise-card { from { opacity: 0; translate: 0 4rem; } }
       .select-copy { animation-name: rise-card; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: view(); animation-range: entry 0% entry 80%; }
       /* Section titles slide in from the left as their rule draws across. */
@@ -437,10 +373,10 @@ const structuredData = {
   }
   .frame-media :global(img) { transition: scale 0.7s var(--ease), filter 0.5s var(--ease); }
   @media (hover: hover) and (pointer: fine) {
-    :is(.select, .frame):hover .frame-media { --lift: -8px; box-shadow: 0 28px 50px -24px rgb(0 0 0 / 0.55); }
-    :is(.select, .frame):hover .frame-media :global(img) { scale: 1.07; }
+    .select:hover .frame-media { --lift: -8px; box-shadow: 0 28px 50px -24px rgb(0 0 0 / 0.55); }
+    .select:hover .frame-media :global(img) { scale: 1.07; }
   }
-  :is(.select, .frame):active .frame-media { scale: 0.985; }
+  .select:active .frame-media { scale: 0.985; }
   .frame-media { transition: translate 0.45s var(--ease), box-shadow 0.45s var(--ease), scale 0.2s var(--ease); }
   .frame-media :global(img) { width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; object-position: top center; }
   :global(:root[data-theme='dark']) .frame-media { background: #262626; }
@@ -465,46 +401,6 @@ const structuredData = {
   .select-label { font-size: var(--step--1); font-weight: 700; }
   .select :global(.actions) { position: relative; z-index: 3; gap: 0 1.1rem; font-size: 0.9375rem; }
   .select :global(.actions a), .select :global(.actions .pending) { display: inline-flex; align-items: center; min-height: 2.75rem; }
-
-  /* All projects: the contact sheet, frames edge to edge in colour. */
-  .project-filter-controls { margin-bottom: clamp(2rem, 4vw, 2.75rem); }
-  .project-filters { display: flex; flex-wrap: wrap; gap: 0.35rem 0.25rem; margin-inline: 0 -0.75rem; }
-  .project-filters button { position: relative; min-height: 2.75rem; padding: 0.35rem 0.75rem; border: 0; background: none; font: inherit; color: var(--muted); cursor: pointer; }
-  .project-filters button:hover, .project-filters button[aria-pressed='true'] { color: var(--ink); }
-  .project-filters button { border-radius: 999px; transition: background-color 0.25s var(--ease), color 0.25s var(--ease), scale 0.15s var(--ease); }
-  .project-filters button:hover { background: var(--accent-soft); }
-  .project-filters button[aria-pressed='true'] { background: var(--ink); color: var(--bg); }
-  .project-filters button:active { scale: 0.94; }
-  .filter-count { margin-left: 0.15em; font-size: var(--step--1); font-variant-numeric: tabular-nums; }
-  .filter-status { margin-top: 0.5rem; color: var(--muted); font-size: var(--step--1); }
-
-  .sheet { list-style: none; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); column-gap: 0; row-gap: clamp(2.25rem, 4vw, 3rem); }
-  @media (min-width: 36rem) { .sheet { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  /* Phones: a dense two-up sheet of frames with title and type; the write-up, pitch and links are one tap away. */
-  @media (max-width: 35.99rem) {
-    .sheet { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 3px; row-gap: 1.5rem; }
-    .frame-copy { padding: 0.6rem 0.25rem 0 3px; gap: 0.2rem; }
-    .frame h3 { font-size: 1rem; }
-    .frame-pitch { display: none; }
-    /* Only the live site stays on the phone card; code, Devpost and the write-up are on the project page. */
-    .frame :global(.actions > :not(.live-link)) { display: none; }
-    .frame :global(.actions) { min-height: 0; }
-    .frame :global(.actions .live-link) { min-height: 2.75rem; font-size: 0.8125rem; }
-    .frame h3 a::after { content: ''; position: absolute; inset: 0; z-index: 3; }
-  }
-  @media (min-width: 56rem) { .sheet { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-  @media (min-width: 72rem) { .sheet { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-  .frame { position: relative; display: flex; flex-direction: column; min-width: 0; }
-  .frame[hidden] { display: none; }
-  .frame-copy { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.9rem 1.25rem 0 3px; }
-  .frame h3 { font-size: var(--step-1); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; }
-  .frame h3 a { text-decoration: none; }
-  .frame:hover h3 a { text-decoration-line: underline; text-decoration-thickness: 2px; text-decoration-color: currentColor; }
-  .frame-meta { display: grid; font-size: var(--step--1); line-height: 1.45; color: var(--muted); }
-  .frame-award { font-size: var(--step--1); font-weight: 700; line-height: 1.45; }
-  .frame-pitch { margin-top: 0.2rem; font-size: 0.9375rem; color: var(--muted); text-wrap: pretty; }
-  .frame :global(.actions) { position: relative; z-index: 3; gap: 0 1.1rem; font-size: 0.875rem; }
-  .frame :global(.actions a), .frame :global(.actions .pending) { display: inline-flex; align-items: center; min-height: 2.75rem; }
 
   /* Experience */
   .experience { list-style: none; padding: 0; }
@@ -564,8 +460,6 @@ const structuredData = {
   .contact-section a:focus-visible, .contact-section :global(.button:focus-visible) { outline-color: var(--c-ink); }
 
   @media print {
-    .frame .frame-media :global(img) { filter: none; }
-    .project-filter-controls { display: none; }
     .contact-section { margin-inline: 0; background: none; color: inherit; }
     .contact-inner { padding: 2rem 0; }
   }

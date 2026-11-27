@@ -52,15 +52,22 @@ const isSiteCard = ogImage.endsWith('/og.png');
 const ogWidth = Astro.props.ogImageWidth ?? (isSiteCard ? 1200 : undefined);
 const ogHeight = Astro.props.ogImageHeight ?? (isSiteCard ? 630 : undefined);
 const year = new Date().getFullYear();
+const path = Astro.url.pathname;
 const navItems = [
-  { label: 'Work', href: '/#work' },
+  { label: 'Projects', href: '/projects/', current: path.startsWith('/projects') },
+  { label: 'Hackathons', href: '/hackathons/', current: path.startsWith('/hackathons') },
   { label: 'Experience', href: '/#experience' },
-  { label: 'Education', href: '/#education' },
-  { label: 'Photos', href: '/photography/', current: Astro.url.pathname.startsWith('/photography') },
+  { label: 'About', href: '/about/', current: path.startsWith('/about') },
+  { label: 'Photos', href: '/photography/', current: path.startsWith('/photography') },
   { label: 'Blog', href: 'https://blog.veermickey.com' },
   { label: 'Resume', href: '/resume.pdf' },
 ];
-const footerSite = navItems.filter((item) => ['Work', 'Experience', 'Photos', 'Blog'].includes(item.label));
+// The footer adds HackUTD, which has its own page but no room in the menu.
+const footerSite = [
+  ...navItems.filter((item) => ['Projects', 'Hackathons', 'About'].includes(item.label)),
+  { label: 'HackUTD', href: '/hackutd/' },
+  ...navItems.filter((item) => ['Photos', 'Blog'].includes(item.label)),
+];
 // One list of places to reach Veer, in one order, everywhere it appears.
 const elsewhereOrder = ['Email', 'GitHub', 'LinkedIn', 'Devpost', 'Resume'];
 const footerElsewhere = elsewhereOrder
