@@ -2,6 +2,10 @@
 // readable only by the site owner. No tracking cookies, IPs or user agents; honors DNT/GPC.
 // Opt yourself out on a device by visiting any page with ?notrack=1 (?notrack=0 undoes it);
 // the opt-out is a localStorage flag plus a .veermickey.com cookie so it covers the blog too.
+// Signing in to the blog admin opts that browser out, and automated browsers (agents, Lighthouse,
+// crawlers) are never tracked, so the data is real visitors only.
+
+import { clearOptOut, isAutomated, setOptOut } from './notrack';
 
 const url = import.meta.env.PUBLIC_SUPABASE_URL;
 const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
@@ -16,17 +20,11 @@ type Event = {
 };
 
 function optedOut() {
+  if (isAutomated()) return true;
   const flag = new URLSearchParams(location.search).get('notrack');
-  const domain = location.hostname.endsWith('veermickey.com') ? '; domain=.veermickey.com' : '';
+  if (flag === '1') setOptOut();
+  if (flag === '0') clearOptOut();
   try {
-    if (flag === '1') {
-      localStorage.setItem('notrack', '1');
-      document.cookie = `notrack=1${domain}; path=/; max-age=31536000; samesite=lax; secure`;
-    }
-    if (flag === '0') {
-      localStorage.removeItem('notrack');
-      document.cookie = `notrack=${domain}; path=/; max-age=0`;
-    }
     if (localStorage.getItem('notrack') === '1' || /(?:^|;\s*)notrack=1/.test(document.cookie)) return true;
   } catch {}
   const nav = navigator as Navigator & { globalPrivacyControl?: boolean };

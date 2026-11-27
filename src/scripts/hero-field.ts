@@ -37,7 +37,7 @@ export function initHeroField() {
   let ty = new Float32Array(0);
   let k = new Float32Array(0);
   let accent = new Uint8Array(0);
-  // Dots take the hero's text colour, which follows the theme (ink by day, white at night).
+  // Dots take the hero's text colour, which follows the theme (white in dark mode, ink in light mode).
   let ink = '#fff';
   let hot = '#fff';
   let pointer = { x: 0, y: 0, active: false };

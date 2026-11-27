@@ -2,7 +2,7 @@
 export const education = [
   {
     school: 'University of Texas at Dallas',
-    degree: 'M.S. in Computer Science, Intelligent Systems',
+    degree: 'MS CS, Intelligent Systems',
     period: 'August 2026 – May 2027',
     detail: 'GPA 4.00. Coursework: Machine Learning, Deep Learning, Artificial Intelligence, Database Design, Compiler Construction.',
   },

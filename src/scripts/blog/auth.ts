@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import { supabase, supabaseConfigured } from '../../lib/blog/supabase';
 import { ADMIN_EMAIL, blogBase } from '../../lib/blog/config';
+import { setOptOut } from '../notrack';
 
 export const base = blogBase(location.hostname);
 export const adminUrl = (path = '') => `${base}/admin/${path}`;
@@ -14,5 +15,7 @@ export async function adminSession(): Promise<Session | null> {
     await supabase().auth.signOut();
     return null;
   }
+  // Veer's own browsers stay out of the site analytics once he has signed in here.
+  if (session) setOptOut();
   return session;
 }

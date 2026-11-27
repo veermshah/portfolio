@@ -1,0 +1,89 @@
+---
+import Base from '../layouts/Base.astro';
+import { profile } from '../data/profile';
+import { experience } from '../data/experience';
+import { hackathonWins } from '../data/hackathons';
+import { breadcrumbs, jsonLd, personRef, schemaIds } from '../lib/seo';
+
+const entry = experience.find((e) => e.company.startsWith('HackUTD'));
+if (!entry) throw new Error('Missing HackUTD experience entry');
+
+const pageUrl = new URL('/hackutd/', Astro.site).href;
+const ids = schemaIds(Astro.site);
+const title = `${profile.shortName}, HackUTD director (2026)`;
+const description = `${profile.shortName} directed HackUTD in 2026, leading a 45-member team for a 24-hour UT Dallas hackathon with more than 1,200 hackers, 15+ sponsors and $50,000+ in prizes.`;
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'AboutPage',
+      '@id': `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: title,
+      description,
+      inLanguage: 'en',
+      isPartOf: { '@id': ids.website },
+      about: {
+        ...personRef(Astro.site),
+        memberOf: {
+          '@type': 'OrganizationRole',
+          roleName: 'Director',
+          startDate: '2026-01',
+          endDate: '2026-12',
+          memberOf: { '@type': 'Organization', name: 'HackUTD', url: 'https://hackutd.co' },
+        },
+      },
+      breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
+    },
+    breadcrumbs(`${pageUrl}#breadcrumb`, [
+      ['Home', ids.home],
+      ['HackUTD', pageUrl],
+    ]),
+  ],
+};
+---
+
+<Base title={title} description={description} wide>
+  <script is:inline slot="head" type="application/ld+json" set:html={jsonLd(structuredData)} />
+  <header class="page-head">
+    <p class="page-kicker">Director, January to December 2026</p>
+    <h1>Running HackUTD</h1>
+    <p class="page-lede">
+      In 2026 I was a director of HackUTD, the hackathon that ACM runs at UT Dallas in Richardson, Texas. Before that I spent
+      two years on the team as an experience organizer.
+    </p>
+  </header>
+
+  <dl class="fact-list">
+    <div><dt>Organizing team</dt><dd>45 people</dd></div>
+    <div><dt>Hackers</dt><dd>1,200+</dd></div>
+    <div><dt>Sponsors</dt><dd>15+</dd></div>
+    <div><dt>Prizes</dt><dd>$50,000+</dd></div>
+    <div><dt>Length</dt><dd>24 hours</dd></div>
+  </dl>
+
+  <div class="prose hackutd-body">
+    <h2>What I did</h2>
+    <ul>
+      <li>Led the 45-member organizing team behind HackUTD, the largest 24-hour collegiate hackathon in North America, an MLH member event.</li>
+      <li>Directed engineering for Jury, an open-source judging platform now used by more than four hackathons, and HARP, the platform we run hackathon operations on.</li>
+    </ul>
+
+    <h2>Beyond HackUTD</h2>
+    <p>
+      I compete too, and my projects have won prizes at events from <a href="/hackathons/">HackTX to PennApps</a>. Since
+      September 2026 I’ve coached hackathons for Major League Hacking (MLH).
+    </p>
+
+    <h2>More</h2>
+    <ul>
+      <li><a href="https://hackutd.co">hackutd.co</a>, the event’s site</li>
+      <li><a href="/hackathons/">Hackathon wins</a>, the {hackathonWins.length} projects that won prizes</li>
+      <li><a href="/about/">About me</a></li>
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .hackutd-body { margin-top: clamp(3rem, 6vw, 5rem); }
+</style>

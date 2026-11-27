@@ -1,0 +1,99 @@
+---
+import Base from '../layouts/Base.astro';
+import { profile } from '../data/profile';
+import { hackathonWins } from '../data/hackathons';
+import { breadcrumbs, jsonLd, personRef, schemaIds } from '../lib/seo';
+
+const pageUrl = new URL('/about/', Astro.site).href;
+const ids = schemaIds(Astro.site);
+const email = profile.links.find((l) => l.label === 'Email')?.href;
+const unsplash = profile.links.find((l) => l.label === 'Unsplash')?.href;
+const title = `About ${profile.shortName} (${profile.name})`;
+const description = `${profile.name} (${profile.shortName}) is a software engineer and UT Dallas master’s student in Richardson, Texas, who builds cloud and AI systems and directed HackUTD in 2026.`;
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'AboutPage',
+      '@id': `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: title,
+      description,
+      inLanguage: 'en',
+      isPartOf: { '@id': ids.website },
+      about: personRef(Astro.site),
+      mainEntity: personRef(Astro.site),
+      breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
+    },
+    breadcrumbs(`${pageUrl}#breadcrumb`, [
+      ['Home', ids.home],
+      ['About', pageUrl],
+    ]),
+  ],
+};
+---
+
+<Base title={title} description={description} wide>
+  <script is:inline slot="head" type="application/ld+json" set:html={jsonLd(structuredData)} />
+  <header class="page-head">
+    <p class="page-kicker">About</p>
+    <h1>{profile.name}</h1>
+    <p class="page-lede">
+      I’m Veer Shah, a software engineer and grad student at UT Dallas in Richardson, Texas, just north of Dallas. I build cloud
+      and AI systems and compete in hackathons, and in 2026 I directed HackUTD.
+    </p>
+  </header>
+
+  <div class="prose">
+    <h2>School</h2>
+    <p>
+      I’m in the MS CS, Intelligent Systems program at UT Dallas and graduate in May 2027. I did my B.S. in Computer Science there
+      too, graduating Magna Cum Laude with CS Honors on a National Merit Finalist scholarship.
+    </p>
+
+    <h2>Work</h2>
+    <p>
+      As a software engineering intern at Capital One in Plano in summer 2026, I built a network-automation platform on AWS that
+      schedules Ansible playbooks across more than 3,400 devices in two regions. At Fidelity Investments in 2025, I built hybrid
+      semantic and lexical search for internal developers and architects. Earlier, as an undergraduate research
+      intern at UT Dallas, I ran ROS2 simulations for anomaly detection in autonomous vehicles. The details are in my
+      <a href="/#experience">experience</a> and on my <a href="/resume.pdf">resume</a>.
+    </p>
+
+    <h2>Hackathons</h2>
+    <p>
+      {hackathonWins.length} of my hackathon projects have won prizes, at events including HackTX, RowdyHacks, HackUTA, HackUPC,
+      HackSMU, TAMUhack and PennApps. The full list is on my <a href="/hackathons/">hackathon wins</a> page. In 2026 I
+      <a href="/hackutd/">directed HackUTD</a> with a 45-person organizing team and more than 1,200 hackers. I also coach hackathons
+      for Major League Hacking.
+    </p>
+
+    <h2>What I’m building</h2>
+    <p>
+      Right now I’m working on <a href="/projects/proofsnap/">ProofSnap</a>, which checks a photo of a handwritten proof step by
+      step in Lean 4. I’m also building <a href="/projects/veer/">Veer</a>, a language where LLM contexts are typed values the
+      compiler can budget, and <a href="/projects/riff/">Riff</a>, a music studio that writes loops with Claude. The rest are on the
+      <a href="/projects/">projects page</a>.
+    </p>
+
+    <h2>Photography</h2>
+    <p>
+      I photograph cities, skylines and architecture when I travel, and publish them on
+      <a href={unsplash}>Unsplash</a>. A selection, with a globe of the places I’ve flown, is on my
+      <a href="/photography/">photography page</a>.
+    </p>
+
+    <h2>Which Veer Shah?</h2>
+    <p>
+      There are a few people named Veer Shah. I’m the one from UT Dallas who directed HackUTD in 2026, also known as Veer Mickey Shah and
+      <a href="https://github.com/veermshah">veermshah</a> on GitHub.
+    </p>
+
+    <h2>Get in touch</h2>
+    <p>
+      The best way to reach me is <a href={email}>email</a>. I’m also on
+      <a href="https://www.linkedin.com/in/veermickeyshah/">LinkedIn</a> and <a href="https://devpost.com/veermickey">Devpost</a>, and I
+      write on my <a href="https://blog.veermickey.com">blog</a>.
+    </p>
+  </div>
+</Base>

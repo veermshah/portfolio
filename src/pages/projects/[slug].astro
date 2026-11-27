@@ -7,6 +7,7 @@ import { profile } from '../../data/profile';
 import { projects, type Project } from '../../data/projects';
 import { roleSummary, myPart } from '../../lib/format';
 import { categoriesByProject } from '../../data/project-categories';
+import { winBySlug } from '../../data/hackathons';
 import { breadcrumbs, jsonLd, metaDescription, personRef, projectTitle, schemaIds } from '../../lib/seo';
 
 export const getStaticPaths = (() =>
@@ -103,7 +104,7 @@ const structuredData = {
     },
     breadcrumbs(`${pageUrl}#breadcrumb`, [
       ['Home', ids.home],
-      ['Projects', `${ids.home}#projects`],
+      ['Projects', new URL('/projects/', Astro.site).href],
       [p.title, pageUrl],
     ]),
   ],
@@ -120,7 +121,7 @@ const structuredData = {
   wide
 >
   <script is:inline slot="head" type="application/ld+json" set:html={jsonLd(structuredData)} />
-  <nav class="crumb" aria-label="Breadcrumb"><a href="/#projects"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M13 8H3.5M7.5 3.5 3 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" /></svg>All projects</a></nav>
+  <nav class="crumb" aria-label="Breadcrumb"><a href="/projects/"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M13 8H3.5M7.5 3.5 3 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" /></svg>All projects</a></nav>
 
   <article class="print" data-track="article">
     <header class="head" style={`--chars: ${longestWord}`}>
@@ -131,6 +132,7 @@ const structuredData = {
             <span class="award-mark">
               {p.award}
             </span>
+            {winBySlug(p.slug) && <a class="award-all" href={`/hackathons/#${p.slug}`}>All hackathon wins</a>}
           </p>
         )
       }
@@ -274,7 +276,7 @@ const structuredData = {
           </span>
         </a>
       ) : (
-        <a class="frame is-next" href="/#projects">
+        <a class="frame is-next" href="/projects/">
           <span class="frame-pic">
             <span class="frame-img frame-type"><span>All projects</span></span>
           </span>
@@ -326,6 +328,25 @@ const structuredData = {
 
   .award-line {
     margin-top: clamp(1.25rem, 0.9rem + 1vw, 1.75rem);
+  }
+
+  .award-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 1rem;
+  }
+
+  .award-all {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  .award-all:hover {
+    color: var(--ink);
   }
 
   .award-mark {

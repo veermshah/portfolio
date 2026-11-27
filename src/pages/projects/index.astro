@@ -1,0 +1,54 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProjectGrid from '../../components/ProjectGrid.astro';
+import { projects } from '../../data/projects';
+import { profile } from '../../data/profile';
+import { breadcrumbs, jsonLd, personRef, schemaIds } from '../../lib/seo';
+
+// Shipped work and award winners first, prototype sessions last (same rule as the home page sheet).
+const isPrototype = (p: (typeof projects)[number]) => /prototype session/i.test(p.context ?? '');
+const all = [...projects].sort((a, b) => Number(isPrototype(a)) - Number(isPrototype(b)));
+
+const pageUrl = new URL('/projects/', Astro.site).href;
+const ids = schemaIds(Astro.site);
+const title = `Projects by ${profile.name} (${profile.shortName})`;
+const description = `All ${all.length} projects by ${profile.shortName}: hackathon prize winners, AI and cloud systems, research prototypes and a compiler, each with a write-up and code.`;
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'CollectionPage',
+      '@id': `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: title,
+      description,
+      inLanguage: 'en',
+      isPartOf: { '@id': ids.website },
+      about: personRef(Astro.site),
+      breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: all.length,
+        itemListElement: all.map((p, i) => ({ '@type': 'ListItem', position: i + 1, name: p.title, url: new URL(`/projects/${p.slug}/`, Astro.site).href })),
+      },
+    },
+    breadcrumbs(`${pageUrl}#breadcrumb`, [
+      ['Home', ids.home],
+      ['Projects', pageUrl],
+    ]),
+  ],
+};
+---
+
+<Base title={title} description={description} wide>
+  <script is:inline slot="head" type="application/ld+json" set:html={jsonLd(structuredData)} />
+  <header class="page-head">
+    <p class="page-kicker">{all.length} projects</p>
+    <h1>Projects</h1>
+    <p class="page-lede">
+      My public work, from <a href="/hackathons/">hackathon prize winners</a> to cloud and AI systems, research prototypes and a
+      compiler. Each project has a write-up of what I built and what came of it.
+    </p>
+  </header>
+  <ProjectGrid projects={all} eager={4} />
+</Base>
